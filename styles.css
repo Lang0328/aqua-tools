@@ -85,6 +85,19 @@
     --luck-mid: #0071e3;
     --luck-bad: #ff3b30;
 
+    /* 今日人品弹窗配色 — 随主题切换（契合主题主色） */
+    --bonus-bg-1: #0071e3;
+    --bonus-bg-2: #2997ff;
+    --bonus-fg: #ffffff;
+    --bonus-close-bg: rgba(255, 255, 255, 0.22);
+    --bonus-close-hover-bg: #ffffff;
+    --bonus-close-hover-fg: #0071e3;
+    --bonus-card-bg: rgba(255, 255, 255, 0.14);
+    --bonus-card-fg: #ffffff;
+    --bonus-card-muted: rgba(255, 255, 255, 0.82);
+    --bonus-score-1: #ffffff;
+    --bonus-score-2: #cfe8ff;
+
     /* 背景动态光晕颜色 — 随主题切换 */
     --orb-1: rgba(0, 113, 227, 0.08);
     --orb-2: rgba(175, 82, 222, 0.06);
@@ -169,6 +182,19 @@ body, .topbar, .sidebar, .tool-body, .tool-card-v2, .design-ref-card,
     --luck-good: #30d158;
     --luck-mid: #0a84ff;
     --luck-bad: #ff453a;
+
+    /* 今日人品弹窗配色（午夜主题）— 深蓝调、白字 */
+    --bonus-bg-1: #0a84ff;
+    --bonus-bg-2: #1f2d4a;
+    --bonus-fg: #ffffff;
+    --bonus-close-bg: rgba(255, 255, 255, 0.18);
+    --bonus-close-hover-bg: #ffffff;
+    --bonus-close-hover-fg: #0a84ff;
+    --bonus-card-bg: rgba(0, 0, 0, 0.35);
+    --bonus-card-fg: #ffffff;
+    --bonus-card-muted: rgba(255, 255, 255, 0.7);
+    --bonus-score-1: #ffffff;
+    --bonus-score-2: #cfe4ff;
 }
 
 /* —— 极光 Aurora —— */
@@ -212,6 +238,19 @@ body, .topbar, .sidebar, .tool-body, .tool-card-v2, .design-ref-card,
     --luck-mid: #a78bfa;
     --luck-bad: #ff6b81;
     --palette-stage: linear-gradient(145deg, #0a1e2a 0%, #051018 100%);
+
+    /* 今日人品弹窗配色（极光主题）— 青→紫极光渐变、白字 */
+    --bonus-bg-1: #0d9488;
+    --bonus-bg-2: #8b5cf6;
+    --bonus-fg: #ffffff;
+    --bonus-close-bg: rgba(255, 255, 255, 0.2);
+    --bonus-close-hover-bg: #ffffff;
+    --bonus-close-hover-fg: #0d9488;
+    --bonus-card-bg: rgba(3, 13, 20, 0.45);
+    --bonus-card-fg: #ffffff;
+    --bonus-card-muted: rgba(232, 250, 247, 0.78);
+    --bonus-score-1: #ffffff;
+    --bonus-score-2: #a5f3eb;
 }
 
 /* 极光主题专属 — 北极光动态背景层 */
@@ -3834,68 +3873,68 @@ input[type="color"]:active {
 .floating-icons { display: none; }
 
 /* ============================================
-   今日人品弹窗：专属 aqua 主题色
+   今日人品弹窗：专属主题色（跟随主题切换）
    ============================================ */
 #bonusModal .info-modal-overlay {
-    background: rgba(5, 46, 50, 0.35);
+    background: color-mix(in srgb, var(--bonus-bg-1) 24%, rgba(0, 0, 0, 0.35));
 }
 
 #bonusModal .info-modal-content {
-    background: linear-gradient(145deg, #a7f3d0 0%, #5eead4 50%, #2dd4bf 100%);
-    border: 1px solid rgba(255, 255, 255, 0.35);
-    box-shadow: 0 20px 60px rgba(13, 148, 136, 0.35);
-    color: #ffffff;
+    background: linear-gradient(145deg, var(--bonus-bg-1) 0%, var(--bonus-bg-2) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 20px 60px color-mix(in srgb, var(--bonus-bg-1) 35%, transparent);
+    color: var(--bonus-fg);
 }
 
 #bonusModal .info-modal-title {
-    color: #ffffff;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    color: var(--bonus-fg);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
 }
 
 #bonusModal .info-modal-desc {
-    color: rgba(255, 255, 255, 0.85);
+    color: color-mix(in srgb, var(--bonus-fg) 82%, transparent);
 }
 
 #bonusModal .info-modal-close {
-    background: rgba(255, 255, 255, 0.25);
-    color: #ffffff;
+    background: var(--bonus-close-bg);
+    color: var(--bonus-fg);
 }
 
 #bonusModal .info-modal-close:hover {
-    background: #ffffff;
-    color: #0d9488;
+    background: var(--bonus-close-hover-bg);
+    color: var(--bonus-close-hover-fg);
 }
 
 #bonusModal .luck-card-modal {
-    background: #0f3d4d;
+    background: var(--bonus-card-bg);
     border-color: rgba(255, 255, 255, 0.15);
 }
 
 #bonusModal .luck-card-modal .luck-label {
-    color: rgba(255, 255, 255, 0.65);
+    color: color-mix(in srgb, var(--bonus-card-fg) 65%, transparent);
 }
 
 #bonusModal .luck-card-modal .luck-value {
-    background: linear-gradient(135deg, #5eead4 0%, #a5f3eb 100%);
+    background: linear-gradient(135deg, var(--bonus-score-1) 0%, var(--bonus-score-2) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
 }
 
 #bonusModal .luck-card-modal .luck-unit {
-    color: rgba(255, 255, 255, 0.6);
+    color: color-mix(in srgb, var(--bonus-card-fg) 60%, transparent);
 }
 
 #bonusModal .luck-card-modal .luck-bar {
-    background: rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.18);
 }
 
 #bonusModal .luck-card-modal .luck-bar-fill {
-    background: linear-gradient(90deg, #2dd4bf, #5eead4);
+    background: linear-gradient(90deg, var(--bonus-score-2), var(--bonus-score-1));
 }
 
 #bonusModal .luck-card-modal .luck-msg {
-    color: rgba(255, 255, 255, 0.85);
+    color: color-mix(in srgb, var(--bonus-card-fg) 82%, transparent);
 }
 
 /* 工具网格区 — Apple 风格 */
