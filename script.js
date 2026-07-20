@@ -561,6 +561,135 @@
     })();
 
     // ============================================
+    // 实时时钟
+    // ============================================
+    (function initClock() {
+        const el = $('#tbClock');
+        if (!el) return;
+        function tick() {
+            const now = new Date();
+            el.textContent = [
+                String(now.getHours()).padStart(2, '0'),
+                String(now.getMinutes()).padStart(2, '0'),
+                String(now.getSeconds()).padStart(2, '0'),
+            ].join(':');
+        }
+        tick();
+        setInterval(tick, 1000);
+    })();
+
+    // ============================================
+    // 今日人品
+    // ============================================
+    (function initLuck() {
+        const card = $('#luckCard');
+        const valueEl = $('#luckValue');
+        const msgEl = $('#luckMsg');
+        const refreshBtn = $('#luckRefresh');
+        if (!card) return;
+
+        const STORAGE_KEY = 'aqua-luck';
+        const fortuneMap = [
+            { min: 95, emoji: '&#x1f451;', text: '天命所归！今天注定不凡，想做什么就去做吧！' },
+            { min: 85, emoji: '&#x1f31f;', text: '大吉大利！运势极佳，适合开展新项目、重要决策。' },
+            { min: 70, emoji: '&#x2728;', text: '好运连连！保持好心情，今天会很顺利。' },
+            { min: 55, emoji: '&#x1f308;', text: '中上运势，诸事平顺，努力就会有回报。' },
+            { min: 40, emoji: '&#x1f338;', text: '平淡是真，按部就班就好，适合处理日常事务。' },
+            { min: 25, emoji: '&#x26c8;', text: '小有波澜，注意细节，避免冲动决策。' },
+            { min: 10, emoji: '&#x1f327;', text: '运势低迷，低调行事，多休息少折腾。' },
+            { min: 0,  emoji: '&#x1f4a5;', text: '黑到谷底……今天适合宅家，不宜外出冒险。' },
+        ];
+
+        function getFortune(score) {
+            for (const f of fortuneMap) {
+                if (score >= f.min) return f;
+            }
+            return fortuneMap[fortuneMap.length - 1];
+        }
+
+        function getTodayKey() {
+            return new Date().toISOString().slice(0, 10);
+        }
+
+        function generate() {
+            return Math.floor(Math.random() * 101);
+        }
+
+        function render(score) {
+            const fortune = getFortune(score);
+            if (valueEl) {
+                valueEl.classList.remove('bump');
+                void valueEl.offsetWidth;
+                valueEl.textContent = score;
+                valueEl.classList.add('bump');
+            }
+            if (msgEl) msgEl.innerHTML = `${fortune.emoji} ${fortune.text}`;
+            // 低分时给予微妙的视觉提醒
+            if (card) {
+                card.style.setProperty('--luck-mood', score < 30 ? '240, 68, 56' : score < 55 ? '255, 159, 10' : '0, 113, 227');
+            }
+        }
+
+        function refresh() {
+            const score = generate();
+            const data = { score, date: getTodayKey(), ts: Date.now() };
+            try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) {}
+            if (refreshBtn) {
+                refreshBtn.classList.remove('spin');
+                void refreshBtn.offsetWidth;
+                refreshBtn.classList.add('spin');
+            }
+            render(score);
+        }
+
+        // 初始化：加载今日或刷新
+        let stored;
+        try { stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null'); } catch(e) { stored = null; }
+        if (stored && stored.date === getTodayKey() && typeof stored.score === 'number') {
+            render(stored.score);
+        } else {
+            refresh();
+        }
+
+        // 互动
+        card.addEventListener('click', (e) => {
+            if (e.target.closest('#luckRefresh')) return; // 按钮单独处理
+            const data = { score: generate(), date: getTodayKey(), ts: Date.now() };
+            try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) {}
+            if (refreshBtn) {
+                refreshBtn.classList.remove('spin');
+                void refreshBtn.offsetWidth;
+                refreshBtn.classList.add('spin');
+            }
+            render(data.score);
+            showToast(`今日人品 ${data.score} 分`);
+        });
+
+        if (refreshBtn) refreshBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const score = generate();
+            const data = { score, date: getTodayKey(), ts: Date.now() };
+            try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) {}
+            if (refreshBtn) {
+                refreshBtn.classList.remove('spin');
+                void refreshBtn.offsetWidth;
+                refreshBtn.classList.add('spin');
+            }
+            render(score);
+        });
+
+        // 右键复制
+        card.addEventListener('contextmenu', async (e) => {
+            e.preventDefault();
+            const current = valueEl ? valueEl.textContent : '--';
+            const fortune = getFortune(parseInt(current) || 0);
+            const msg = `✨ 今日人品 ${current} 分 — ${fortune.emoji} ${fortune.text}`;
+            const ok = await copyText(msg);
+            if (ok) showToast('人品值已复制');
+        });
+    })();
+
+    // ============================================
     // 极光主题交互动效 — 鼠标轨迹 / 点击波纹 / 卡片追踪
     // ============================================
     (function initAuroraInteractive() {

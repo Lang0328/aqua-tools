@@ -263,6 +263,7 @@
                 <h1 class="page-title" id="pageTitle">主页</h1>
             </div>
             <div class="topbar-actions">
+                <div class="tb-clock" id="tbClock" title="当前时间">--:--:--</div>
                 <div class="theme-switcher">
                     <button class="icon-btn" id="themeBtn" aria-label="切换主题" title="切换主题">
                         <i class="fas fa-circle-half-stroke"></i>
@@ -311,7 +312,21 @@
                         </h1>
                         <div class="hero-stats-v2">
                             <div class="stat-pill"><span class="pill-num" data-count="36">0</span><span class="pill-label">工具</span></div>
-                        </div>                    </div>
+                        </div>
+                        <!-- 今日人品 -->
+                        <div class="luck-card-v2" id="luckCard" title="点击刷新人品值">
+                            <div class="luck-icon"><i class="fas fa-sparkles"></i></div>
+                            <div class="luck-body">
+                                <div class="luck-label">今日人品</div>
+                                <div class="luck-value-wrap">
+                                    <span class="luck-value" id="luckValue">--</span>
+                                    <span class="luck-unit">分</span>
+                                </div>
+                                <div class="luck-msg" id="luckMsg">点击卡片刷新</div>
+                            </div>
+                            <button class="luck-refresh" id="luckRefresh" title="刷新人品值"><i class="fas fa-rotate"></i></button>
+                        </div>
+                    </div>
                     <!-- 浮动工具预览图标 -->
                     <div class="floating-icons" aria-hidden="true">
                         <div class="float-icon" style="--d:0s;--x:0;--y:0"><i class="fas fa-code"></i></div>
