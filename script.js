@@ -471,9 +471,18 @@
     // ============================================
     const navItems = $$('.nav-item');
     const toolPanels = $$('.tool-panel');
-    const pageTitle = $('#pageTitle');
-    const homeBtn = $('#homeBtn');
-    const titleDot = $('#titleDot');
+        const pageTitle = $('#pageTitle');
+        const homeBtn = $('#homeBtn');
+        const titleDot = $('#titleDot');
+
+        // 进入新页面时强制回到顶端（真正的滚动容器是 #toolContainer）
+        function scrollPageTop() {
+            const tc = $('#toolContainer');
+            if (tc) tc.scrollTop = 0;
+            const mc = $('#mainContent');
+            if (mc) mc.scrollTop = 0;
+            if (window.scrollTo) window.scrollTo(0, 0);
+        }
 
     // 分类强调色映射（与卡片/侧栏分类色统一，减少割裂感）
     const catAccent = (cat) => cat ? `var(--cat-${cat})` : 'var(--primary)';
@@ -507,8 +516,7 @@
             sidebar.classList.add('collapsed');
             mainContent.classList.add('expanded');
         }
-        const tc = $('#toolContainer');
-        tc.scrollTo({ top: 0, behavior: 'smooth' });
+        scrollPageTop();
     }
 
     navItems.forEach(item => {
@@ -5301,6 +5309,7 @@ function hello() {
         function openDetail(board) {
             listView.hidden = true;
             detailView.hidden = false;
+            hideLeaderLine();
 
             // 头部信息
             $('#devBoardDetailInfo').innerHTML = `
@@ -5330,8 +5339,7 @@ function hello() {
             buildBoardModel(board, nodes);
             buildInterfaces(board, nodes);
 
-            const main = $('#mainContent');
-            if (main) main.scrollTo({ top: 0, behavior: 'smooth' });
+            scrollPageTop();
         }
 
         // 按接口顺序在四边均布编号节点
@@ -5432,6 +5440,61 @@ function hello() {
             });
         }
 
+        const SVG_NS = 'http://www.w3.org/2000/svg';
+        let activeLineName = null;
+
+        // 在板图节点与下方对应接口之间画一条引导线，让对应关系一目了然
+        function getLineLayer() {
+            let svg = $('#devBoardLineLayer');
+            if (!svg) {
+                svg = document.createElementNS(SVG_NS, 'svg');
+                svg.id = 'devBoardLineLayer';
+                svg.setAttribute('aria-hidden', 'true');
+                const dv = $('#devBoardsDetailView');
+                if (dv) dv.appendChild(svg);
+            }
+            return svg;
+        }
+        function hideLeaderLine() {
+            const svg = $('#devBoardLineLayer');
+            if (svg) { while (svg.firstChild) svg.removeChild(svg.firstChild); }
+            activeLineName = null;
+        }
+        function drawLeaderLine(name) {
+            const svg = getLineLayer();
+            if (!svg) return;
+            const node = Array.from(document.querySelectorAll('.dev-board-node')).find(n => n.dataset.itf === name);
+            const card = Array.from(document.querySelectorAll('.dev-board-iface')).find(c => c.dataset.itf === name);
+            while (svg.firstChild) svg.removeChild(svg.firstChild);
+            if (!node || !card) { activeLineName = null; return; }
+            const sr = svg.getBoundingClientRect();
+            const nr = node.getBoundingClientRect();
+            const cr = card.getBoundingClientRect();
+            let x1 = nr.left + nr.width / 2 - sr.left;
+            let y1 = nr.top + nr.height / 2 - sr.top;
+            const x2 = cr.left - sr.left + 2;
+            const y2 = cr.top + cr.height / 2 - sr.top;
+            // 从节点边缘起笔，避免压住编号圆点
+            const ang = Math.atan2(y2 - y1, x2 - x1);
+            const off = 20;
+            x1 += Math.cos(ang) * off;
+            y1 += Math.sin(ang) * off;
+            const dx = Math.max(30, Math.abs(x2 - x1) * 0.5);
+            const dir = x2 >= x1 ? 1 : -1;
+            const d = `M ${x1.toFixed(1)} ${y1.toFixed(1)} C ${(x1 + dir * dx).toFixed(1)} ${y1.toFixed(1)}, ${(x2 - dir * dx).toFixed(1)} ${y2.toFixed(1)}, ${x2.toFixed(1)} ${y2.toFixed(1)}`;
+            const path = document.createElementNS(SVG_NS, 'path');
+            path.setAttribute('d', d);
+            path.setAttribute('class', 'dev-board-link-path');
+            svg.appendChild(path);
+            const dot = document.createElementNS(SVG_NS, 'circle');
+            dot.setAttribute('cx', x2.toFixed(1));
+            dot.setAttribute('cy', y2.toFixed(1));
+            dot.setAttribute('r', 4);
+            dot.setAttribute('class', 'dev-board-link-end');
+            svg.appendChild(dot);
+            activeLineName = name;
+        }
+
         function focusInterface(name, scroll) {
             document.querySelectorAll('.dev-board-node').forEach(n => n.classList.toggle('is-active', n.dataset.itf === name));
             document.querySelectorAll('.dev-board-iface').forEach(c => {
@@ -5439,11 +5502,15 @@ function hello() {
                 c.classList.toggle('is-active', on);
                 if (on && scroll) c.scrollIntoView({ behavior: 'smooth', block: 'center' });
             });
+            drawLeaderLine(name);
         }
         function clearFocus() {
             document.querySelectorAll('.dev-board-node.is-active, .dev-board-iface.is-active')
                 .forEach(el => el.classList.remove('is-active'));
+            hideLeaderLine();
         }
+        // 布局变化时（窗口缩放）重画引导线
+        window.addEventListener('resize', () => { if (activeLineName) drawLeaderLine(activeLineName); });
 
         $('#devBoardsBack').addEventListener('click', () => {
             detailView.hidden = true;

@@ -6852,6 +6852,33 @@ body.reader-fullscreen .sidebar { display: none; }
 
 /* 详情视图 */
 .dev-boards-detail-view[hidden] { display: none; }
+.dev-boards-detail-view { position: relative; }
+
+/* 节点 → 接口 引导线图层 */
+#devBoardLineLayer {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 30;
+    overflow: visible;
+}
+.dev-board-link-path {
+    fill: none;
+    stroke: var(--accent-active, #0071e3);
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-dasharray: 6 5;
+    animation: devBoardDash 0.5s linear infinite;
+    filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.45));
+}
+.dev-board-link-end {
+    fill: var(--accent-active, #0071e3);
+    stroke: rgba(255, 255, 255, 0.85);
+    stroke-width: 1.5;
+}
+@keyframes devBoardDash { to { stroke-dashoffset: -22; } }
 .dev-boards-back {
     display: inline-flex;
     align-items: center;
