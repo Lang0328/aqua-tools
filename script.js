@@ -692,38 +692,10 @@
         const bonusModal = $('#bonusModal');
         const bonusModalOverlay = $('#bonusModalOverlay');
         const bonusModalClose = $('#bonusModalClose');
-        const bonusModalScore = $('#bonusModalScore');
         const bonusBtn = $('#luckBonusBtn');
-
-        const bonusKeys = ['love', 'career', 'wealth', 'health', 'social'];
-        const bonusIdMap = { love: 'barLove', career: 'barCareer', wealth: 'barWealth', health: 'barHealth', social: 'barSocial' };
-        const bonusTextIdMap = { love: 'bonusLove', career: 'bonusCareer', wealth: 'bonusWealth', health: 'bonusHealth', social: 'bonusSocial' };
-
-        function seededRandom(seed) {
-            let s = seed;
-            return () => { s = (s * 1103515245 + 12345) & 0x7fffffff; return s / 0x7fffffff; };
-        }
-
-        function renderBonus() {
-            const currentScore = parseInt(valueEl ? valueEl.textContent : '50') || 50;
-            const todaySeed = parseInt(getTodayKey().replace(/-/g, '')) + currentScore * 37;
-            const rand = seededRandom(todaySeed);
-            if (bonusModalScore) bonusModalScore.textContent = currentScore;
-            bonusKeys.forEach(key => {
-                const val = Math.round(currentScore * 0.55 + rand() * currentScore * 0.9);
-                const clamped = Math.min(100, Math.max(5, val));
-                const bar = $(bonusIdMap[key]);
-                const text = $(bonusTextIdMap[key]);
-                if (bar) bar.style.width = clamped + '%';
-                if (text) text.textContent = clamped;
-            });
-            const bonusData = { date: getTodayKey(), score: currentScore };
-            try { localStorage.setItem(STORAGE_KEY + '-bonus', JSON.stringify(bonusData)); } catch(e) {}
-        }
 
         function showBonusModal() {
             if (!bonusModal) return;
-            renderBonus();
             bonusModal.classList.add('show');
         }
 
