@@ -6864,21 +6864,19 @@ body.reader-fullscreen .sidebar { display: none; }
     z-index: 30;
     overflow: visible;
 }
-.dev-board-link-path {
-    fill: none;
-    stroke: var(--accent-active, #0071e3);
-    stroke-width: 2.5;
+.dev-board-link-line {
+    stroke: #34c759;
+    stroke-width: 1.6;
     stroke-linecap: round;
-    stroke-dasharray: 6 5;
-    animation: devBoardDash 0.5s linear infinite;
-    filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.45));
+    opacity: 0.9;
+    filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.55));
+    transition: stroke-width 0.15s ease, stroke 0.15s ease, opacity 0.15s ease;
 }
-.dev-board-link-end {
-    fill: var(--accent-active, #0071e3);
-    stroke: rgba(255, 255, 255, 0.85);
-    stroke-width: 1.5;
+.dev-board-link-line.is-active {
+    stroke: #7cffb0;
+    stroke-width: 2.8;
+    opacity: 1;
 }
-@keyframes devBoardDash { to { stroke-dashoffset: -22; } }
 .dev-boards-back {
     display: inline-flex;
     align-items: center;

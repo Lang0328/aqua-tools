@@ -5309,7 +5309,6 @@ function hello() {
         function openDetail(board) {
             listView.hidden = true;
             detailView.hidden = false;
-            hideLeaderLine();
 
             // 头部信息
             $('#devBoardDetailInfo').innerHTML = `
@@ -5366,15 +5365,18 @@ function hello() {
             img.src = `assets/boards/${board.id}.png`;
             img.alt = board.name + ' 仿真建模图';
             img.loading = 'lazy';
+            img.addEventListener('load', () => drawConnectorLines());
             img.addEventListener('error', () => {
                 el.classList.remove('has-photo');
                 el.innerHTML = '';
                 renderSchematic(el, board);
                 placeMarks(el.querySelector('.dev-board-pcb'), nodes, false);
+                requestAnimationFrame(() => drawConnectorLines());
             });
             el.classList.add('has-photo');
             el.appendChild(img);
             placeMarks(el, nodes, true);
+            requestAnimationFrame(() => drawConnectorLines());
         }
 
         function renderSchematic(el, board) {
@@ -5403,6 +5405,7 @@ function hello() {
                 dot.className = `dev-board-node dev-board-node-${n.side}`;
                 dot.dataset.itf = n.itf;
                 dot.dataset.num = n.num;
+                dot.dataset.side = n.side;
                 dot.style.left = x + '%';
                 dot.style.top = y + '%';
                 dot.title = n.itf;
@@ -5441,9 +5444,8 @@ function hello() {
         }
 
         const SVG_NS = 'http://www.w3.org/2000/svg';
-        let activeLineName = null;
 
-        // 在板图节点与下方对应接口之间画一条引导线，让对应关系一目了然
+        // 常亮：每个编号节点向板内指一条细绿实线，指向图片上对应的接口位置
         function getLineLayer() {
             let svg = $('#devBoardLineLayer');
             if (!svg) {
@@ -5455,44 +5457,32 @@ function hello() {
             }
             return svg;
         }
-        function hideLeaderLine() {
-            const svg = $('#devBoardLineLayer');
-            if (svg) { while (svg.firstChild) svg.removeChild(svg.firstChild); }
-            activeLineName = null;
-        }
-        function drawLeaderLine(name) {
+        function drawConnectorLines() {
             const svg = getLineLayer();
             if (!svg) return;
-            const node = Array.from(document.querySelectorAll('.dev-board-node')).find(n => n.dataset.itf === name);
-            const card = Array.from(document.querySelectorAll('.dev-board-iface')).find(c => c.dataset.itf === name);
             while (svg.firstChild) svg.removeChild(svg.firstChild);
-            if (!node || !card) { activeLineName = null; return; }
             const sr = svg.getBoundingClientRect();
-            const nr = node.getBoundingClientRect();
-            const cr = card.getBoundingClientRect();
-            let x1 = nr.left + nr.width / 2 - sr.left;
-            let y1 = nr.top + nr.height / 2 - sr.top;
-            const x2 = cr.left - sr.left + 2;
-            const y2 = cr.top + cr.height / 2 - sr.top;
-            // 从节点边缘起笔，避免压住编号圆点
-            const ang = Math.atan2(y2 - y1, x2 - x1);
-            const off = 20;
-            x1 += Math.cos(ang) * off;
-            y1 += Math.sin(ang) * off;
-            const dx = Math.max(30, Math.abs(x2 - x1) * 0.5);
-            const dir = x2 >= x1 ? 1 : -1;
-            const d = `M ${x1.toFixed(1)} ${y1.toFixed(1)} C ${(x1 + dir * dx).toFixed(1)} ${y1.toFixed(1)}, ${(x2 - dir * dx).toFixed(1)} ${y2.toFixed(1)}, ${x2.toFixed(1)} ${y2.toFixed(1)}`;
-            const path = document.createElementNS(SVG_NS, 'path');
-            path.setAttribute('d', d);
-            path.setAttribute('class', 'dev-board-link-path');
-            svg.appendChild(path);
-            const dot = document.createElementNS(SVG_NS, 'circle');
-            dot.setAttribute('cx', x2.toFixed(1));
-            dot.setAttribute('cy', y2.toFixed(1));
-            dot.setAttribute('r', 4);
-            dot.setAttribute('class', 'dev-board-link-end');
-            svg.appendChild(dot);
-            activeLineName = name;
+            document.querySelectorAll('.dev-board-node').forEach(node => {
+                const nr = node.getBoundingClientRect();
+                const x1 = nr.left + nr.width / 2 - sr.left;
+                const y1 = nr.top + nr.height / 2 - sr.top;
+                // 由所在边向板内指入一小段，指向图片上的接口位置
+                // 起点从编号圆点边缘起笔，避免压住数字
+                const side = node.dataset.side || 'top';
+                const gap = 15, len = 20;
+                let x2 = x1, y2 = y1, x3 = x1, y3 = y1;
+                if (side === 'top') { y2 = y1 + gap; y3 = y1 + gap + len; }
+                else if (side === 'bottom') { y2 = y1 - gap; y3 = y1 - gap - len; }
+                else if (side === 'left') { x2 = x1 + gap; x3 = x1 + gap + len; }
+                else { x2 = x1 - gap; x3 = x1 - gap - len; }
+                const line = document.createElementNS(SVG_NS, 'line');
+                line.setAttribute('x1', x2.toFixed(1));
+                line.setAttribute('y1', y2.toFixed(1));
+                line.setAttribute('x2', x3.toFixed(1));
+                line.setAttribute('y2', y3.toFixed(1));
+                line.setAttribute('class', 'dev-board-link-line' + (node.classList.contains('is-active') ? ' is-active' : ''));
+                svg.appendChild(line);
+            });
         }
 
         function focusInterface(name, scroll) {
@@ -5502,15 +5492,15 @@ function hello() {
                 c.classList.toggle('is-active', on);
                 if (on && scroll) c.scrollIntoView({ behavior: 'smooth', block: 'center' });
             });
-            drawLeaderLine(name);
+            drawConnectorLines();
         }
         function clearFocus() {
             document.querySelectorAll('.dev-board-node.is-active, .dev-board-iface.is-active')
                 .forEach(el => el.classList.remove('is-active'));
-            hideLeaderLine();
+            drawConnectorLines();
         }
-        // 布局变化时（窗口缩放）重画引导线
-        window.addEventListener('resize', () => { if (activeLineName) drawLeaderLine(activeLineName); });
+        // 布局/图片加载变化（窗口缩放）时重画常亮连线
+        window.addEventListener('resize', drawConnectorLines);
 
         $('#devBoardsBack').addEventListener('click', () => {
             detailView.hidden = true;
