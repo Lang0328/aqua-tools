@@ -117,6 +117,10 @@
                     <i class="fas fa-key"></i>
                     <span>JWT 解码器</span>
                 </a>
+                <a href="#" class="nav-item" data-tool="dev-boards">
+                    <i class="fas fa-microchip"></i>
+                    <span>开发板百科</span>
+                </a>
             </div>
 
             <div class="nav-group">
@@ -219,13 +223,6 @@
                 </a>
             </div>
 
-            <div class="nav-group">
-                <p class="nav-group-title">硬件</p>
-                <a href="#" class="nav-item" data-tool="dev-boards">
-                    <i class="fas fa-microchip"></i>
-                    <span>开发板百科</span>
-                </a>
-            </div>
             <div class="nav-group">
                 <p class="nav-group-title">系统工具</p>
                 <a href="#" class="nav-item" data-tool="kms">
@@ -1904,8 +1901,25 @@
                     </div>
                 </div>
                 <div class="tool-body glass">
-                    <div class="dev-boards-filters" id="devBoardsFilters"></div>
-                    <div class="dev-boards-grid" id="devBoardsGrid"></div>
+                    <!-- 列表视图 -->
+                    <div class="dev-boards-list-view" id="devBoardsListView">
+                        <div class="dev-boards-filters" id="devBoardsFilters"></div>
+                        <div class="dev-boards-grid" id="devBoardsGrid"></div>
+                    </div>
+                    <!-- 详情视图 -->
+                    <div class="dev-boards-detail-view" id="devBoardsDetailView" hidden>
+                        <button class="dev-boards-back" id="devBoardsBack" type="button">
+                            <i class="fas fa-arrow-left"></i> 返回列表
+                        </button>
+                        <div class="dev-board-detail-grid">
+                            <div class="dev-board-model-wrap">
+                                <div class="dev-board-model" id="devBoardModel"></div>
+                                <p class="dev-board-model-hint">点亮模型上的接口节点，可定位到右侧/下方对应说明</p>
+                            </div>
+                            <div class="dev-board-detail-info" id="devBoardDetailInfo"></div>
+                        </div>
+                        <div class="dev-board-interfaces" id="devBoardInterfaces"></div>
+                    </div>
                 </div>
             </section>
             <section class="tool-panel" id="tool-design-ref">
@@ -1948,13 +1962,12 @@
                 <i class="fas fa-times"></i>
             </button>
             <h2 class="info-modal-title" id="bonusModalTitle">今日人品</h2>
-            <p class="info-modal-desc">点卡片或刷新按钮可重新测算今天的人品</p>
+            <p class="info-modal-desc">今日人品每天固定，跨过零点才会重新测算</p>
 
             <!-- 整张人品卡片搬进弹窗 -->
-            <div class="luck-card-v2 luck-card-modal" id="luckCard" title="点击卡面刷新人品值">
+            <div class="luck-card-v2 luck-card-modal" id="luckCard" title="今日人品 · 当天固定">
                 <div class="luck-top">
                     <div class="luck-label">今日人品</div>
-                    <button class="luck-refresh" id="luckRefresh" title="刷新人品值" aria-label="刷新人品值"><i class="fas fa-rotate"></i></button>
                 </div>
                 <div class="luck-score-row">
                     <span class="luck-value" id="luckValue">--</span>
@@ -1963,7 +1976,7 @@
                 <div class="luck-bar" aria-hidden="true">
                     <div class="luck-bar-fill" id="luckBarFill"></div>
                 </div>
-                <div class="luck-msg" id="luckMsg">点击卡片刷新</div>
+                <div class="luck-msg" id="luckMsg">今日人品 · 每天更新一次</div>
             </div>
         </div>
     </div>

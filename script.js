@@ -612,7 +612,6 @@
         const card = $('#luckCard');
         const valueEl = $('#luckValue');
         const msgEl = $('#luckMsg');
-        const refreshBtn = $('#luckRefresh');
         if (!card) return;
 
         const STORAGE_KEY = 'aqua-luck';
@@ -634,12 +633,21 @@
             return fortuneMap[fortuneMap.length - 1];
         }
 
+        // 以本地"当日"日期为 key，跨过零点即视为新的一天（按日历日，而非 24 小时滚动窗口）
         function getTodayKey() {
-            return new Date().toISOString().slice(0, 10);
+            const d = new Date();
+            const y = d.getFullYear();
+            const m = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${y}-${m}-${day}`;
         }
 
+        // 偏向高分：约 75% 概率落在 50~100，其余 1~49，提升"50 以上"的出现概率
         function generate() {
-            return Math.floor(Math.random() * 101);
+            if (Math.random() < 0.75) {
+                return 50 + Math.floor(Math.random() * 51);
+            }
+            return 1 + Math.floor(Math.random() * 49);
         }
 
         function render(score) {
@@ -659,53 +667,24 @@
             if (barFill) barFill.style.width = score + '%';
         }
 
-        function refresh() {
-            const score = generate();
-            const data = { score, date: getTodayKey(), ts: Date.now() };
-            try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) {}
-            if (refreshBtn) {
-                refreshBtn.classList.remove('spin');
-                void refreshBtn.offsetWidth;
-                refreshBtn.classList.add('spin');
+        // 当天首次打开（或跨过日历日）才重新随机，并写入本地；
+        // 同日同设备任意时间打开都读取已存值，保证数值一致
+        function ensureToday() {
+            let stored = null;
+            try { stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null'); } catch(e) {}
+            if (stored && stored.date === getTodayKey() && typeof stored.score === 'number') {
+                render(stored.score);
+            } else {
+                const score = generate();
+                try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ score, date: getTodayKey() })); } catch(e) {}
+                render(score);
             }
-            render(score);
         }
 
-        // 初始化：加载今日或刷新
-        let stored;
-        try { stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null'); } catch(e) { stored = null; }
-        if (stored && stored.date === getTodayKey() && typeof stored.score === 'number') {
-            render(stored.score);
-        } else {
-            refresh();
-        }
+        ensureToday();
 
-        // 互动 — 点击卡面刷新人品
-        card.addEventListener('click', (e) => {
-            if (e.target.closest('#luckRefresh')) return;
-            const data = { score: generate(), date: getTodayKey(), ts: Date.now() };
-            try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) {}
-            if (refreshBtn) {
-                refreshBtn.classList.remove('spin');
-                void refreshBtn.offsetWidth;
-                refreshBtn.classList.add('spin');
-            }
-            render(data.score);
-            showToast(`今日人品 ${data.score} 分`);
-        });
+        // 取消刷新机制：人品值当天固定，左键点击不再重算
 
-        if (refreshBtn) refreshBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const score = generate();
-            const data = { score, date: getTodayKey(), ts: Date.now() };
-            try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) {}
-            if (refreshBtn) {
-                refreshBtn.classList.remove('spin');
-                void refreshBtn.offsetWidth;
-                refreshBtn.classList.add('spin');
-            }
-            render(score);
-        });
 
         // 右键复制
         card.addEventListener('contextmenu', async (e) => {
@@ -4963,12 +4942,14 @@ function hello() {
     })();
 
     // ============================================
-    // 工具：开发板百科
+    // 工具：开发板百科（列表 → 详情：建模图 + 接口用处）
     // ============================================
     (function initDevBoards() {
         const filtersEl = $('#devBoardsFilters');
         const grid = $('#devBoardsGrid');
-        if (!filtersEl || !grid) return;
+        const listView = $('#devBoardsListView');
+        const detailView = $('#devBoardsDetailView');
+        if (!filtersEl || !grid || !listView || !detailView) return;
 
         const boards = [
             {
@@ -4976,173 +4957,306 @@ function hello() {
                 icon: 'fa-microchip', maker: 'Arduino',
                 brief: '全球最流行的入门开发板，基于 ATmega328P 8 位 MCU，生态成熟、教程丰富。',
                 difficulty: 'beginner',
-                specs: { '主控': 'ATmega328P', '主频': '16 MHz', 'Flash': '32 KB', 'SRAM': '2 KB', 'GPIO': '14 数字 + 6 模拟', '电压': '5V', '接口': 'USB-B / UART / SPI / I²C', '尺寸': '68.6×53.4mm', '价格': '¥15–30' },
+                specs: { '主控': 'ATmega328P', '主频': '16 MHz', 'Flash': '32 KB', 'SRAM': '2 KB', 'GPIO': '14 数字 + 6 模拟', '电压': '5V', '尺寸': '68.6×53.4mm', '价格': '¥15–30' },
                 uses: 'LED 流水灯、温湿度传感器、舵机控制、基础 IoT 实验',
                 pros: ['价格极低', '社区最大教程最多', 'Shield 扩展生态', '即插即用无需焊接'],
                 cons: ['性能较弱 8 位', 'RAM 很小仅 2KB', '无 WiFi / 蓝牙'],
-                stars: 5
+                stars: 5,
+                interfaces: [
+                    { name: 'USB-B 接口', icon: 'fa-usb', desc: '连接电脑供电并上传程序，同时作为串口与 PC 通信。', example: '插电脑烧录草图、用串口监视器看传感器读数' },
+                    { name: '数字引脚 D0–D13', icon: 'fa-plug', desc: '14 个数字 IO，可输出高/低电平或读取数字信号。', example: '点亮 LED、读取按键、驱动继电器模块' },
+                    { name: '模拟引脚 A0–A5', icon: 'fa-sliders-h', desc: '6 路 10 位 ADC，读取 0–5V 模拟电压。', example: '接电位器调光、读取温湿度传感器' },
+                    { name: '电源 5V / 3.3V / GND', icon: 'fa-bolt', desc: '对外提供 5V 与 3.3V 电源及接地。', example: '给外接传感器、OLED 屏幕供电' },
+                    { name: 'SPI（ICSP）', icon: 'fa-project-diagram', desc: '6 针 SPI 总线，用于高速外设与烧录。', example: '接 SPI 触摸屏、SD 卡模块' },
+                    { name: 'I²C（A4/A5）', icon: 'fa-network-wired', desc: '两线串行总线，可挂多个低速设备。', example: '接 OLED 显示屏、DS3231 实时时钟' }
+                ]
             },
             {
                 id: 'arduino-uno-r4', name: 'Arduino Uno R4 WiFi', cat: 'Arduino',
                 icon: 'fa-microchip', maker: 'Arduino',
                 brief: 'Uno 的现代升级版，搭载 Renesas RA4M1 32 位 ARM Cortex-M4，板载 WiFi 和 LED 矩阵。',
                 difficulty: 'beginner',
-                specs: { '主控': 'Renesas RA4M1 32位', '主频': '48 MHz', 'Flash': '256 KB', 'SRAM': '32 KB', 'GPIO': '14 数字 + 6 模拟', '电压': '5V', '接口': 'USB-C / WiFi / BLE / CAN', '尺寸': '68.6×53.4mm', '价格': '¥120–160' },
+                specs: { '主控': 'Renesas RA4M1 32位', '主频': '48 MHz', 'Flash': '256 KB', 'SRAM': '32 KB', 'GPIO': '14 数字 + 6 模拟', '电压': '5V', '尺寸': '68.6×53.4mm', '价格': '¥120–160' },
                 uses: 'IoT 联网项目、CAN 总线通信、LED 矩阵显示、中级学习',
                 pros: ['32 位性能跃升', '板载 WiFi + BLE', '兼容 Uno 引脚', 'LED 矩阵可玩性高'],
                 cons: ['价格偏高', '社区资源不如 R3 丰富', '部分老旧库需适配'],
-                stars: 4
+                stars: 4,
+                interfaces: [
+                    { name: 'USB-C 接口', icon: 'fa-usb', desc: '新一代 USB-C 供电与烧录，兼容原有引脚布局。', example: '连电脑上传程序、串口调试' },
+                    { name: '数字引脚 D0–D13', icon: 'fa-plug', desc: '14 个数字 IO，兼容 Uno R3 生态与 Shield。', example: '接 Shield 扩展板、LED 实验' },
+                    { name: '模拟引脚 A0–A5', icon: 'fa-sliders-h', desc: '14 位 ADC，精度比 R3 更高。', example: '精密传感器采集、电位器读值' },
+                    { name: 'WiFi + BLE', icon: 'fa-wifi', desc: '板载 ESP32-S3 提供无线联网与蓝牙。', example: '联网上报数据、手机蓝牙控制' },
+                    { name: 'CAN 总线', icon: 'fa-sitemap', desc: '支持 CAN 通信，适合车辆/工业总线。', example: '接 OBD、电机驱动器' },
+                    { name: 'LED 矩阵', icon: 'fa-table', desc: '板载 12×8 红色 LED 点阵，免外接显示。', example: '显示表情、动画、状态提示' },
+                    { name: '电源 5V / 3.3V', icon: 'fa-bolt', desc: '对外提供电源与接地。', example: '给模块、传感器供电' }
+                ]
             },
             {
                 id: 'arduino-mega', name: 'Arduino Mega 2560', cat: 'Arduino',
                 icon: 'fa-microchip', maker: 'Arduino',
                 brief: '54 个数字 IO + 16 个模拟输入的大引脚开发板，适合 3D 打印机、机器人等多 IO 项目。',
                 difficulty: 'intermediate',
-                specs: { '主控': 'ATmega2560', '主频': '16 MHz', 'Flash': '256 KB', 'SRAM': '8 KB', 'GPIO': '54 数字 + 16 模拟', '电压': '5V', '接口': 'USB-B / 4×UART / SPI / I²C', '尺寸': '101.5×53.3mm', '价格': '¥50–80' },
+                specs: { '主控': 'ATmega2560', '主频': '16 MHz', 'Flash': '256 KB', 'SRAM': '8 KB', 'GPIO': '54 数字 + 16 模拟', '电压': '5V', '尺寸': '101.5×53.3mm', '价格': '¥50–80' },
                 uses: '3D 打印机主板、多舵机机器人、大型矩阵键盘、CNC 控制',
                 pros: ['IO 极多 70 个', 'Flash 大 256KB', '多串口通信', '3D 打印标配主板'],
                 cons: ['体积较大', '无 WiFi / 蓝牙', '仍是 8 位性能', '功耗较高'],
-                stars: 4
+                stars: 4,
+                interfaces: [
+                    { name: 'USB-B 接口', icon: 'fa-usb', desc: '供电与上传程序。', example: '连电脑烧录草图' },
+                    { name: '数字引脚 0–53', icon: 'fa-plug', desc: '54 个数字 IO，海量扩展能力。', example: '3D 打印机步进电机、多路舵机' },
+                    { name: '模拟引脚 A0–A15', icon: 'fa-sliders-h', desc: '16 路模拟输入，多传感器并行。', example: '多路传感器矩阵采集' },
+                    { name: '4× UART', icon: 'fa-arrows-alt-h', desc: '四路串口可同时与多个设备通信。', example: '接 GPS、蓝牙、无线数传' },
+                    { name: 'SPI / I²C', icon: 'fa-project-diagram', desc: '标准总线，连接各类外设。', example: '接屏幕、存储、传感器' },
+                    { name: '电源 5V', icon: 'fa-bolt', desc: '对外供电与接地。', example: '给外围电路供电' }
+                ]
             },
             {
                 id: 'arduino-nano', name: 'Arduino Nano', cat: 'Arduino',
                 icon: 'fa-microchip', maker: 'Arduino',
                 brief: '仅有指节大小的微型 Arduino，面包板友好，适合紧凑嵌入式项目。',
                 difficulty: 'beginner',
-                specs: { '主控': 'ATmega328P', '主频': '16 MHz', 'Flash': '32 KB', 'SRAM': '2 KB', 'GPIO': '14 数字 + 8 模拟', '电压': '5V', '接口': 'Mini-USB / UART / SPI / I²C', '尺寸': '43.2×18.5mm', '价格': '¥12–25' },
+                specs: { '主控': 'ATmega328P', '主频': '16 MHz', 'Flash': '32 KB', 'SRAM': '2 KB', 'GPIO': '14 数字 + 8 模拟', '电压': '5V', '尺寸': '43.2×18.5mm', '价格': '¥12–25' },
                 uses: '穿戴设备原型、微型传感器节点、面包板实验',
                 pros: ['极微型 18.5mm', '面包板直插', '价格最低', 'IO 够用'],
                 cons: ['无 USB-C', '无 WiFi / 蓝牙', 'RAM 仍仅 2KB', '调试需串口转接'],
-                stars: 4
+                stars: 4,
+                interfaces: [
+                    { name: 'Mini-USB', icon: 'fa-usb', desc: '老式 Mini-USB 供电与烧录。', example: '连电脑上传程序' },
+                    { name: '数字引脚 D0–D13', icon: 'fa-plug', desc: '14 个数字 IO，面包板直插。', example: '面包板接线、LED 实验' },
+                    { name: '模拟引脚 A0–A7', icon: 'fa-sliders-h', desc: '8 路模拟输入。', example: '读取电位器、传感器' },
+                    { name: '电源 5V / 3.3V', icon: 'fa-bolt', desc: '对外供电。', example: '给小模块供电' },
+                    { name: 'I²C / SPI', icon: 'fa-project-diagram', desc: '两线/四线总线扩展。', example: '接 OLED 显示屏' }
+                ]
             },
             {
                 id: 'rpi-5', name: 'Raspberry Pi 5', cat: '树莓派',
                 icon: 'fa-raspberry-pi', brand: true, maker: 'Raspberry Pi 基金会',
                 brief: '2023 年发布的旗舰单板计算机，4 核 Cortex-A76，支持双 4K 输出，可替代桌面电脑。',
                 difficulty: 'intermediate',
-                specs: { 'SoC': 'BCM2712 四核 Cortex-A76', '主频': '2.4 GHz', 'RAM': '4/8 GB LPDDR4X', '存储': 'microSD + M.2 NVMe', 'GPU': 'VideoCore VII', '接口': 'USB3×2 + USB2×2 / PCIe 2.0 / HDMI×2 / WiFi 5 / BLE 5', '尺寸': '85×56mm', '价格': '¥380–650' },
+                specs: { 'SoC': 'BCM2712 四核 Cortex-A76', '主频': '2.4 GHz', 'RAM': '4/8 GB LPDDR4X', '存储': 'microSD + M.2 NVMe', 'GPU': 'VideoCore VII', 'GPIO': '40 针', '尺寸': '85×56mm', '价格': '¥380–650' },
                 uses: '轻量桌面办公、Home Assistant 智能家居、NAS、媒体中心、Docker 容器',
                 pros: ['桌面级性能', 'M.2 NVMe 直连', '实时时钟 + 电源键', 'Pi OS 稳定好用'],
                 cons: ['功耗高需散热', '价格较贵', '无板载 eMMC', 'GPIO 兼容性需注意'],
-                stars: 5
+                stars: 5,
+                interfaces: [
+                    { name: 'USB 3.0 / 2.0', icon: 'fa-usb', desc: '接键鼠、硬盘、摄像头等外设。', example: '接 SSD 做系统盘、USB 摄像头' },
+                    { name: '双 HDMI 2.0', icon: 'fa-display', desc: '双 4K 显示输出。', example: '接显示器做桌面系统' },
+                    { name: 'GPIO 40 针', icon: 'fa-plug', desc: '40 针通用 IO，兼容老树莓派 HAT。', example: '接 LED、传感器、扩展板' },
+                    { name: 'PCIe 2.0', icon: 'fa-server', desc: 'M.2 NVMe 高速扩展接口。', example: '接固态硬盘大幅提速' },
+                    { name: 'WiFi 5 / BLE', icon: 'fa-wifi', desc: '无线连接。', example: 'SSH 远程登录、联网' },
+                    { name: '千兆网口', icon: 'fa-network-wired', desc: 'RJ45 有线网络。', example: '搭建 NAS、家庭服务器' },
+                    { name: 'USB-C PD 电源', icon: 'fa-bolt', desc: '5V 供电（需 5A 电源）。', example: '接官方电源适配器' },
+                    { name: 'microSD / M.2', icon: 'fa-sd-card', desc: '系统与存储载体。', example: '烧录树莓派系统盘' }
+                ]
             },
             {
                 id: 'rpi-pico', name: 'Raspberry Pi Pico 2 W', cat: '树莓派',
                 icon: 'fa-microchip', maker: 'Raspberry Pi 基金会',
                 brief: 'RP2350 双核微控制器 + WiFi，树莓派官方 MCU 系列，极低功耗实时控制。',
                 difficulty: 'beginner',
-                specs: { '主控': 'RP2350 双核 ARM + RISC-V', '主频': '150 MHz', 'Flash': '4 MB (外挂)', 'SRAM': '520 KB', 'GPIO': '26 个', '电压': '3.3V', '接口': 'USB-C / WiFi / BLE / PIO', '尺寸': '51×21mm', '价格': '¥35–50' },
+                specs: { '主控': 'RP2350 双核 ARM + RISC-V', '主频': '150 MHz', 'Flash': '4 MB (外挂)', 'SRAM': '520 KB', 'GPIO': '26 个', '电压': '3.3V', '尺寸': '51×21mm', '价格': '¥35–50' },
                 uses: '传感器采集、电机控制、低功耗 IoT、MicroPython 教学',
                 pros: ['超低功耗', 'PIO 可编程 IO', 'WiFi 内置', '双架构 ARM+RISC-V'],
                 cons: ['无 GPU 不做桌面', 'Flash 需外挂', '社区不如 Arduino 成熟'],
-                stars: 4
+                stars: 4,
+                interfaces: [
+                    { name: 'USB-C', icon: 'fa-usb', desc: '供电与拖拽式 UF2 烧录。', example: '拖入 UF2 文件烧录 MicroPython' },
+                    { name: 'GPIO 26 针', icon: 'fa-plug', desc: '26 个多功能 IO。', example: '接传感器、LED' },
+                    { name: 'WiFi + BLE', icon: 'fa-wifi', desc: '无线联网与蓝牙。', example: '数据上报、手机控制' },
+                    { name: 'PIO 接口', icon: 'fa-microchip', desc: '可编程 IO 状态机，软件模拟协议。', example: '驱动 WS2812 灯带、自定义时序' },
+                    { name: 'ADC 引脚', icon: 'fa-sliders-h', desc: '3 路 12 位 ADC 模拟输入。', example: '读取模拟传感器' },
+                    { name: '电源 3.3V', icon: 'fa-bolt', desc: '对外供电。', example: '给小模块供电' }
+                ]
             },
             {
                 id: 'esp32-dev', name: 'ESP32-DevKitC V4', cat: 'ESP',
                 icon: 'fa-wifi', maker: '乐鑫 Espressif',
                 brief: 'IoT 开发王者，240MHz 双核 Xtensa LX6 + 内置 WiFi/BLE，性价比最高。',
                 difficulty: 'beginner',
-                specs: { '主控': 'ESP32-D0WDQ6 双核', '主频': '240 MHz', 'Flash': '4–16 MB', 'SRAM': '520 KB', 'GPIO': '34 个', '电压': '3.3V', '接口': 'micro-USB / WiFi b/g/n / BLE 4.2 / 3×UART / SPI / I²C', '尺寸': '55.3×28mm', '价格': '¥18–35' },
+                specs: { '主控': 'ESP32-D0WDQ6 双核', '主频': '240 MHz', 'Flash': '4–16 MB', 'SRAM': '520 KB', 'GPIO': '34 个', '电压': '3.3V', '尺寸': '55.3×28mm', '价格': '¥18–35' },
                 uses: '智能家居网关、MQTT 物联网节点、WebSocket 服务器、低功耗蓝牙设备',
                 pros: ['WiFi+BLE 双模内置', '双核 240MHz', '价格极低', 'Arduino IDE 兼容'],
                 cons: ['ADC 精度一般', '引脚电流有限', '功耗比 Pico 高'],
-                stars: 5
+                stars: 5,
+                interfaces: [
+                    { name: 'micro-USB', icon: 'fa-usb', desc: '供电与上传程序。', example: '连电脑烧录固件' },
+                    { name: 'WiFi + BLE', icon: 'fa-wifi', desc: '内置无线双模，IoT 核心。', example: 'MQTT 物联网节点' },
+                    { name: '34× GPIO', icon: 'fa-plug', desc: '丰富通用 IO。', example: '接继电器、灯、传感器' },
+                    { name: '3× UART', icon: 'fa-arrows-alt-h', desc: '多串口同时通信。', example: '接 GPS、调试串口' },
+                    { name: 'SPI / I²C', icon: 'fa-project-diagram', desc: '标准总线扩展。', example: '接屏幕、传感器' },
+                    { name: 'ADC / 触摸', icon: 'fa-sliders-h', desc: '12 位 ADC + 电容触摸。', example: '读模拟量、做触摸按键' },
+                    { name: '电源 3.3V', icon: 'fa-bolt', desc: '对外供电（注意电流限制）。', example: '给小传感器供电' }
+                ]
             },
             {
                 id: 'esp32-s3', name: 'ESP32-S3-DevKitC', cat: 'ESP',
                 icon: 'fa-microchip', maker: '乐鑫 Espressif',
                 brief: 'ESP32 升级版，搭载 USB-OTG、向量指令集和更强的 AI 加速能力。',
                 difficulty: 'intermediate',
-                specs: { '主控': 'ESP32-S3 双核 Xtensa LX7', '主频': '240 MHz', 'Flash': '8–16 MB', 'SRAM': '512 KB + 2MB PSRAM', 'GPIO': '45 个', '电压': '3.3V', '接口': 'USB-OTG / WiFi 4 / BLE 5 / LCD 接口', '尺寸': '54×25mm', '价格': '¥30–60' },
+                specs: { '主控': 'ESP32-S3 双核 Xtensa LX7', '主频': '240 MHz', 'Flash': '8–16 MB', 'SRAM': '512 KB + 2MB PSRAM', 'GPIO': '45 个', '电压': '3.3V', '尺寸': '54×25mm', '价格': '¥30–60' },
                 uses: 'AI 视觉识别、TFT 屏幕驱动、USB 设备模拟、语音处理',
                 pros: ['USB-OTG 原生', 'AI/向量加速', 'BLE 5.0 长距', 'LCD/Camera 接口'],
                 cons: ['不带完整 5GHz WiFi', '发热略高于原版'],
-                stars: 4
+                stars: 4,
+                interfaces: [
+                    { name: 'USB-OTG', icon: 'fa-usb', desc: '原生 USB，可做设备/主机。', example: '模拟键盘鼠标、直连烧录' },
+                    { name: 'WiFi / BLE 5', icon: 'fa-wifi', desc: '无线联网与蓝牙。', example: '联网上报、长距通信' },
+                    { name: '45× GPIO', icon: 'fa-plug', desc: '大量通用 IO。', example: '丰富外设扩展' },
+                    { name: 'LCD / Camera', icon: 'fa-display', desc: '并口屏与摄像头接口。', example: '驱动 TFT、接摄像头做视觉' },
+                    { name: 'SPI / I²C / UART', icon: 'fa-project-diagram', desc: '标准总线。', example: '接传感器、屏幕' },
+                    { name: 'PSRAM', icon: 'fa-memory', desc: '片外 RAM 扩展，缓存大模型。', example: 'AI 推理帧缓冲' },
+                    { name: '电源 3.3V', icon: 'fa-bolt', desc: '对外供电。', example: '给模块供电' }
+                ]
             },
             {
                 id: 'esp8266', name: 'NodeMCU ESP8266', cat: 'ESP',
                 icon: 'fa-wifi', maker: '乐鑫 Espressif',
                 brief: '经典款超低成本 WiFi 模块，虽已老旧但至今仍有大量教程和项目沿用。',
                 difficulty: 'beginner',
-                specs: { '主控': 'ESP8266EX 单核', '主频': '80–160 MHz', 'Flash': '4 MB', 'SRAM': '80 KB', 'GPIO': '11 个', '电压': '3.3V', '接口': 'micro-USB / WiFi b/g/n', '尺寸': '48×25mm', '价格': '¥8–15' },
+                specs: { '主控': 'ESP8266EX 单核', '主频': '80–160 MHz', 'Flash': '4 MB', 'SRAM': '80 KB', 'GPIO': '11 个', '电压': '3.3V', '尺寸': '48×25mm', '价格': '¥8–15' },
                 uses: 'WiFi 开关、天气时钟、MQTT 数据上报、极简 IoT 节点',
                 pros: ['价格极低 8 元起', 'Arduino IDE 兼容', '功耗极低', '教程最多'],
                 cons: ['单核性能弱', '无蓝牙', 'GPIO 少且部分受限', '已停止新 SDK 开发'],
-                stars: 3
+                stars: 3,
+                interfaces: [
+                    { name: 'micro-USB', icon: 'fa-usb', desc: '供电与烧录。', example: '连电脑上传程序' },
+                    { name: 'WiFi', icon: 'fa-wifi', desc: '内置 WiFi（无蓝牙）。', example: 'WiFi 开关、天气时钟' },
+                    { name: 'GPIO 11', icon: 'fa-plug', desc: '有限 IO（部分引脚受限）。', example: '接继电器、LED' },
+                    { name: 'UART', icon: 'fa-arrows-alt-h', desc: '串口通信。', example: '接串口设备' },
+                    { name: 'SPI / I²C', icon: 'fa-project-diagram', desc: '总线扩展。', example: '接传感器' },
+                    { name: '电源 3.3V', icon: 'fa-bolt', desc: '对外供电。', example: '给小模块供电' }
+                ]
             },
             {
                 id: 'stm32-f103', name: 'STM32F103C8T6 蓝药丸', cat: 'STM32',
                 icon: 'fa-cogs', maker: '意法半导体 ST',
                 brief: '最经典的 ARM Cortex-M3 入门开发板，极小体积，工业控制首选。',
                 difficulty: 'intermediate',
-                specs: { '主控': 'STM32F103C8T6 Cortex-M3', '主频': '72 MHz', 'Flash': '64 KB', 'SRAM': '20 KB', 'GPIO': '37 个', '电压': '3.3V', '接口': 'micro-USB / 3×USART / 2×SPI / 2×I²C / CAN / 12位 ADC', '尺寸': '53×22mm', '价格': '¥10–20' },
+                specs: { '主控': 'STM32F103C8T6 Cortex-M3', '主频': '72 MHz', 'Flash': '64 KB', 'SRAM': '20 KB', 'GPIO': '37 个', '电压': '3.3V', '尺寸': '53×22mm', '价格': '¥10–20' },
                 uses: '电机闭环控制、CAN 总线通信、精密 ADC 采集、工业传感器',
                 pros: ['价格极低', '外设丰富专业', 'CAN 总线内置', '实时性极强'],
                 cons: ['上手难度高', '调试器需另购 ST-Link', 'RAM 偏少 20KB'],
-                stars: 3
+                stars: 3,
+                interfaces: [
+                    { name: 'micro-USB', icon: 'fa-usb', desc: '供电（烧录需 ST-Link 调试器）。', example: '接 5V 供电' },
+                    { name: '3× USART', icon: 'fa-arrows-alt-h', desc: '三路串口通信。', example: '接 GPS、蓝牙、调试' },
+                    { name: '2× SPI / 2× I²C', icon: 'fa-project-diagram', desc: '多路标准总线。', example: '接屏幕、传感器' },
+                    { name: 'CAN 总线', icon: 'fa-sitemap', desc: '工业现场总线。', example: '接电机驱动、车辆总线' },
+                    { name: 'GPIO 37', icon: 'fa-plug', desc: '丰富通用 IO。', example: '接按键、LED' },
+                    { name: '12 位 ADC', icon: 'fa-sliders-h', desc: '精密模拟采集。', example: '读取模拟传感器' },
+                    { name: '电源 3.3V', icon: 'fa-bolt', desc: '对外供电。', example: '给模块供电' }
+                ]
             },
             {
                 id: 'stm32-f407', name: 'STM32F407VET6 黑药丸', cat: 'STM32',
                 icon: 'fa-cogs', maker: '意法半导体 ST',
                 brief: 'Cortex-M4 带 FPU + DSP 指令，168MHz 高频性能，适合音频和实时信号处理。',
                 difficulty: 'advanced',
-                specs: { '主控': 'STM32F407VET6 Cortex-M4 + FPU', '主频': '168 MHz', 'Flash': '512 KB', 'SRAM': '192 KB', 'GPIO': '82 个', '电压': '3.3V', '接口': 'micro-USB OTG / 4×USART / 3×SPI / 3×I²C / 2×CAN / SDIO / FSMC', '尺寸': '69×52mm', '价格': '¥40–70' },
+                specs: { '主控': 'STM32F407VET6 Cortex-M4 + FPU', '主频': '168 MHz', 'Flash': '512 KB', 'SRAM': '192 KB', 'GPIO': '82 个', '电压': '3.3V', '尺寸': '69×52mm', '价格': '¥40–70' },
                 uses: '数字音频处理、FSMC 驱动 TFT 屏、多路伺服控制、复杂算法',
                 pros: ['DSP + FPU 强大', 'Flash 大 512KB', 'IO 数量极多', 'FSMC 高速并口'],
                 cons: ['学习曲线陡峭', '体积偏大', '功耗管理复杂'],
-                stars: 3
+                stars: 3,
+                interfaces: [
+                    { name: 'micro-USB OTG', icon: 'fa-usb', desc: '供电与 USB OTG。', example: '接 USB 设备' },
+                    { name: '4× USART', icon: 'fa-arrows-alt-h', desc: '四路串口。', example: '多设备通信' },
+                    { name: '3× SPI / 3× I²C', icon: 'fa-project-diagram', desc: '多路总线。', example: '接屏幕、传感器' },
+                    { name: '2× CAN', icon: 'fa-sitemap', desc: '双 CAN 总线。', example: '工业/车辆通信' },
+                    { name: 'SDIO', icon: 'fa-sd-card', desc: '高速 SD 卡接口。', example: '接 SD 卡存储数据' },
+                    { name: 'FSMC', icon: 'fa-server', desc: '高速并口，驱动 TFT。', example: '并口驱动大屏' },
+                    { name: 'GPIO 82', icon: 'fa-plug', desc: '极多 IO。', example: '复杂外设扩展' },
+                    { name: '电源 3.3V', icon: 'fa-bolt', desc: '对外供电。', example: '给模块供电' }
+                ]
             },
             {
                 id: 'microbit-v2', name: 'BBC micro:bit V2', cat: '教育',
                 icon: 'fa-circle', maker: 'BBC / 微软',
                 brief: '中小学编程教育标准硬件，内置 25 颗 LED 矩阵、喇叭、麦克风和触摸传感器。',
                 difficulty: 'beginner',
-                specs: { '主控': 'nRF52833 Cortex-M4', '主频': '64 MHz', 'Flash': '512 KB', 'SRAM': '128 KB', 'GPIO': '25 个含 5 大引脚', '电压': '3V', '接口': 'micro-USB / BLE 5 / 喇叭 / 麦克风 / 触摸 / 加速度计 / 磁力计', '尺寸': '52×42mm', '价格': '¥120–150' },
+                specs: { '主控': 'nRF52833 Cortex-M4', '主频': '64 MHz', 'Flash': '512 KB', 'SRAM': '128 KB', 'GPIO': '25 个含 5 大引脚', '电压': '3V', '尺寸': '52×42mm', '价格': '¥120–150' },
                 uses: '中小学 STEM 教学、MakeCode 图形化编程、穿戴原型、互动游戏',
                 pros: ['零基础可用', '传感器内置丰富', '图形化 + Python', '全球教育资源'],
                 cons: ['专业性不足', '价格贵于性能比', '成人开发者不适用'],
-                stars: 4
+                stars: 4,
+                interfaces: [
+                    { name: 'micro-USB', icon: 'fa-usb', desc: '供电与拖拽式烧录。', example: '拖入 HEX 文件烧录' },
+                    { name: '5× 大引脚', icon: 'fa-plug', desc: '鳄鱼夹友好的大焊盘 IO。', example: '接鳄鱼夹做电路实验' },
+                    { name: '25× LED 矩阵', icon: 'fa-table', desc: '板载点阵显示。', example: '显示图案、文字、心跳' },
+                    { name: '喇叭 + 麦克风', icon: 'fa-volume-up', desc: '声音输出与输入。', example: '播放音效、声控互动' },
+                    { name: '触摸引脚', icon: 'fa-hand-pointer', desc: '电容触摸感应。', example: '做触摸按键' },
+                    { name: '加速度计 + 磁力计', icon: 'fa-compass', desc: '姿态与指南针。', example: '计步、方向检测' },
+                    { name: 'BLE 5', icon: 'fa-wifi', desc: '无线连接。', example: '手机互动、板间通信' },
+                    { name: '电源 3V', icon: 'fa-bolt', desc: '电池盒/USB 供电。', example: '接纽扣电池盒便携使用' }
+                ]
             },
             {
                 id: 'orange-pi-5', name: 'Orange Pi 5', cat: '树莓派',
                 icon: 'fa-microchip', maker: '香橙派',
                 brief: '瑞芯微 RK3588S 八核处理器，性能对标树莓派 5，性价比突出。',
                 difficulty: 'advanced',
-                specs: { 'SoC': 'Rockchip RK3588S 八核', '主频': '2.4 GHz A76×4 + 1.8 GHz A55×4', 'RAM': '4/8/16 GB LPDDR4X', '存储': 'microSD + M.2 NVMe + eMMC', '接口': 'USB3×1 + USB2×2 / HDMI 2.1×2 / 2.5G LAN / WiFi 6', '尺寸': '89×62mm', '价格': '¥400–900' },
+                specs: { 'SoC': 'Rockchip RK3588S 八核', '主频': '2.4 GHz A76×4 + 1.8 GHz A55×4', 'RAM': '4/8/16 GB LPDDR4X', '存储': 'microSD + M.2 NVMe + eMMC', 'GPIO': '40 针', '尺寸': '89×62mm', '价格': '¥400–900' },
                 uses: '高性能 NAS、边缘 AI 推理、Android/Linux 桌面替代、K8s 集群节点',
                 pros: ['八核性能爆表', 'M.2 + eMMC 双存储', '2.5G 网口', 'WiFi 6 + BT 5'],
                 cons: ['软件生态不如树莓派', '社区稍小', '高负载需主动散热'],
-                stars: 4
+                stars: 4,
+                interfaces: [
+                    { name: 'USB 3.0 / 2.0', icon: 'fa-usb', desc: '外接设备。', example: '接硬盘、键鼠' },
+                    { name: 'HDMI 2.1 ×2', icon: 'fa-display', desc: '双 8K 显示。', example: '接显示器做桌面' },
+                    { name: '40 针 GPIO', icon: 'fa-plug', desc: '通用 IO 扩展。', example: '接传感器、HAT' },
+                    { name: 'M.2 NVMe / eMMC', icon: 'fa-server', desc: '高速存储。', example: '接固态硬盘提速' },
+                    { name: '2.5G 网口', icon: 'fa-network-wired', desc: '高速有线网络。', example: '高速 NAS' },
+                    { name: 'WiFi 6 / BT', icon: 'fa-wifi', desc: '无线连接。', example: '联网、蓝牙外设' },
+                    { name: '电源 USB-C / 5V', icon: 'fa-bolt', desc: '供电接口。', example: '接官方电源' }
+                ]
             },
             {
                 id: 'beaglebone-black', name: 'BeagleBone Black', cat: '工业',
                 icon: 'fa-server', maker: 'BeagleBoard.org',
                 brief: 'AM3358 Cortex-A8 工业级单板机，带 PRU 实时协处理器，适合工业控制和实时任务。',
                 difficulty: 'advanced',
-                specs: { '主控': 'TI AM3358 Cortex-A8', '主频': '1 GHz', 'RAM': '512 MB DDR3', '存储': '4 GB eMMC + microSD', 'GPIO': '65 个', '电压': '5V', '接口': 'mini-USB / 1G LAN / 2×PRU 实时核心 / HDMI / 4×UART / 2×CAN', '尺寸': '86.4×53.3mm', '价格': '¥350–500' },
+                specs: { '主控': 'TI AM3358 Cortex-A8', '主频': '1 GHz', 'RAM': '512 MB DDR3', '存储': '4 GB eMMC + microSD', 'GPIO': '65 个', '电压': '5V', '尺寸': '86.4×53.3mm', '价格': '¥350–500' },
                 uses: '工业 PLC 替代、电机实时控制、数据采集网关、机器人控制',
                 pros: ['PRU 实时核硬实时', '工业级设计', 'GPIO 极多 65 个', 'CAN 总线双通道'],
                 cons: ['RAM 仅 512MB', '处理器性能偏弱', '社区较小', '不推荐做桌面'],
-                stars: 3
+                stars: 3,
+                interfaces: [
+                    { name: 'mini-USB', icon: 'fa-usb', desc: '供电与串口终端。', example: '连电脑做串口调试' },
+                    { name: '1G 网口', icon: 'fa-network-wired', desc: '千兆有线网络。', example: '工业网关联网' },
+                    { name: '2× PRU 实时核', icon: 'fa-microchip', desc: '硬实时协处理器。', example: '电机实时闭环控制' },
+                    { name: '65× GPIO', icon: 'fa-plug', desc: '极多通用 IO。', example: '多路采集与控制' },
+                    { name: '4× UART / 2× CAN', icon: 'fa-arrows-alt-h', desc: '串口与 CAN 总线。', example: '工业设备通信' },
+                    { name: 'HDMI', icon: 'fa-display', desc: '视频输出。', example: '接显示器' },
+                    { name: '电源 5V', icon: 'fa-bolt', desc: '供电。', example: '接 5V 电源' }
+                ]
             },
             {
                 id: 'kendryte-k210', name: 'Sipeed Maix (K210)', cat: 'AI',
                 icon: 'fa-brain', maker: 'Sipeed / 嘉楠科技',
                 brief: '内置 KPU AI 神经网络加速器的 RISC-V 双核芯片，超低价格实现边缘 AI。',
                 difficulty: 'intermediate',
-                specs: { '主控': 'K210 双核 RISC-V 64位', '主频': '400 MHz (可调 800)', 'Flash': '16 MB', 'SRAM': '8 MB', 'GPIO': '48 个', '电压': '5V', '接口': 'USB-C / KPU AI加速 / LCD / Camera / WiFi (模块)', '尺寸': '52×25mm', '价格': '¥50–90' },
+                specs: { '主控': 'K210 双核 RISC-V 64位', '主频': '400 MHz (可调 800)', 'Flash': '16 MB', 'SRAM': '8 MB', 'GPIO': '48 个', '电压': '5V', '尺寸': '52×25mm', '价格': '¥50–90' },
                 uses: '人脸识别、物体分类、语音唤醒、车牌识别、AI 视觉教学',
                 pros: ['AI 加速极低功耗', '0.5 TOPS 算力', '价格极低', '屏幕+摄像头直连'],
                 cons: ['非标准 ARM 架构', '软件生态有限', '不适合通用开发'],
-                stars: 3
+                stars: 3,
+                interfaces: [
+                    { name: 'USB-C', icon: 'fa-usb', desc: '供电与烧录。', example: '连电脑上传模型' },
+                    { name: 'KPU AI 加速', icon: 'fa-brain', desc: '神经网络推理核心。', example: '人脸识别、物体分类' },
+                    { name: 'LCD 接口', icon: 'fa-display', desc: '并口屏驱动。', example: '接 TFT 显示识别结果' },
+                    { name: 'Camera 接口', icon: 'fa-camera', desc: '摄像头接入。', example: '接 OV 摄像头做视觉' },
+                    { name: '48× GPIO', icon: 'fa-plug', desc: '通用 IO。', example: '接外设' },
+                    { name: 'WiFi（模块）', icon: 'fa-wifi', desc: '可选无线模块。', example: '联网上报识别结果' },
+                    { name: '电源 5V', icon: 'fa-bolt', desc: '供电。', example: '接 5V 电源' }
+                ]
             }
         ];
 
         const categories = ['全部', ...([...new Set(boards.map(b => b.cat))])];
         let activeFilter = '全部';
 
-        const diffLabels = { beginner: '新手友好', intermediate: '中等', advanced: '进阶' };
+        const diffLabels = { beginner: '新手友好', intermediate: '中等', 'advanced': '进阶' };
         const diffClass = { beginner: 'beginner', intermediate: 'intermediate', advanced: 'advanced' };
+        const starStr = n => '★'.repeat(n) + '☆'.repeat(5 - n);
 
         function renderFilters() {
             filtersEl.innerHTML = categories.map(c => {
@@ -5160,8 +5274,8 @@ function hello() {
 
         function renderGrid() {
             const filtered = activeFilter === '全部' ? boards : boards.filter(b => b.cat === activeFilter);
-            grid.innerHTML = filtered.map((b, i) => `
-                <div class="dev-board-card" data-id="${b.id}" data-index="${i}">
+            grid.innerHTML = filtered.map((b) => `
+                <div class="dev-board-card" data-id="${b.id}">
                     <div class="dev-board-card-top">
                         <div class="dev-board-icon"><i class="${b.brand ? 'fab' : 'fas'} ${b.icon}"></i></div>
                         <div class="dev-board-info">
@@ -5169,45 +5283,129 @@ function hello() {
                             <div class="dev-board-subtitle">${b.maker}</div>
                             <span class="dev-board-badge ${diffClass[b.difficulty]}">${diffLabels[b.difficulty]}</span>
                         </div>
-                        <div style="color:var(--text-secondary);font-size:0.7rem;">${'★'.repeat(b.stars)}${'☆'.repeat(5 - b.stars)}</div>
+                        <div class="dev-board-stars">${starStr(b.stars)}</div>
                     </div>
-                    <div class="dev-board-card-bottom">
-                        <div class="dev-board-detail">
-                            <div class="dev-board-desc">${b.brief}</div>
-                            <div class="dev-board-specs">
-                                ${Object.entries(b.specs).map(([k, v]) => `
-                                    <div class="dev-board-spec"><span class="dev-board-spec-label">${k}</span><span class="dev-board-spec-value">${v}</span></div>
-                                `).join('')}
-                            </div>
-                            <div class="dev-board-proscons">
-                                <div class="dev-board-pros">
-                                    <div><i class="fas fa-check-circle"></i><strong>优点</strong></div>
-                                    ${b.pros.map(p => `<div>+ ${p}</div>`).join('')}
-                                </div>
-                                <div class="dev-board-cons">
-                                    <div><i class="fas fa-times-circle"></i><strong>缺点</strong></div>
-                                    ${b.cons.map(c => `<div>- ${c}</div>`).join('')}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="dev-board-expand-hint">点击展开查看详细参数 ▼</div>
+                    <div class="dev-board-card-brief">${b.brief}</div>
+                    <div class="dev-board-card-go">查看接口与建模 <i class="fas fa-arrow-right"></i></div>
                 </div>
             `).join('');
 
-            // 展开 / 收起逻辑
             grid.querySelectorAll('.dev-board-card').forEach(card => {
                 card.addEventListener('click', () => {
-                    const wasExpanded = card.classList.contains('expanded');
-                    // 先收起同批其他卡片（手风琴效果）
-                    grid.querySelectorAll('.dev-board-card.expanded').forEach(c => c.classList.remove('expanded'));
-                    if (!wasExpanded) {
-                        card.classList.add('expanded');
-                        card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                    }
+                    const b = boards.find(x => x.id === card.dataset.id);
+                    if (b) openDetail(b);
                 });
             });
         }
+
+        function openDetail(board) {
+            listView.hidden = true;
+            detailView.hidden = false;
+
+            // 头部信息
+            $('#devBoardDetailInfo').innerHTML = `
+                <div class="dev-board-detail-head">
+                    <div class="dev-board-icon-lg"><i class="${board.brand ? 'fab' : 'fas'} ${board.icon}"></i></div>
+                    <div>
+                        <div class="dev-board-detail-name">${board.name}</div>
+                        <div class="dev-board-detail-maker">${board.maker} · ${board.cat}</div>
+                        <div class="dev-board-detail-meta">
+                            <span class="dev-board-badge ${diffClass[board.difficulty]}">${diffLabels[board.difficulty]}</span>
+                            <span class="dev-board-stars">${starStr(board.stars)}</span>
+                        </div>
+                    </div>
+                </div>
+                <p class="dev-board-detail-brief">${board.brief}</p>
+                <div class="dev-board-detail-specs">
+                    ${Object.entries(board.specs).map(([k, v]) => `<div class="dev-board-spec"><span class="dev-board-spec-label">${k}</span><span class="dev-board-spec-value">${v}</span></div>`).join('')}
+                </div>
+                <div class="dev-board-detail-uses"><i class="fas fa-bolt"></i> 典型用途：${board.uses}</div>
+                <div class="dev-board-proscons">
+                    <div class="dev-board-pros"><div><i class="fas fa-check-circle"></i><strong>优点</strong></div>${board.pros.map(p => `<div>+ ${p}</div>`).join('')}</div>
+                    <div class="dev-board-cons"><div><i class="fas fa-times-circle"></i><strong>缺点</strong></div>${board.cons.map(c => `<div>- ${c}</div>`).join('')}</div>
+                </div>
+            `;
+
+            buildBoardModel(board);
+            buildInterfaces(board);
+
+            const main = $('#mainContent');
+            if (main) main.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function buildBoardModel(board) {
+            const model = $('#devBoardModel');
+            model.innerHTML = '';
+            const pcb = document.createElement('div');
+            pcb.className = 'dev-board-pcb';
+            pcb.innerHTML = `<div class="dev-board-chip"><i class="${board.brand ? 'fab' : 'fas'} ${board.icon}"></i></div><div class="dev-board-pcb-label">${board.name}</div>`;
+
+            const edges = ['top', 'right', 'bottom', 'left'];
+            const per = { top: [], right: [], bottom: [], left: [] };
+            board.interfaces.forEach((itf, i) => per[edges[i % 4]].push(itf));
+
+            edges.forEach(edge => {
+                const list = per[edge];
+                list.forEach((itf, k) => {
+                    const n = list.length;
+                    const pct = ((k + 1) / (n + 1)) * 100;
+                    const node = document.createElement('button');
+                    node.type = 'button';
+                    node.className = `dev-board-node dev-board-node-${edge}`;
+                    node.dataset.itf = itf.name;
+                    if (edge === 'top') { node.style.left = pct + '%'; node.style.top = '0'; }
+                    if (edge === 'right') { node.style.top = pct + '%'; node.style.right = '0'; }
+                    if (edge === 'bottom') { node.style.left = pct + '%'; node.style.bottom = '0'; }
+                    if (edge === 'left') { node.style.top = pct + '%'; node.style.left = '0'; }
+                    node.innerHTML = `<span class="dev-board-node-dot"><i class="${itf.icon}"></i></span><span class="dev-board-node-label">${itf.name}</span>`;
+                    node.addEventListener('click', () => focusInterface(itf.name, true));
+                    node.addEventListener('mouseenter', () => focusInterface(itf.name, false));
+                    node.addEventListener('mouseleave', clearFocus);
+                    pcb.appendChild(node);
+                });
+            });
+            model.appendChild(pcb);
+        }
+
+        function buildInterfaces(board) {
+            const wrap = $('#devBoardInterfaces');
+            wrap.innerHTML = `
+                <h3 class="dev-board-section-title"><i class="fas fa-plug"></i> 接口与引脚用途</h3>
+                <p class="dev-board-section-sub">点上方模型上的接口节点，可定位到对应说明；悬停任一处双方会联动高亮</p>
+                ${board.interfaces.map(itf => `
+                    <div class="dev-board-iface" data-itf="${itf.name}">
+                        <div class="dev-board-iface-icon"><i class="${itf.icon}"></i></div>
+                        <div class="dev-board-iface-body">
+                            <div class="dev-board-iface-name">${itf.name}</div>
+                            <div class="dev-board-iface-desc">${itf.desc}</div>
+                            <div class="dev-board-iface-example"><i class="fas fa-lightbulb"></i> 常见用法：${itf.example}</div>
+                        </div>
+                    </div>
+                `).join('')}
+            `;
+            wrap.querySelectorAll('.dev-board-iface').forEach(card => {
+                card.addEventListener('mouseenter', () => focusInterface(card.dataset.itf, false));
+                card.addEventListener('mouseleave', clearFocus);
+            });
+        }
+
+        function focusInterface(name, scroll) {
+            document.querySelectorAll('.dev-board-node').forEach(n => n.classList.toggle('is-active', n.dataset.itf === name));
+            document.querySelectorAll('.dev-board-iface').forEach(c => {
+                const on = c.dataset.itf === name;
+                c.classList.toggle('is-active', on);
+                if (on && scroll) c.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            });
+        }
+        function clearFocus() {
+            document.querySelectorAll('.dev-board-node.is-active, .dev-board-iface.is-active')
+                .forEach(el => el.classList.remove('is-active'));
+        }
+
+        $('#devBoardsBack').addEventListener('click', () => {
+            detailView.hidden = true;
+            listView.hidden = false;
+        });
 
         renderFilters();
         renderGrid();
