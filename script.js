@@ -925,16 +925,42 @@
         { id: 'ip-lookup', icon: 'fa-network-wired', title: 'IP 信息', desc: '本机IP与归属地', cat: 'utility' }
     ];
 
+    // --- 卡片滚动驱动动画：从左→右、从上→下进入 / 反之退出 ---
+    const cardRevealObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.remove('card-hidden');
+            } else {
+                entry.target.classList.add('card-hidden');
+            }
+        });
+    }, { threshold: 0.04, rootMargin: '60px 0px 60px 0px' });
+
+    function observeCards(grid) {
+        // 先注销已有观察
+        grid.querySelectorAll('.tool-card-v2').forEach(el => cardRevealObserver.unobserve(el));
+        // 计算列数以确定瀑布延迟
+        requestAnimationFrame(() => {
+            const cols = getComputedStyle(grid).gridTemplateColumns.split(' ').length || 3;
+            grid.querySelectorAll('.tool-card-v2').forEach((el, i) => {
+                const row = Math.floor(i / cols);
+                const col = i % cols;
+                // col 0.06s per step → 左→右；row 0.12s per step → 上→下
+                el.style.transitionDelay = (col * 0.06 + row * 0.12).toFixed(2) + 's';
+                cardRevealObserver.observe(el);
+            });
+        });
+    }
+
     function renderToolsGrid(filter = 'all') {
         const grid = $('#toolsGridV2');
         if (!grid) return;
         grid.innerHTML = '';
         const filtered = filter === 'all' ? allTools : allTools.filter(t => t.cat === filter);
-        filtered.forEach((card, i) => {
+        filtered.forEach((card) => {
             const el = document.createElement('div');
-            el.className = 'tool-card-v2';
+            el.className = 'tool-card-v2 card-hidden';
             el.dataset.cat = card.cat;
-            el.style.animationDelay = (i * 0.04) + 's';
             el.innerHTML = `
                 <div class="tool-card-icon-v2">
                     <i class="${card.brand ? 'fab' : 'fas'} ${card.icon}"></i>
@@ -946,6 +972,7 @@
             el.addEventListener('click', () => switchTool(card.id));
             grid.appendChild(el);
         });
+        observeCards(grid);
     }
     renderToolsGrid();
 
