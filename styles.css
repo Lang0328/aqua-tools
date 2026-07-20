@@ -7353,16 +7353,41 @@ body.reader-fullscreen .sidebar { display: none; }
     transform: translateX(4px);
 }
 .dev-board-iface-icon {
-    width: 42px;
-    height: 42px;
-    border-radius: 10px;
-    background: rgba(127, 227, 160, 0.12);
-    color: #7fe3a0;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #a7f3d0 0%, #5eead4 50%, #2dd4bf 100%);
+    color: #0f766e;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 1.1rem;
     flex-shrink: 0;
+    position: relative;
+    overflow: hidden;
+    box-shadow:
+        0 4px 14px rgba(45, 212, 191, 0.25),
+        inset 0 1px 0 rgba(255, 255, 255, 0.4),
+        inset 0 -2px 4px rgba(13, 148, 136, 0.12);
+    transition: transform 0.25s var(--ease-ios-spring), box-shadow 0.25s ease;
+}
+.dev-board-iface-icon::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 50%;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0) 100%);
+    border-radius: 12px 12px 0 0;
+    pointer-events: none;
+}
+.dev-board-iface:hover .dev-board-iface-icon {
+    transform: scale(1.08) rotate(-4deg);
+    box-shadow:
+        0 8px 22px rgba(45, 212, 191, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.55),
+        inset 0 -2px 4px rgba(13, 148, 136, 0.18);
 }
 .dev-board-iface-body { flex: 1; }
 .dev-board-iface-name {
