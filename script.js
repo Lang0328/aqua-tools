@@ -628,6 +628,8 @@
             if (card) {
                 card.style.setProperty('--luck-mood', score < 30 ? '220, 38, 38' : score < 55 ? '168, 85, 247' : '0, 113, 227');
             }
+            const barFill = $('#luckBarFill');
+            if (barFill) barFill.style.width = score + '%';
         }
 
         function refresh() {

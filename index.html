@@ -1949,15 +1949,18 @@
 
             <!-- 整张人品卡片搬进弹窗 -->
             <div class="luck-card-v2 luck-card-modal" id="luckCard" title="点击卡面刷新人品值">
-                <div class="luck-body">
+                <div class="luck-top">
                     <div class="luck-label">今日人品</div>
-                    <div class="luck-value-wrap">
-                        <span class="luck-value" id="luckValue">--</span>
-                        <span class="luck-unit">分</span>
-                    </div>
-                    <div class="luck-msg" id="luckMsg">点击卡片刷新</div>
+                    <button class="luck-refresh" id="luckRefresh" title="刷新人品值" aria-label="刷新人品值"><i class="fas fa-rotate"></i></button>
                 </div>
-                <button class="luck-refresh" id="luckRefresh" title="刷新人品值"><i class="fas fa-rotate"></i></button>
+                <div class="luck-score-row">
+                    <span class="luck-value" id="luckValue">--</span>
+                    <span class="luck-unit">分</span>
+                </div>
+                <div class="luck-bar" aria-hidden="true">
+                    <div class="luck-bar-fill" id="luckBarFill"></div>
+                </div>
+                <div class="luck-msg" id="luckMsg">点击卡片刷新</div>
             </div>
         </div>
     </div>
