@@ -1,0 +1,1784 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aqua Tools · 清新工具箱</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.0/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+    <script>
+        // 尽早应用已保存主题，避免刷新时主题闪烁
+        (function() {
+            try {
+                var t = localStorage.getItem('aqua-theme') || 'aqua';
+                if (t !== 'aqua') document.documentElement.dataset.theme = t;
+            } catch (e) {}
+        })();
+    </script>
+</head>
+<body>
+    <!-- 极光天空（仅极光主题显示） -->
+    <div class="aurora-sky" aria-hidden="true">
+        <div class="aurora-stars"></div>
+        <div class="aurora-particles" id="auroraParticles"></div>
+        <div class="aurora-ribbon aurora-ribbon-1"></div>
+        <div class="aurora-ribbon aurora-ribbon-2"></div>
+        <div class="aurora-ribbon aurora-ribbon-3"></div>
+        <div class="aurora-ribbon aurora-ribbon-4"></div>
+        <div class="aurora-veil-glow"></div>
+        <div class="aurora-top-edge"></div>
+        <div class="aurora-cursor-glow" id="auroraCursorGlow"></div>
+        <div class="aurora-ripples" id="auroraRipples"></div>
+        <div class="aurora-entry-sweep" id="auroraEntrySweep"></div>
+    </div>
+
+    <!-- 背景装饰 -->
+    <div class="bg-decoration">
+        <div class="bg-orb orb-1"></div>
+        <div class="bg-orb orb-2"></div>
+        <div class="bg-orb orb-3"></div>
+    </div>
+
+    <!-- 侧边栏（默认折叠） -->
+    <aside class="sidebar collapsed" id="sidebar">
+        <div class="sidebar-header">
+            <a href="#" class="logo" data-tool="home">
+                <div class="logo-icon"><i class="fas fa-water"></i></div>
+                <span class="logo-text">Aqua Tools</span>
+            </a>
+        </div>
+        
+        <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" id="toolSearch" placeholder="搜索工具..." aria-label="搜索工具">
+        </div>
+
+        <nav class="sidebar-nav" aria-label="工具导航">
+            <div class="nav-group">
+                <p class="nav-group-title">概览</p>
+                <a href="#" class="nav-item active" data-tool="home">
+                    <i class="fas fa-home"></i>
+                    <span>主页</span>
+                </a>
+            </div>
+
+            <div class="nav-group">
+                <p class="nav-group-title">开发工具</p>
+                <a href="#" class="nav-item" data-tool="json">
+                    <i class="fas fa-code"></i>
+                    <span>JSON 格式化</span>
+                </a>
+                <a href="#" class="nav-item" data-tool="markdown">
+                    <i class="fab fa-markdown"></i>
+                    <span>Markdown 编辑器</span>
+                </a>
+                <a href="#" class="nav-item" data-tool="regex">
+                    <i class="fas fa-asterisk"></i>
+                    <span>正则测试</span>
+                </a>
+                <a href="#" class="nav-item" data-tool="base64">
+                    <i class="fas fa-exchange-alt"></i>
+                    <span>Base64 编解码</span>
+                </a>
+                <a href="#" class="nav-item" data-tool="hash">
+                    <i class="fas fa-fingerprint"></i>
+                    <span>哈希计算</span>
+                </a>
+                <a href="#" class="nav-item" data-tool="snippets">
+                    <i class="fas fa-code-branch"></i>
+                    <span>代码片段管理</span>
+                </a>
+                <a href="#" class="nav-item" data-tool="cron">
+                    <i class="fas fa-clock-rotate-left"></i>
+                    <span>Cron 表达式</span>
+                </a>
+                <a href="#" class="nav-item" data-tool="http-status">
+                    <i class="fas fa-globe"></i>
+                    <span>HTTP 状态码</span>
+                </a>
+                <a href="#" class="nav-item" data-tool="timestamp">
+                    <i class="fas fa-stopwatch"></i>
+                    <span>时间戳转换</span>
+                </a>
+            </div>
+
+            <div class="nav-group">
+                <p class="nav-group-title">文本工具</p>
+                <a href="#" class="nav-item" data-tool="word-count">
+                    <i class="fas fa-align-left"></i>
+                    <span>字数统计</span>
+                </a>
+                <a href="#" class="nav-item" data-tool="text-diff">
+                    <i class="fas fa-code-branch"></i>
+                    <span>文本对比</span>
+                </a>
+                <a href="#" class="nav-item" data-tool="lorem">
+                    <i class="fas fa-paragraph"></i>
+                    <span>占位文本生成</span>
+                </a>
+                <a href="#" class="nav-item" data-tool="deai">
+                    <i class="fas fa-wand-magic-sparkles"></i>
+                    <span>文本润色（去AI味）</span>
+                </a>
+            </div>
+
+            <div class="nav-group">
+                <p class="nav-group-title">颜色与设计</p>
+                <a href="#" class="nav-item" data-tool="color-picker">
+                    <i class="fas fa-eye-dropper"></i>
+                    <span>颜色选择器</span>
+                </a>
+                <a href="#" class="nav-item" data-tool="palette-gen">
+                    <i class="fas fa-palette"></i>
+                    <span>调色板生成</span>
+                </a>
+                <a href="#" class="nav-item" data-tool="gradient">
+                    <i class="fas fa-fill-drip"></i>
+                    <span>渐变生成器</span>
+                </a>
+                <a href="#" class="nav-item" data-tool="poster">
+                    <i class="fas fa-panorama"></i>
+                    <span>海报生成器</span>
+                </a>
+                <a href="#" class="nav-item" data-tool="design-ref">
+                    <i class="fas fa-swatchbook"></i>
+                    <span>设计风格参考卡</span>
+                </a>
+            </div>
+
+            <div class="nav-group">
+                <p class="nav-group-title">媒体工具</p>
+                <a href="#" class="nav-item" data-tool="image-compress">
+                    <i class="fas fa-image"></i>
+                    <span>图片压缩</span>
+                </a>
+                <a href="#" class="nav-item" data-tool="qr-code">
+                    <i class="fas fa-qrcode"></i>
+                    <span>二维码生成</span>
+                </a>
+                <a href="#" class="nav-item" data-tool="color-picker-image">
+                    <i class="fas fa-eye"></i>
+                    <span>图片取色器</span>
+                </a>
+                <a href="#" class="nav-item" data-tool="watermark">
+                    <i class="fas fa-stamp"></i>
+                    <span>图片去水印</span>
+                </a>
+            </div>
+
+            <div class="nav-group">
+                <p class="nav-group-title">实用工具</p>
+                <a href="#" class="nav-item" data-tool="unit-convert">
+                    <i class="fas fa-ruler-combined"></i>
+                    <span>单位换算</span>
+                </a>
+                <a href="#" class="nav-item" data-tool="password">
+                    <i class="fas fa-key"></i>
+                    <span>密码生成器</span>
+                </a>
+                <a href="#" class="nav-item" data-tool="pomodoro">
+                    <i class="fas fa-clock"></i>
+                    <span>番茄钟</span>
+                </a>
+            </div>
+
+            <div class="nav-group">
+                <p class="nav-group-title">网络工具</p>
+                <a href="#" class="nav-item" data-tool="file-transfer">
+                    <i class="fas fa-share-alt"></i>
+                    <span>文件快传</span>
+                </a>
+                <a href="#" class="nav-item" data-tool="encrypted-chat">
+                    <i class="fas fa-comment-dots"></i>
+                    <span>加密聊天</span>
+                </a>
+                <a href="#" class="nav-item" data-tool="online-terminal">
+                    <i class="fas fa-terminal"></i>
+                    <span>在线终端</span>
+                </a>
+            </div>
+
+            <div class="nav-group">
+                <p class="nav-group-title">系统工具</p>
+                <a href="#" class="nav-item" data-tool="kms">
+                    <i class="fas fa-key"></i>
+                    <span>KMS 激活</span>
+                </a>
+                <a href="#" class="nav-item" data-tool="backup">
+                    <i class="fas fa-database"></i>
+                    <span>本地备份箱</span>
+                </a>
+                <a href="#" class="nav-item" data-tool="opensource">
+                    <i class="fas fa-book"></i>
+                    <span>开源广场</span>
+                </a>
+            </div>
+
+            <div class="nav-group">
+                <p class="nav-group-title">阅读</p>
+                <a href="#" class="nav-item" data-tool="reader">
+                    <i class="fas fa-book-open"></i>
+                    <span>小说阅读器</span>
+                </a>
+            </div>
+        </nav>
+    </aside>
+
+    <!-- 主内容区 -->
+    <main class="main-content expanded" id="mainContent">
+        <!-- 顶部栏 -->
+        <header class="topbar glass">
+            <button class="menu-toggle" id="menuToggle" aria-label="切换侧边栏">
+                <i class="fas fa-bars"></i>
+            </button>
+            <button class="home-btn is-active" id="homeBtn" aria-label="返回主页" title="返回主页">
+                <i class="fas fa-house"></i>
+            </button>
+            <div class="title-wrap">
+                <span class="title-dot is-home" id="titleDot" aria-hidden="true"></span>
+                <h1 class="page-title" id="pageTitle">主页</h1>
+            </div>
+            <div class="topbar-actions">
+                <div class="theme-switcher">
+                    <button class="icon-btn" id="themeBtn" aria-label="切换主题" title="切换主题">
+                        <i class="fas fa-circle-half-stroke"></i>
+                    </button>
+                    <div class="theme-popover" id="themePopover" hidden>
+                        <div class="theme-popover-title">主题</div>
+                        <button class="theme-option" data-theme="aqua">
+                            <span class="theme-swatch swatch-aqua"></span>
+                            <span class="theme-name">浅空</span>
+                            <i class="fas fa-check theme-check"></i>
+                        </button>
+                        <button class="theme-option" data-theme="midnight">
+                            <span class="theme-swatch swatch-midnight"></span>
+                            <span class="theme-name">午夜</span>
+                            <i class="fas fa-check theme-check"></i>
+                        </button>
+                        <button class="theme-option" data-theme="aurora">
+                            <span class="theme-swatch swatch-aurora"></span>
+                            <span class="theme-name">极光</span>
+                            <i class="fas fa-check theme-check"></i>
+                        </button>
+                    </div>
+                </div>
+                <button class="icon-btn info-btn" id="infoBtn" aria-label="工具说明" title="工具详细说明">
+                    <i class="fas fa-info-circle"></i>
+                </button>
+                <button class="icon-btn" id="fullscreenBtn" aria-label="全屏" title="全屏">
+                    <i class="fas fa-expand"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- 工具容器 -->
+        <div class="tool-container" id="toolContainer">
+            
+            <!-- 主页 -->
+            <section class="tool-panel active" id="tool-home">
+                <!-- 动画 Hero -->
+                <div class="home-hero-v2">
+                    <div class="hero-orb"></div>
+                    <div class="hero-content-v2">
+                        <div class="hero-tag">AQUA TOOLS · v2.0</div>
+                        <h1 class="hero-title-v2">
+                            <span class="title-line">纯前端工具集</span>
+                            <span class="title-line">原生 JS 实现</span>
+                        </h1>
+                        <div class="hero-stats-v2">
+                            <div class="stat-pill"><span class="pill-num" data-count="32">0</span><span class="pill-label">工具</span></div>
+                        </div>                    </div>
+                    <!-- 浮动工具预览图标 -->
+                    <div class="floating-icons" aria-hidden="true">
+                        <div class="float-icon" style="--d:0s;--x:0;--y:0"><i class="fas fa-code"></i></div>
+                        <div class="float-icon" style="--d:1s;--x:1;--y:0"><i class="fab fa-markdown"></i></div>
+                        <div class="float-icon" style="--d:2s;--x:0;--y:1"><i class="fas fa-asterisk"></i></div>
+                        <div class="float-icon" style="--d:3s;--x:1;--y:1"><i class="fas fa-palette"></i></div>
+                        <div class="float-icon" style="--d:1.5s;--x:0.5;--y:0.5"><i class="fas fa-image"></i></div>
+                    </div>
+                </div>
+
+                <!-- 工具网格（动画卡片） -->
+                <div class="home-grid-section">
+                    <div class="section-tabs">
+                        <button class="section-tab active" data-filter="all">全部</button>
+                        <button class="section-tab" data-filter="dev">开发</button>
+                        <button class="section-tab" data-filter="text">文本</button>
+                        <button class="section-tab" data-filter="design">设计</button>
+                        <button class="section-tab" data-filter="media">媒体</button>
+                        <button class="section-tab" data-filter="utility">实用</button>
+                    </div>
+                    <div class="tools-grid-v2" id="toolsGridV2"></div>
+                </div>
+            </section>
+
+            <!-- 工具：JSON 格式化 -->
+            <section class="tool-panel" id="tool-json">
+                <div class="tool-header">
+                    <div>
+                        <h2>JSON 格式化</h2>
+                        <p>美化、压缩、转义、校验 JSON 数据</p>
+                    </div>
+                </div>
+                <div class="tool-body glass">
+                    <div class="json-layout">
+                        <div class="json-pane">
+                            <div class="pane-header">
+                                <span>输入</span>
+                                <div class="pane-actions">
+                                    <button class="mini-btn" id="jsonSample">示例</button>
+                                    <button class="mini-btn" id="jsonClear">清空</button>
+                                </div>
+                            </div>
+                            <textarea id="jsonInput" class="text-input code" rows="14" placeholder='{"name":"Aqua","tools":17}'></textarea>
+                        </div>
+                        <div class="json-pane">
+                            <div class="pane-header">
+                                <span>输出</span>
+                                <button class="mini-btn" data-target="jsonOutput"><i class="fas fa-copy"></i> 复制</button>
+                            </div>
+                            <pre class="code-output" id="jsonOutput"><code></code></pre>
+                        </div>
+                    </div>
+                    <div class="button-row">
+                        <button class="tool-btn primary" id="jsonFormat"><i class="fas fa-indent"></i>格式化</button>
+                        <button class="tool-btn" id="jsonMinify"><i class="fas fa-compress"></i>压缩</button>
+                        <button class="tool-btn" id="jsonEscape"><i class="fas fa-quote-right"></i>转义</button>
+                        <button class="tool-btn" id="jsonUnescape"><i class="fas fa-quote-left"></i>反转义</button>
+                        <button class="tool-btn" id="jsonValidate"><i class="fas fa-check"></i>校验</button>
+                    </div>
+                    <div class="json-status" id="jsonStatus"></div>
+                </div>
+            </section>
+
+            <!-- 工具：Markdown 编辑器 -->
+            <section class="tool-panel" id="tool-markdown">
+                <div class="tool-header">
+                    <div>
+                        <h2>Markdown 编辑器</h2>
+                        <p>实时预览 Markdown 渲染效果</p>
+                    </div>
+                </div>
+                <div class="tool-body glass">
+                    <div class="md-toolbar">
+                        <button class="md-btn" data-md="h1" title="一级标题">H1</button>
+                        <button class="md-btn" data-md="h2" title="二级标题">H2</button>
+                        <button class="md-btn" data-md="bold" title="加粗"><i class="fas fa-bold"></i></button>
+                        <button class="md-btn" data-md="italic" title="斜体"><i class="fas fa-italic"></i></button>
+                        <button class="md-btn" data-md="link" title="链接"><i class="fas fa-link"></i></button>
+                        <button class="md-btn" data-md="code" title="代码"><i class="fas fa-code"></i></button>
+                        <button class="md-btn" data-md="list" title="列表"><i class="fas fa-list-ul"></i></button>
+                        <button class="md-btn" data-md="quote" title="引用"><i class="fas fa-quote-right"></i></button>
+                        <div class="md-spacer"></div>
+                        <button class="mini-btn" data-target="mdInput"><i class="fas fa-copy"></i> 复制源码</button>
+                        <button class="mini-btn" id="mdClear"><i class="fas fa-trash"></i> 清空</button>
+                    </div>
+                    <div class="md-layout">
+                        <textarea id="mdInput" class="text-input code" rows="16" placeholder="# 开始书写..."></textarea>
+                        <div class="md-preview" id="mdPreview"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 工具：正则测试 -->
+            <section class="tool-panel" id="tool-regex">
+                <div class="tool-header">
+                    <div>
+                        <h2>正则表达式测试</h2>
+                        <p>实时测试正则匹配结果</p>
+                    </div>
+                </div>
+                <div class="tool-body glass">
+                    <div class="regex-input-row">
+                        <span class="regex-slash">/</span>
+                        <input type="text" id="regexPattern" class="regex-pattern" placeholder="输入正则表达式..." value="\d+">
+                        <span class="regex-slash">/</span>
+                        <input type="text" id="regexFlags" class="regex-flags" placeholder="标志" value="g">
+                    </div>
+                    <div class="regex-flags-presets">
+                        <span class="flag-chip" data-flag="g">g 全局</span>
+                        <span class="flag-chip" data-flag="i">i 忽略大小写</span>
+                        <span class="flag-chip" data-flag="m">m 多行</span>
+                        <span class="flag-chip" data-flag="s">s 单行</span>
+                    </div>
+                    <textarea id="regexText" class="text-input code" rows="6" placeholder="输入测试文本...">电话: 13800138000, 邮箱: test@example.com, 邮编: 100000</textarea>
+                    <div class="regex-stats" id="regexStats">输入正则与文本以查看匹配</div>
+                    <div class="regex-result" id="regexResult"></div>
+                </div>
+            </section>
+
+            <!-- 工具：Base64 -->
+            <section class="tool-panel" id="tool-base64">
+                <div class="tool-header">
+                    <div>
+                        <h2>Base64 编解码</h2>
+                        <p>支持文本与文件互转</p>
+                    </div>
+                </div>
+                <div class="tool-body glass">
+                    <div class="tab-switcher">
+                        <button class="tab-btn active" data-b64-tab="text">文本模式</button>
+                        <button class="tab-btn" data-b64-tab="file">文件模式</button>
+                    </div>
+                    <div class="b64-content">
+                        <div class="b64-pane active" id="b64TextPane">
+                            <textarea id="base64Input" class="text-input" rows="5" placeholder="输入文本..."></textarea>
+                            <div class="button-row">
+                                <button class="tool-btn primary" id="base64Encode"><i class="fas fa-lock"></i>编码</button>
+                                <button class="tool-btn" id="base64Decode"><i class="fas fa-lock-open"></i>解码</button>
+                                <button class="tool-btn" id="base64Swap"><i class="fas fa-exchange-alt"></i>互换</button>
+                            </div>
+                            <div class="output-area">
+                                <div class="output-header">
+                                    <span>结果</span>
+                                    <button class="mini-btn" data-target="base64Output"><i class="fas fa-copy"></i></button>
+                                </div>
+                                <textarea id="base64Output" class="text-input" rows="5" readonly></textarea>
+                            </div>
+                        </div>
+                        <div class="b64-pane" id="b64FilePane">
+                            <div class="file-drop" id="b64FileDrop">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <p>拖放文件到此处或点击选择</p>
+                                <input type="file" id="b64FileInput" hidden>
+                            </div>
+                            <div class="output-area">
+                                <div class="output-header">
+                                    <span>Base64 结果</span>
+                                    <button class="mini-btn" id="b64FileCopy"><i class="fas fa-copy"></i></button>
+                                </div>
+                                <textarea id="b64FileOutput" class="text-input code" rows="6" readonly placeholder="文件转 Base64 后显示在这里..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 工具：哈希计算 -->
+            <section class="tool-panel" id="tool-hash">
+                <div class="tool-header">
+                    <div>
+                        <h2>哈希计算</h2>
+                        <p>基于 Web Crypto API 计算 SHA 哈希</p>
+                    </div>
+                </div>
+                <div class="tool-body glass">
+                    <textarea id="hashInput" class="text-input" rows="4" placeholder="输入要计算哈希的文本..."></textarea>
+                    <button class="tool-btn primary" id="hashCalculate"><i class="fas fa-fingerprint"></i>计算哈希</button>
+                    <div class="hash-results" id="hashResults">
+                        <div class="hash-item">
+                            <label>SHA-256</label>
+                            <div class="hash-value" id="hashSha256">—</div>
+                            <button class="mini-btn small" data-target="hashSha256"><i class="fas fa-copy"></i></button>
+                        </div>
+                        <div class="hash-item">
+                            <label>SHA-384</label>
+                            <div class="hash-value" id="hashSha384">—</div>
+                            <button class="mini-btn small" data-target="hashSha384"><i class="fas fa-copy"></i></button>
+                        </div>
+                        <div class="hash-item">
+                            <label>SHA-512</label>
+                            <div class="hash-value" id="hashSha512">—</div>
+                            <button class="mini-btn small" data-target="hashSha512"><i class="fas fa-copy"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 工具：代码片段管理 -->
+            <section class="tool-panel" id="tool-snippets">
+                <div class="tool-header">
+                    <div>
+                        <h2>代码片段管理</h2>
+                        <p>保存常用代码片段，支持本地持久化与搜索</p>
+                    </div>
+                </div>
+                <div class="tool-body glass">
+                    <div class="snippets-layout">
+                        <div class="snippets-sidebar">
+                            <div class="snippet-search">
+                                <i class="fas fa-search"></i>
+                                <input type="text" id="snippetSearchInput" placeholder="搜索片段...">
+                            </div>
+                            <button class="tool-btn primary snippet-new" id="snippetNew"><i class="fas fa-plus"></i>新建片段</button>
+                            <div class="snippet-list" id="snippetList"></div>
+                        </div>
+                        <div class="snippets-editor">
+                            <div class="snippet-editor-header">
+                                <input type="text" id="snippetTitle" class="snippet-title-input" placeholder="片段标题...">
+                                <select id="snippetLang" class="snippet-lang-select">
+                                    <option value="javascript">JavaScript</option>
+                                    <option value="python">Python</option>
+                                    <option value="html">HTML</option>
+                                    <option value="css">CSS</option>
+                                    <option value="json">JSON</option>
+                                    <option value="bash">Bash</option>
+                                    <option value="sql">SQL</option>
+                                    <option value="typescript">TypeScript</option>
+                                    <option value="go">Go</option>
+                                    <option value="rust">Rust</option>
+                                </select>
+                            </div>
+                            <textarea id="snippetCode" class="text-input code" rows="14" placeholder="// 在此输入代码..."></textarea>
+                            <div class="snippet-actions">
+                                <button class="tool-btn primary" id="snippetSave"><i class="fas fa-save"></i>保存</button>
+                                <button class="tool-btn" id="snippetCopy"><i class="fas fa-copy"></i>复制</button>
+                                <button class="tool-btn" id="snippetDelete"><i class="fas fa-trash"></i>删除</button>
+                                <span class="snippet-count" id="snippetCount"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 工具：Cron 表达式生成器 -->
+            <section class="tool-panel" id="tool-cron">
+                <div class="tool-header">
+                    <div>
+                        <h2>Cron 表达式生成器</h2>
+                        <p>可视化构建 Cron 定时任务表达式</p>
+                    </div>
+                </div>
+                <div class="tool-body glass">
+                    <div class="cron-display">
+                        <div class="cron-output" id="cronOutput">* * * * *</div>
+                        <div class="cron-parts">
+                            <span class="cron-part" data-i="0">分</span>
+                            <span class="cron-part" data-i="1">时</span>
+                            <span class="cron-part" data-i="2">日</span>
+                            <span class="cron-part" data-i="3">月</span>
+                            <span class="cron-part" data-i="4">周</span>
+                        </div>
+                    </div>
+                    <div class="cron-desc" id="cronDesc">每分钟执行一次</div>
+                    
+                    <div class="cron-presets">
+                        <button class="cron-preset" data-cron="* * * * *">每分钟</button>
+                        <button class="cron-preset" data-cron="0 * * * *">每小时</button>
+                        <button class="cron-preset" data-cron="0 0 * * *">每天 0 点</button>
+                        <button class="cron-preset" data-cron="0 9 * * *">每天 9 点</button>
+                        <button class="cron-preset" data-cron="0 0 * * 1">每周一</button>
+                        <button class="cron-preset" data-cron="0 0 1 * *">每月 1 号</button>
+                        <button class="cron-preset" data-cron="*/15 * * * *">每 15 分钟</button>
+                        <button class="cron-preset" data-cron="0 0,12 * * *">每天 0 点和 12 点</button>
+                    </div>
+                    
+                    <div class="cron-builders">
+                        <div class="cron-builder">
+                            <label>分钟</label>
+                            <select id="cronMin">
+                                <option value="*">每分钟</option>
+                                <option value="0">第 0 分</option>
+                                <option value="30">第 30 分</option>
+                                <option value="*/5">每 5 分</option>
+                                <option value="*/15">每 15 分</option>
+                                <option value="*/30">每 30 分</option>
+                                <option value="0,30">0 和 30 分</option>
+                            </select>
+                        </div>
+                        <div class="cron-builder">
+                            <label>小时</label>
+                            <select id="cronHour">
+                                <option value="*">每小时</option>
+                                <option value="0">0 点</option>
+                                <option value="9">9 点</option>
+                                <option value="12">12 点</option>
+                                <option value="*/2">每 2 小时</option>
+                                <option value="*/6">每 6 小时</option>
+                                <option value="0,12">0 和 12 点</option>
+                            </select>
+                        </div>
+                        <div class="cron-builder">
+                            <label>日</label>
+                            <select id="cronDay">
+                                <option value="*">每天</option>
+                                <option value="1">1 号</option>
+                                <option value="15">15 号</option>
+                                <option value="1,15">1 和 15 号</option>
+                                <option value="*/2">每 2 天</option>
+                            </select>
+                        </div>
+                        <div class="cron-builder">
+                            <label>月</label>
+                            <select id="cronMonth">
+                                <option value="*">每月</option>
+                                <option value="1">1 月</option>
+                                <option value="*/3">每季度</option>
+                                <option value="*/6">每半年</option>
+                                <option value="1,7">1 月和 7 月</option>
+                            </select>
+                        </div>
+                        <div class="cron-builder">
+                            <label>星期</label>
+                            <select id="cronWeek">
+                                <option value="*">每天</option>
+                                <option value="0">周日</option>
+                                <option value="1">周一</option>
+                                <option value="1-5">工作日</option>
+                                <option value="6,0">周末</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="output-area">
+                        <div class="output-header">
+                            <span>未来 5 次执行时间</span>
+                            <button class="mini-btn" data-target="cronNext"><i class="fas fa-copy"></i> 复制</button>
+                        </div>
+                        <div id="cronNext" class="cron-next"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 工具：HTTP 状态码速查 -->
+            <section class="tool-panel" id="tool-http-status">
+                <div class="tool-header">
+                    <div>
+                        <h2>HTTP 状态码速查</h2>
+                        <p>查询所有 HTTP 状态码的含义与使用场景</p>
+                    </div>
+                </div>
+                <div class="tool-body glass">
+                    <div class="http-search-bar">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="httpSearch" placeholder="搜索状态码或关键词，如 404 / Not Found / 重定向...">
+                    </div>
+                    <div class="http-categories" id="httpCategories"></div>
+                </div>
+            </section>
+
+            <!-- 工具：Unix 时间戳转换 -->
+            <section class="tool-panel" id="tool-timestamp">
+                <div class="tool-header">
+                    <div>
+                        <h2>Unix 时间戳转换</h2>
+                        <p>时间戳与日期时间互转，支持秒/毫秒</p>
+                    </div>
+                </div>
+                <div class="tool-body glass">
+                    <div class="ts-now">
+                        <div class="ts-now-label">当前时间戳</div>
+                        <div class="ts-now-value" id="tsNow">—</div>
+                        <button class="mini-btn" id="tsCopyNow"><i class="fas fa-copy"></i> 复制</button>
+                    </div>
+                    
+                    <div class="ts-layout">
+                        <div class="ts-pane">
+                            <h3>时间戳 → 日期</h3>
+                            <input type="text" id="tsInput" class="text-input code" placeholder="输入时间戳..." value="1700000000">
+                            <div class="ts-unit-toggle">
+                                <label><input type="radio" name="tsUnit" value="s" checked> 秒</label>
+                                <label><input type="radio" name="tsUnit" value="ms"> 毫秒</label>
+                            </div>
+                            <div class="ts-result" id="tsResult"></div>
+                        </div>
+                        <div class="ts-pane">
+                            <h3>日期 → 时间戳</h3>
+                            <input type="datetime-local" id="tsDateInput" class="text-input">
+                            <div class="ts-result" id="tsDateResult"></div>
+                            <div class="ts-quick">
+                                <button class="mini-btn" data-ts="now">现在</button>
+                                <button class="mini-btn" data-ts="today">今天 0 点</button>
+                                <button class="mini-btn" data-ts="tomorrow">明天</button>
+                                <button class="mini-btn" data-ts="week">一周后</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 工具：字数统计 -->
+            <section class="tool-panel" id="tool-word-count">
+                <div class="tool-header">
+                    <div>
+                        <h2>字数统计</h2>
+                        <p>实时分析文本数据</p>
+                    </div>
+                </div>
+                <div class="tool-body glass">
+                    <textarea id="wordCountInput" class="text-input" rows="8" placeholder="开始输入文本..."></textarea>
+                    <div class="stats-grid">
+                        <div class="stat-card glass">
+                            <div class="stat-icon"><i class="fas fa-font"></i></div>
+                            <div class="stat-value" id="statChars">0</div>
+                            <div class="stat-name">字符数</div>
+                        </div>
+                        <div class="stat-card glass">
+                            <div class="stat-icon"><i class="fas fa-keyboard"></i></div>
+                            <div class="stat-value" id="statCharsNoSpace">0</div>
+                            <div class="stat-name">无空格</div>
+                        </div>
+                        <div class="stat-card glass">
+                            <div class="stat-icon"><i class="fas fa-book-open"></i></div>
+                            <div class="stat-value" id="statWords">0</div>
+                            <div class="stat-name">单词数</div>
+                        </div>
+                        <div class="stat-card glass">
+                            <div class="stat-icon"><i class="fas fa-list"></i></div>
+                            <div class="stat-value" id="statLines">0</div>
+                            <div class="stat-name">行数</div>
+                        </div>
+                        <div class="stat-card glass">
+                            <div class="stat-icon"><i class="fas fa-paragraph"></i></div>
+                            <div class="stat-value" id="statParagraphs">0</div>
+                            <div class="stat-name">段落</div>
+                        </div>
+                        <div class="stat-card glass">
+                            <div class="stat-icon"><i class="fas fa-clock"></i></div>
+                            <div class="stat-value" id="statReadTime">0</div>
+                            <div class="stat-name">阅读(分)</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 工具：文本对比 -->
+            <section class="tool-panel" id="tool-text-diff">
+                <div class="tool-header">
+                    <div>
+                        <h2>文本对比</h2>
+                        <p>逐行对比两段文本的差异</p>
+                    </div>
+                </div>
+                <div class="tool-body glass">
+                    <div class="diff-inputs">
+                        <div class="diff-input-group">
+                            <label>原始文本</label>
+                            <textarea id="diffOriginal" class="text-input code" rows="8" placeholder="原始文本..."></textarea>
+                        </div>
+                        <div class="diff-input-group">
+                            <label>修改后文本</label>
+                            <textarea id="diffModified" class="text-input code" rows="8" placeholder="修改后文本..."></textarea>
+                        </div>
+                    </div>
+                    <button class="tool-btn primary" id="diffCompare"><i class="fas fa-not-equal"></i>开始对比</button>
+                    <div class="output-area">
+                        <div class="output-header">
+                            <span>对比结果</span>
+                            <span class="diff-summary" id="diffSummary"></span>
+                        </div>
+                        <div id="diffResult" class="diff-result"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 工具：占位文本生成 -->
+            <section class="tool-panel" id="tool-lorem">
+                <div class="tool-header">
+                    <div>
+                        <h2>占位文本生成</h2>
+                        <p>生成 Lorem Ipsum 或中文占位文本</p>
+                    </div>
+                </div>
+                <div class="tool-body glass">
+                    <div class="lorem-controls">
+                        <div class="control-group">
+                            <label>类型</label>
+                            <select id="loremType">
+                                <option value="paragraphs">段落</option>
+                                <option value="sentences">句子</option>
+                                <option value="words">单词</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label>数量</label>
+                            <input type="number" id="loremCount" value="3" min="1" max="50">
+                        </div>
+                        <div class="control-group">
+                            <label>语言</label>
+                            <select id="loremLang">
+                                <option value="lorem">Lorem Ipsum</option>
+                                <option value="zh">中文</option>
+                            </select>
+                        </div>
+                        <button class="tool-btn primary" id="loremGenerate"><i class="fas fa-magic"></i>生成</button>
+                    </div>
+                    <div class="output-area">
+                        <div class="output-header">
+                            <span>结果</span>
+                            <button class="mini-btn" data-target="loremOutput"><i class="fas fa-copy"></i> 复制</button>
+                        </div>
+                        <textarea id="loremOutput" class="text-input" rows="10" readonly></textarea>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 工具：颜色选择器 -->
+            <section class="tool-panel" id="tool-color-picker">
+                <div class="tool-header">
+                    <div>
+                        <h2>颜色选择器</h2>
+                        <p>获取 HEX / RGB / HSL 格式</p>
+                    </div>
+                </div>
+                <div class="tool-body glass">
+                    <div class="color-picker-layout">
+                        <div class="color-preview-area">
+                            <input type="color" id="colorPickerInput" value="#4fc3f7">
+                            <div class="color-display" id="colorDisplay"></div>
+                        </div>
+                        <div class="color-info">
+                            <div class="color-format">
+                                <label>HEX</label>
+                                <div class="format-row">
+                                    <input type="text" id="colorHex" readonly>
+                                    <button class="mini-btn small" data-target="colorHex"><i class="fas fa-copy"></i></button>
+                                </div>
+                            </div>
+                            <div class="color-format">
+                                <label>RGB</label>
+                                <div class="format-row">
+                                    <input type="text" id="colorRgb" readonly>
+                                    <button class="mini-btn small" data-target="colorRgb"><i class="fas fa-copy"></i></button>
+                                </div>
+                            </div>
+                            <div class="color-format">
+                                <label>HSL</label>
+                                <div class="format-row">
+                                    <input type="text" id="colorHsl" readonly>
+                                    <button class="mini-btn small" data-target="colorHsl"><i class="fas fa-copy"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 工具：调色板生成 -->
+            <section class="tool-panel" id="tool-palette-gen">
+                <div class="tool-header">
+                    <div>
+                        <h2>调色板生成</h2>
+                        <p>基于基础色生成和谐配色</p>
+                    </div>
+                </div>
+                <div class="tool-body glass">
+                    <div class="palette-controls">
+                        <div class="control-group">
+                            <label>基础颜色</label>
+                            <input type="color" id="paletteBase" value="#4fc3f7">
+                        </div>
+                        <div class="control-group">
+                            <label>方案</label>
+                            <select id="paletteType">
+                                <option value="analogous">类似色</option>
+                                <option value="complementary">互补色</option>
+                                <option value="triadic">三角色</option>
+                                <option value="monochrome">单色阶</option>
+                            </select>
+                        </div>
+                        <button class="tool-btn primary" id="paletteGenerate"><i class="fas fa-magic"></i>生成</button>
+                    </div>
+                    <div class="palette-display" id="paletteDisplay"></div>
+                </div>
+            </section>
+
+            <!-- 工具：渐变生成器 -->
+            <section class="tool-panel" id="tool-gradient">
+                <div class="tool-header">
+                    <div>
+                        <h2>渐变生成器</h2>
+                        <p>创建并复制 CSS 渐变代码</p>
+                    </div>
+                </div>
+                <div class="tool-body glass">
+                    <div class="gradient-controls">
+                        <div class="control-group">
+                            <label>颜色 1</label>
+                            <input type="color" id="gradColor1" value="#4fc3f7">
+                        </div>
+                        <div class="control-group">
+                            <label>颜色 2</label>
+                            <input type="color" id="gradColor2" value="#0288d1">
+                        </div>
+                        <div class="control-group">
+                            <label>角度: <span id="gradAngleValue">135°</span></label>
+                            <input type="range" id="gradAngle" min="0" max="360" value="135">
+                        </div>
+                        <div class="control-group">
+                            <label>类型</label>
+                            <select id="gradType">
+                                <option value="linear">线性</option>
+                                <option value="radial">径向</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="gradient-preview" id="gradientPreview"></div>
+                    <div class="output-area">
+                        <div class="output-header">
+                            <span>CSS 代码</span>
+                            <button class="mini-btn" data-target="gradientCode"><i class="fas fa-copy"></i> 复制</button>
+                        </div>
+                        <textarea id="gradientCode" class="text-input code" rows="2" readonly></textarea>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 工具：图片压缩 -->
+            <section class="tool-panel" id="tool-image-compress">
+                <div class="tool-header">
+                    <div>
+                        <h2>图片压缩</h2>
+                        <p>本地压缩图片，支持质量调节与格式转换</p>
+                    </div>
+                </div>
+                <div class="tool-body glass">
+                    <div class="file-drop" id="imgCompressDrop">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>拖放图片或点击选择 (JPG / PNG / WebP)</p>
+                        <input type="file" id="imgCompressInput" accept="image/*" hidden>
+                    </div>
+                    <div class="compress-controls" id="compressControls" style="display:none;">
+                        <div class="compress-preview">
+                            <div class="preview-box">
+                                <span class="preview-label">原图</span>
+                                <img id="originalPreview" alt="原图" loading="lazy">
+                                <span class="preview-size" id="originalSize">—</span>
+                            </div>
+                            <div class="preview-box">
+                                <span class="preview-label">压缩后</span>
+                                <img id="compressedPreview" alt="压缩后" loading="lazy">
+                                <span class="preview-size" id="compressedSize">—</span>
+                            </div>
+                        </div>
+                        <div class="compress-options">
+                            <div class="control-group">
+                                <label>质量: <span id="qualityValue">80</span>%</label>
+                                <input type="range" id="qualityRange" min="10" max="100" value="80">
+                            </div>
+                            <div class="control-group">
+                                <label>输出格式</label>
+                                <select id="compressFormat">
+                                    <option value="image/jpeg">JPEG</option>
+                                    <option value="image/webp">WebP</option>
+                                    <option value="image/png">PNG</option>
+                                </select>
+                            </div>
+                            <div class="control-group">
+                                <label>最大宽度 (px)</label>
+                                <input type="number" id="maxWidth" value="1920" min="100">
+                            </div>
+                            <button class="tool-btn primary" id="compressDownload"><i class="fas fa-download"></i>下载压缩图</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 工具：二维码生成 -->
+            <section class="tool-panel" id="tool-qr-code">
+                <div class="tool-header">
+                    <div>
+                        <h2>二维码生成器</h2>
+                        <p>生成可下载的二维码</p>
+                    </div>
+                </div>
+                <div class="tool-body glass">
+                    <textarea id="qrInput" class="text-input" rows="2" placeholder="输入文本或链接...">https://github.com</textarea>
+                    <div class="qr-controls">
+                        <div class="control-group">
+                            <label>尺寸: <span id="qrSizeValue">256</span>px</label>
+                            <input type="range" id="qrSize" min="128" max="512" value="256" step="32">
+                        </div>
+                        <div class="control-group">
+                            <label>前景色</label>
+                            <input type="color" id="qrFg" value="#0288d1">
+                        </div>
+                        <div class="control-group">
+                            <label>背景色</label>
+                            <input type="color" id="qrBg" value="#ffffff">
+                        </div>
+                        <button class="tool-btn primary" id="qrGenerate"><i class="fas fa-qrcode"></i>生成</button>
+                    </div>
+                    <div class="qr-display">
+                        <canvas id="qrCanvas"></canvas>
+                        <button class="tool-btn" id="qrDownload"><i class="fas fa-download"></i>下载二维码</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 工具：图片取色器 -->
+            <section class="tool-panel" id="tool-color-picker-image">
+                <div class="tool-header">
+                    <div>
+                        <h2>图片取色器</h2>
+                        <p>从图片中提取主要颜色</p>
+                    </div>
+                </div>
+                <div class="tool-body glass">
+                    <div class="file-drop" id="imgPickerDrop">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>拖放图片或点击选择</p>
+                        <input type="file" id="imgPickerInput" accept="image/*" hidden>
+                    </div>
+                    <div class="picker-result" id="pickerResult" style="display:none;">
+                        <div class="picker-image-wrap">
+                            <canvas id="pickerCanvas"></canvas>
+                            <div class="picker-zoom" id="pickerZoom"></div>
+                        </div>
+                        <div class="picker-colors">
+                            <div class="picker-current glass">
+                                <div class="picker-swatch" id="pickerSwatch"></div>
+                                <div>
+                                    <div class="picker-hex" id="pickerHex">#000000</div>
+                                    <div class="picker-rgb" id="pickerRgb">rgb(0,0,0)</div>
+                                </div>
+                                <button class="mini-btn small" id="pickerCopy"><i class="fas fa-copy"></i></button>
+                            </div>
+                            <p class="picker-hint">点击图片任意位置取色</p>
+                            <div class="picker-history" id="pickerHistory"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 工具：单位换算 -->
+            <section class="tool-panel" id="tool-unit-convert">
+                <div class="tool-header">
+                    <div>
+                        <h2>单位换算</h2>
+                        <p>长度、重量、温度、面积、数据存储</p>
+                    </div>
+                </div>
+                <div class="tool-body glass">
+                    <div class="unit-tabs">
+                        <button class="unit-tab active" data-category="length">长度</button>
+                        <button class="unit-tab" data-category="weight">重量</button>
+                        <button class="unit-tab" data-category="temperature">温度</button>
+                        <button class="unit-tab" data-category="area">面积</button>
+                        <button class="unit-tab" data-category="data">数据存储</button>
+                    </div>
+                    <div class="convert-layout">
+                        <div class="convert-group">
+                            <input type="number" id="convertFromValue" value="1">
+                            <select id="convertFromUnit"></select>
+                        </div>
+                        <button class="swap-btn" id="convertSwap" aria-label="交换单位">
+                            <i class="fas fa-exchange-alt"></i>
+                        </button>
+                        <div class="convert-group">
+                            <input type="number" id="convertToValue" readonly>
+                            <select id="convertToUnit"></select>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 工具：密码生成器 -->
+            <section class="tool-panel" id="tool-password">
+                <div class="tool-header">
+                    <div>
+                        <h2>密码生成器</h2>
+                        <p>生成安全的随机密码</p>
+                    </div>
+                </div>
+                <div class="tool-body glass">
+                    <div class="password-display">
+                        <input type="text" id="passwordOutput" readonly>
+                        <button class="mini-btn" data-target="passwordOutput"><i class="fas fa-copy"></i></button>
+                        <button class="icon-btn" id="passwordRegenerate" title="重新生成"><i class="fas fa-redo"></i></button>
+                    </div>
+                    <div class="password-options">
+                        <div class="option-group">
+                            <label>密码长度: <span id="passwordLengthValue">16</span></label>
+                            <input type="range" id="passwordLength" min="4" max="64" value="16">
+                        </div>
+                        <div class="checkbox-group">
+                            <label class="checkbox-label"><input type="checkbox" id="pwUpper" checked> 大写 (A-Z)</label>
+                            <label class="checkbox-label"><input type="checkbox" id="pwLower" checked> 小写 (a-z)</label>
+                            <label class="checkbox-label"><input type="checkbox" id="pwNumbers" checked> 数字 (0-9)</label>
+                            <label class="checkbox-label"><input type="checkbox" id="pwSymbols" checked> 符号 (!@#$)</label>
+                        </div>
+                    </div>
+                    <div class="password-strength">
+                        <span class="strength-label">强度:</span>
+                        <div class="strength-bar"><div class="strength-fill" id="strengthFill"></div></div>
+                        <span class="strength-text" id="strengthText">—</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 工具：番茄钟 -->
+            <section class="tool-panel" id="tool-pomodoro">
+                <div class="tool-header">
+                    <div>
+                        <h2>番茄钟</h2>
+                        <p>番茄工作法提升专注力</p>
+                    </div>
+                </div>
+                <div class="tool-body glass pomodoro-body">
+                    <div class="pomodoro-modes">
+                        <button class="pomo-mode active" data-mode="work" data-time="25">专注 25min</button>
+                        <button class="pomo-mode" data-mode="short" data-time="5">短休 5min</button>
+                        <button class="pomo-mode" data-mode="long" data-time="15">长休 15min</button>
+                    </div>
+                    <div class="timer-display">
+                        <svg class="timer-ring" viewBox="0 0 200 200">
+                            <circle class="timer-ring-bg" cx="100" cy="100" r="90"/>
+                            <circle class="timer-ring-progress" id="timerRing" cx="100" cy="100" r="90"/>
+                        </svg>
+                        <div class="timer-text" id="timerText">25:00</div>
+                    </div>
+                    <div class="timer-controls">
+                        <button class="tool-btn primary" id="timerStart"><i class="fas fa-play"></i>开始</button>
+                        <button class="tool-btn" id="timerPause"><i class="fas fa-pause"></i>暂停</button>
+                        <button class="tool-btn" id="timerReset"><i class="fas fa-redo"></i>重置</button>
+                    </div>
+                    <div class="pomodoro-stats">
+                        <div class="pomo-stat">
+                            <span class="pomo-stat-value" id="pomoCount">0</span>
+                            <span class="pomo-stat-label">已完成番茄</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 工具：文件快传（WebRTC P2P） -->
+            <section class="tool-panel" id="tool-file-transfer">
+                <div class="tool-header">
+                    <div>
+                        <h2>文件快传</h2>
+                        <p>基于 WebRTC 的点对点文件传输，无需服务器中转，安全快速</p>
+                    </div>
+                </div>
+                <div class="tool-body glass">
+                    <!-- 模式切换 -->
+                    <div class="ft-modes">
+                        <button class="ft-mode-btn active" data-mode="send">
+                            <i class="fas fa-paper-plane"></i>
+                            <div>
+                                <strong>发送文件</strong>
+                                <small>生成取件码给对方</small>
+                            </div>
+                        </button>
+                        <button class="ft-mode-btn" data-mode="receive">
+                            <i class="fas fa-inbox"></i>
+                            <div>
+                                <strong>接收文件</strong>
+                                <small>输入取件码下载</small>
+                            </div>
+                        </button>
+                    </div>
+
+                    <!-- 发送模式 -->
+                    <div class="ft-panel active" id="ftSendPanel">
+                        <div class="ft-step-guide">
+                            <div class="ft-step"><span class="ft-step-num">1</span>选择文件</div>
+                            <div class="ft-step-line"></div>
+                            <div class="ft-step"><span class="ft-step-num">2</span>生成取件码</div>
+                            <div class="ft-step-line"></div>
+                            <div class="ft-step"><span class="ft-step-num">3</span>告诉对方取件码</div>
+                        </div>
+
+                        <div class="file-drop" id="ftFileDrop">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <p>拖放文件到此处或点击选择</p>
+                            <p class="file-drop-formats">支持任意格式，单文件最大 2GB</p>
+                            <input type="file" id="ftFileInput" hidden>
+                        </div>
+
+                        <div class="ft-file-info" id="ftFileInfo" style="display:none;">
+                            <div class="ft-file-card">
+                                <i class="fas fa-file ft-file-icon"></i>
+                                <div class="ft-file-detail">
+                                    <div class="ft-file-name" id="ftFileName"></div>
+                                    <div class="ft-file-size" id="ftFileSize"></div>
+                                </div>
+                                <button class="icon-btn" id="ftFileRemove" title="移除"><i class="fas fa-times"></i></button>
+                            </div>
+                        </div>
+
+                        <div class="ft-code-area" id="ftCodeArea" style="display:none;">
+                            <div class="ft-code-label">取件码（告诉接收方输入此码）</div>
+                            <div class="ft-code-display" id="ftCodeDisplay">—</div>
+                            <button class="tool-btn primary" id="ftCopyCode"><i class="fas fa-copy"></i>复制取件码</button>
+                        </div>
+
+                        <div class="ft-status" id="ftSendStatus"></div>
+                    </div>
+
+                    <!-- 接收模式 -->
+                    <div class="ft-panel" id="ftReceivePanel" style="display:none;">
+                        <div class="ft-step-guide">
+                            <div class="ft-step"><span class="ft-step-num">1</span>输入取件码</div>
+                            <div class="ft-step-line"></div>
+                            <div class="ft-step"><span class="ft-step-num">2</span>等待连接</div>
+                            <div class="ft-step-line"></div>
+                            <div class="ft-step"><span class="ft-step-num">3</span>下载文件</div>
+                        </div>
+
+                        <div class="ft-receive-input">
+                            <label>请输入对方提供的取件码</label>
+                            <input type="text" id="ftCodeInput" placeholder="例如 ABCD-1234-EFGH" maxlength="14">
+                            <button class="tool-btn primary" id="ftConnect"><i class="fas fa-link"></i>连接</button>
+                        </div>
+
+                        <div class="ft-status" id="ftReceiveStatus"></div>
+
+                        <div class="ft-download-area" id="ftDownloadArea" style="display:none;">
+                            <div class="ft-file-card">
+                                <i class="fas fa-file ft-file-icon"></i>
+                                <div class="ft-file-detail">
+                                    <div class="ft-file-name" id="ftReceiveFileName"></div>
+                                    <div class="ft-file-size" id="ftReceiveFileSize"></div>
+                                </div>
+                            </div>
+                            <div class="ft-progress-bar">
+                                <div class="ft-progress-fill" id="ftProgressFill"></div>
+                            </div>
+                            <div class="ft-progress-text" id="ftProgressText">等待中...</div>
+                            <button class="tool-btn primary" id="ftDownloadBtn"><i class="fas fa-download"></i>下载文件</button>
+                        </div>
+                    </div>
+
+                    <div class="ft-info-note">
+                        <i class="fas fa-shield-alt"></i>
+                        <div>
+                            <strong>安全说明：</strong>
+                            文件通过浏览器 WebRTC 点对点加密传输，不经过任何服务器中转。取件码仅用于建立连接，传输完成后立即失效。
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 工具：加密聊天（P2P） -->
+            <section class="tool-panel" id="tool-encrypted-chat">
+                <div class="tool-header">
+                    <div>
+                        <h2>加密聊天</h2>
+                        <p>端到端加密的点对点聊天，无需服务器，浏览器直接通话</p>
+                    </div>
+                </div>
+                <div class="tool-body glass">
+                    <div class="chat-setup" id="chatSetup">
+                        <div class="chat-step-guide">
+                            <div class="chat-step"><span class="chat-step-num">1</span>生成密钥</div>
+                            <div class="chat-step-line"></div>
+                            <div class="chat-step"><span class="chat-step-num">2</span>分享邀请码</div>
+                            <div class="chat-step-line"></div>
+                            <div class="chat-step"><span class="chat-step-num">3</span>对方加入开始聊天</div>
+                        </div>
+                        
+                        <div class="chat-modes">
+                            <button class="chat-mode-btn active" data-cmode="create">
+                                <i class="fas fa-plus-circle"></i>
+                                <div>
+                                    <strong>创建房间</strong>
+                                    <small>生成邀请码给对方</small>
+                                </div>
+                            </button>
+                            <button class="chat-mode-btn" data-cmode="join">
+                                <i class="fas fa-sign-in-alt"></i>
+                                <div>
+                                    <strong>加入房间</strong>
+                                    <small>输入对方邀请码</small>
+                                </div>
+                            </button>
+                        </div>
+
+                        <!-- 创建房间 -->
+                        <div class="chat-panel active" id="chatCreatePanel">
+                            <button class="tool-btn primary" id="chatCreateBtn"><i class="fas fa-magic"></i>生成房间邀请码</button>
+                            <div class="chat-code-area" id="chatCreateCodeArea" style="display:none;">
+                                <div class="chat-code-label">邀请码（发给对方）</div>
+                                <textarea class="text-input code" id="chatCreateCode" rows="4" readonly placeholder="点击上方按钮生成..."></textarea>
+                                <button class="tool-btn primary" id="chatCopyInvite"><i class="fas fa-copy"></i>复制邀请码</button>
+                                <div class="chat-waiting" id="chatWaiting" style="display:none;">
+                                    <i class="fas fa-spinner fa-spin"></i> 等待对方加入...
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 加入房间 -->
+                        <div class="chat-panel" id="chatJoinPanel" style="display:none;">
+                            <label class="chat-label">粘贴对方发来的邀请码</label>
+                            <textarea class="text-input code" id="chatJoinCode" rows="4" placeholder="在此粘贴邀请码..."></textarea>
+                            <button class="tool-btn primary" id="chatJoinBtn"><i class="fas fa-link"></i>连接房间</button>
+                        </div>
+                    </div>
+
+                    <!-- 聊天界面 -->
+                    <div class="chat-room" id="chatRoom" style="display:none;">
+                        <div class="chat-room-header">
+                            <div class="chat-room-info">
+                                <span class="chat-room-name" id="chatRoomName">加密房间</span>
+                                <span class="chat-conn-status" id="chatConnStatus">连接中...</span>
+                            </div>
+                            <button class="icon-btn" id="chatLeaveBtn" title="离开"><i class="fas fa-sign-out-alt"></i></button>
+                        </div>
+                        <div class="chat-messages" id="chatMessages"></div>
+                        <div class="chat-input-area">
+                            <input type="text" id="chatInput" class="text-input" placeholder="输入消息，回车发送...">
+                            <button class="tool-btn primary" id="chatSendBtn"><i class="fas fa-paper-plane"></i></button>
+                        </div>
+                        <div class="chat-encrypt-note">
+                            <i class="fas fa-lock"></i> 消息使用 AES-GCM 端到端加密，仅你与对方可解密
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 工具：在线终端（JS 沙箱） -->
+            <section class="tool-panel" id="tool-online-terminal">
+                <div class="tool-header">
+                    <div>
+                        <h2>在线终端</h2>
+                        <p>浏览器内 JavaScript 沙箱终端，安全执行常用计算命令</p>
+                    </div>
+                </div>
+                <div class="tool-body glass">
+                    <div class="terminal-window">
+                        <div class="terminal-header">
+                            <span class="term-dot dot-r"></span>
+                            <span class="term-dot dot-y"></span>
+                            <span class="term-dot dot-g"></span>
+                            <span class="terminal-title">aqua@browser: ~</span>
+                        </div>
+                        <div class="terminal-body" id="terminalBody">
+                            <div class="terminal-line">Aqua Browser Terminal v1.0</div>
+                            <div class="terminal-line">输入 <span class="term-cmd">help</span> 查看可用命令</div>
+                            <div class="terminal-line">提示：这是一个 JavaScript 沙箱，不会访问你的系统</div>
+                            <div class="terminal-line">&nbsp;</div>
+                        </div>
+                        <div class="terminal-input-line">
+                            <span class="terminal-prompt">aqua@browser:~$</span>
+                            <input type="text" id="terminalInput" class="terminal-input" autofocus placeholder="输入命令...">
+                        </div>
+                    </div>
+                    <div class="terminal-commands">
+                        <span class="term-cmd-hint">可用命令：</span>
+                        <button class="mini-btn" data-cmd="help">help</button>
+                        <button class="mini-btn" data-cmd="date">date</button>
+                        <button class="mini-btn" data-cmd="calc">calc</button>
+                        <button class="mini-btn" data-cmd="echo">echo</button>
+                        <button class="mini-btn" data-cmd="uuid">uuid</button>
+                        <button class="mini-btn" data-cmd="random">random</button>
+                        <button class="mini-btn" data-cmd="base64">base64</button>
+                        <button class="mini-btn" data-cmd="clear">clear</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 工具：KMS 激活向导 -->
+            <section class="tool-panel" id="tool-kms">
+                <div class="tool-header">
+                    <div>
+                        <h2>KMS 激活向导</h2>
+                        <p>Windows / Office 批量激活命令生成器，三步完成</p>
+                    </div>
+                </div>
+                <div class="tool-body glass">
+                    <div class="kms-warn">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <div>
+                            <strong>法律声明：</strong>本工具仅用于已购买合法批量授权的用户。请确保你拥有相应的授权许可，未授权激活违反软件许可协议。
+                        </div>
+                    </div>
+
+                    <div class="kms-step">
+                        <h3 class="kms-step-title"><span class="kms-badge">1</span>选择要激活的产品</h3>
+                        <div class="kms-products">
+                            <label class="kms-product-card">
+                                <input type="radio" name="kmsProduct" value="win10" checked>
+                                <div>
+                                    <strong>Windows 10/11 专业版</strong>
+                                    <small>GVLK: W269N-WFGWX-YVC9B-4J6C9-T83GX</small>
+                                </div>
+                            </label>
+                            <label class="kms-product-card">
+                                <input type="radio" name="kmsProduct" value="win10ent">
+                                <div>
+                                    <strong>Windows 10/11 企业版</strong>
+                                    <small>NPPR9-FWDCX-D2C8J-H872K-2YT43</small>
+                                </div>
+                            </label>
+                            <label class="kms-product-card">
+                                <input type="radio" name="kmsProduct" value="office2019">
+                                <div>
+                                    <strong>Office 2019/2021</strong>
+                                    <small>需指定安装路径</small>
+                                </div>
+                            </label>
+                            <label class="kms-product-card">
+                                <input type="radio" name="kmsProduct" value="office365">
+                                <div>
+                                    <strong>Office 365 (M365 Apps)</strong>
+                                    <small>订阅版</small>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="kms-step">
+                        <h3 class="kms-step-title"><span class="kms-badge">2</span>填写 KMS 服务器地址</h3>
+                        <div class="form-grid">
+                            <div class="form-field">
+                                <label>KMS 服务器地址</label>
+                                <input type="text" id="kmsServer" placeholder="例如 kms.example.com" value="kms.03k.org">
+                            </div>
+                            <div class="form-field">
+                                <label>端口（默认 1688）</label>
+                                <input type="number" id="kmsPort" value="1688">
+                            </div>
+                        </div>
+                        <p class="kms-tip"><i class="fas fa-lightbulb"></i> 公共 KMS 服务器仅供参考，建议自建（项目地址：<code>vlmcsd</code> GitHub 开源）</p>
+                    </div>
+
+                    <div class="kms-step">
+                        <h3 class="kms-step-title"><span class="kms-badge">3</span>复制命令并执行</h3>
+                        <p class="kms-instruct">以管理员身份打开 CMD 或 PowerShell，依次执行以下命令：</p>
+                        <div class="config-block">
+                            <div class="config-header">
+                                <span class="config-filename">激活命令（CMD 管理员）</span>
+                                <button class="mini-btn" id="kmsCopyCmd"><i class="fas fa-copy"></i> 复制全部</button>
+                            </div>
+                            <pre class="config-code" id="kmsCommand"></pre>
+                        </div>
+                    </div>
+
+                    <div class="kms-faq">
+                        <h3 class="kms-step-title">常见问题</h3>
+                        <details class="kms-faq-item">
+                            <summary>执行 slmgr /skms 提示"无法解析 DNS"？</summary>
+                            <p>KMS 服务器地址错误或不可达。请检查地址拼写、网络连接，或换用其他公共 KMS 服务器。</p>
+                        </details>
+                        <details class="kms-faq-item">
+                            <summary>激活有效期多久？需要重新激活吗？</summary>
+                            <p>KMS 激活有效期为 180 天，系统会每 7 天自动续期一次。只要 KMS 服务器在线，无需手动操作。</p>
+                        </details>
+                        <details class="kms-faq-item">
+                            <summary>如何查看当前激活状态？</summary>
+                            <p>在 CMD 中执行：<code>slmgr /xpr</code> 查看激活状态，<code>slmgr /dli</code> 查看许可证详情。</p>
+                        </details>
+                        <details class="kms-faq-item">
+                            <summary>Office 激活需要额外步骤吗？</summary>
+                            <p>Office 需要先进入安装目录（如 <code>C:\Program Files\Microsoft Office\Office16</code>），再执行 <code>cscript ospp.vbs /sethst:服务器</code> 和 <code>cscript ospp.vbs /act</code>。</p>
+                        </details>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 工具：本地备份箱（IndexedDB） -->
+            <section class="tool-panel" id="tool-backup">
+                <div class="tool-header">
+                    <div>
+                        <h2>本地备份箱</h2>
+                        <p>基于浏览器 IndexedDB 的本地文件管理，可上传、下载、打包</p>
+                    </div>
+                </div>
+                <div class="tool-body glass">
+                    <div class="backup-stats" id="backupStats">
+                        <div class="backup-stat">
+                            <span class="backup-stat-num" id="backupFileCount">0</span>
+                            <span class="backup-stat-label">文件</span>
+                        </div>
+                        <div class="backup-stat">
+                            <span class="backup-stat-num" id="backupTotalSize">0 B</span>
+                            <span class="backup-stat-label">总大小</span>
+                        </div>
+                        <div class="backup-stat">
+                            <span class="backup-stat-num" id="backupQuota">—</span>
+                            <span class="backup-stat-label">可用配额</span>
+                        </div>
+                    </div>
+
+                    <div class="backup-toolbar">
+                        <label class="tool-btn primary" for="backupFileInput">
+                            <i class="fas fa-upload"></i> 上传文件
+                        </label>
+                        <input type="file" id="backupFileInput" multiple hidden>
+                        <button class="tool-btn" id="backupDownloadAll"><i class="fas fa-download"></i> 全部下载</button>
+                        <button class="tool-btn" id="backupClearAll"><i class="fas fa-trash"></i> 清空</button>
+                        <div class="backup-search">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="backupSearch" placeholder="搜索文件...">
+                        </div>
+                    </div>
+
+                    <div class="backup-list" id="backupList">
+                        <div class="backup-empty">
+                            <i class="fas fa-folder-open"></i>
+                            <p>暂无文件，点击上方"上传文件"开始</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 工具：开源广场（本地知识库） -->
+            <section class="tool-panel" id="tool-opensource">
+                <div class="tool-header">
+                    <div>
+                        <h2>开源广场</h2>
+                        <p>本地知识库，整理项目、工具与教程笔记</p>
+                    </div>
+                </div>
+                <div class="tool-body glass">
+                    <div class="os-layout">
+                        <aside class="os-sidebar">
+                            <button class="tool-btn primary os-new-section" id="osNewSection"><i class="fas fa-plus"></i>新建栏目</button>
+                            <div class="os-section-list" id="osSectionList"></div>
+                        </aside>
+                        <section class="os-content" id="osContent">
+                            <div class="os-empty">
+                                <i class="fas fa-book-open"></i>
+                                <p>选择左侧栏目查看内容，或新建栏目开始</p>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 工具：小说阅读器 -->
+            <section class="tool-panel" id="tool-reader">
+                <div class="tool-header" id="readerHeader">
+                    <div>
+                        <h2>小说阅读器</h2>
+                        <p>支持 TXT / EPUB 格式，自动转换为纯文本阅读</p>
+                    </div>
+                </div>
+                <div class="tool-body glass">
+                    <!-- 导入区域 -->
+                    <div class="reader-import" id="readerImport">
+                        <div class="file-drop" id="readerFileDrop">
+                            <i class="fas fa-book"></i>
+                            <p>拖放小说文件或点击选择</p>
+                            <p class="file-drop-formats">支持 TXT / EPUB / HTML / HTM / MD</p>
+                            <input type="file" id="readerFileInput" accept=".txt,.epub,.html,.htm,.md,.text" hidden>
+                        </div>
+                        <div class="reader-samples">
+                            <span class="reader-samples-label">或试用示例：</span>
+                            <button class="mini-btn" id="readerSample1">《海底两万里》节选</button>
+                            <button class="mini-btn" id="readerSample2">《小王子》节选</button>
+                        </div>
+                    </div>
+
+                    <!-- 阅读器主体 -->
+                    <div class="reader-main" id="readerMain" style="display:none;">
+                        <!-- 顶部工具栏 -->
+                        <div class="reader-toolbar">
+                            <div class="reader-info">
+                                <span class="reader-title" id="readerTitle">未命名</span>
+                                <span class="reader-progress" id="readerProgress">0%</span>
+                            </div>
+                            <div class="reader-controls">
+                                <button class="icon-btn" id="readerFontMinus" title="字号减小"><i class="fas fa-minus"></i></button>
+                                <span class="reader-font-size" id="readerFontSize">18</span>
+                                <button class="icon-btn" id="readerFontPlus" title="字号增大"><i class="fas fa-plus"></i></button>
+                                <button class="icon-btn" id="readerThemeToggle" title="切换主题"><i class="fas fa-moon"></i></button>
+                                <button class="icon-btn" id="readerLineHeight" title="行距"><i class="fas fa-grip-lines"></i></button>
+                                <button class="icon-btn" id="readerExport" title="导出 TXT"><i class="fas fa-download"></i></button>
+                                <button class="icon-btn" id="readerFullscreen" title="全屏阅读"><i class="fas fa-expand"></i></button>
+                                <button class="icon-btn" id="readerClose" title="关闭"><i class="fas fa-times"></i></button>
+                            </div>
+                        </div>
+
+                        <!-- 章节目录抽屉 -->
+                        <div class="reader-toc-panel" id="readerTocPanel">
+                            <div class="reader-toc-header">
+                                <span>目录</span>
+                                <button class="icon-btn" id="readerTocClose"><i class="fas fa-times"></i></button>
+                            </div>
+                            <div class="reader-toc-list" id="readerTocList"></div>
+                        </div>
+
+                        <div class="reader-content-wrap">
+                            <button class="reader-toc-toggle" id="readerTocToggle" title="目录">
+                                <i class="fas fa-list"></i>
+                            </button>
+                            <div class="reader-content" id="readerContent" tabindex="0"></div>
+                        </div>
+
+                        <!-- 底部进度条 + 章节切换 -->
+                        <div class="reader-footer">
+                            <div class="reader-progress-bar">
+                                <div class="reader-progress-fill" id="readerProgressFill"></div>
+                            </div>
+                            <div class="reader-nav">
+                                <button class="tool-btn" id="readerPrevChapter" title="上一章 (←)">
+                                    <i class="fas fa-chevron-left"></i> 上一章
+                                </button>
+                                <div class="reader-chapter-indicator" id="readerChapterIndicator"></div>
+                                <span class="reader-chapter-info" id="readerChapterInfo">第 1 / 1 章</span>
+                                <button class="tool-btn" id="readerNextChapter" title="下一章 (→)">
+                                    下一章 <i class="fas fa-chevron-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 工具：文本润色（去AI味） -->
+            <section class="tool-panel" id="tool-deai">
+                <div class="tool-header">
+                    <div>
+                        <h2>文本润色（去AI味）</h2>
+                        <p>去除 AI 写作痕迹，让文字更自然、更像人话</p>
+                    </div>
+                </div>
+                <div class="tool-body glass">
+                    <div class="deai-options">
+                        <label class="chk"><input type="checkbox" id="deaiToxic" checked> 修复最毒句式</label>
+                        <label class="chk"><input type="checkbox" id="deaiWords" checked> 替换 AI 高频词</label>
+                        <label class="chk"><input type="checkbox" id="deaiConnectors" checked> 精简机械连接词</label>
+                        <label class="chk"><input type="checkbox" id="deaiStructure" checked> 去掉套路化开头结尾</label>
+                        <label class="chk"><input type="checkbox" id="deaiPunct" checked> 规范标点（：——"")</label>
+                    </div>
+                    <div class="deai-grid">
+                        <div class="output-area">
+                            <div class="output-header">
+                                <span>原文</span>
+                                <button class="mini-btn" id="deaiClear"><i class="fas fa-eraser"></i> 清空</button>
+                            </div>
+                            <textarea id="deaiInput" class="text-input" rows="14" placeholder="粘贴需要去 AI 味的文本…"></textarea>
+                        </div>
+                        <div class="output-area">
+                            <div class="output-header">
+                                <span>润色结果 <span class="deai-count" id="deaiCount"></span></span>
+                                <button class="mini-btn" data-target="deaiOutput"><i class="fas fa-copy"></i> 复制</button>
+                            </div>
+                            <textarea id="deaiOutput" class="text-input" rows="14" readonly placeholder="处理后的文本会显示在这里…"></textarea>
+                        </div>
+                    </div>
+                    <div class="deai-report" id="deaiReport" hidden>
+                        <div class="deai-grade" id="deaiGrade"></div>
+                        <div class="deai-breakdown" id="deaiBreakdown"></div>
+                    </div>
+                    <div class="deai-actions">
+                        <button class="tool-btn primary" id="deaiRun"><i class="fas fa-wand-magic-sparkles"></i>一键去 AI 味</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 工具：图片去水印 -->
+            <section class="tool-panel" id="tool-watermark">
+                <div class="tool-header">
+                    <div>
+                        <h2>图片去水印</h2>
+                        <p>上传图片，框选水印区域，本地涂抹/马赛克去除，图片不上传</p>
+                    </div>
+                </div>
+                <div class="tool-body glass">
+                    <div class="wm-toolbar">
+                        <label class="tool-btn primary" for="wmFile"><i class="fas fa-upload"></i>选择图片</label>
+                        <input type="file" id="wmFile" accept="image/*" hidden>
+                        <div class="control-group">
+                            <label>方式</label>
+                            <select id="wmMode">
+                                <option value="mosaic">马赛克</option>
+                                <option value="blur">模糊</option>
+                                <option value="fill">邻近取色填充</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label>强度 <span id="wmStrengthVal">16</span></label>
+                            <input type="range" id="wmStrength" min="4" max="48" value="16">
+                        </div>
+                        <button class="tool-btn" id="wmApply"><i class="fas fa-stamp"></i>去除选区</button>
+                        <button class="tool-btn" id="wmReset"><i class="fas fa-rotate-left"></i>还原</button>
+                        <button class="tool-btn primary" id="wmDownload"><i class="fas fa-download"></i>下载</button>
+                    </div>
+                    <p class="wm-hint" id="wmHint">在图片上按住鼠标拖拽即可框选水印区域，松开后点击「去除选区」。</p>
+                    <div class="wm-stage" id="wmStage">
+                        <canvas id="wmCanvas"></canvas>
+                        <div class="wm-selection" id="wmSelection" hidden></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 工具：海报生成器 -->
+            <section class="tool-panel" id="tool-poster">
+                <div class="tool-header">
+                    <div>
+                        <h2>海报生成器</h2>
+                        <p>输入文案、挑选配色与版式，一键导出高清海报</p>
+                    </div>
+                </div>
+                <div class="tool-body glass">
+                    <div class="poster-layout">
+                        <div class="poster-controls">
+                            <div class="control-group">
+                                <label>主标题</label>
+                                <input type="text" id="posterTitle" value="保持热爱" maxlength="20">
+                            </div>
+                            <div class="control-group">
+                                <label>副标题</label>
+                                <input type="text" id="posterSub" value="奔赴山海" maxlength="30">
+                            </div>
+                            <div class="control-group">
+                                <label>底部标签</label>
+                                <input type="text" id="posterTag" value="AQUA · DAILY" maxlength="40">
+                            </div>
+                            <div class="control-group">
+                                <label>配色方案</label>
+                                <div class="poster-themes" id="posterThemes"></div>
+                            </div>
+                            <div class="control-group">
+                                <label>尺寸比例</label>
+                                <select id="posterRatio">
+                                    <option value="3:4">竖版 3:4（海报）</option>
+                                    <option value="1:1">方形 1:1（社媒）</option>
+                                    <option value="9:16">竖屏 9:16（手机）</option>
+                                    <option value="16:9">横版 16:9（Banner）</option>
+                                </select>
+                            </div>
+                            <div class="control-group">
+                                <label>版式</label>
+                                <select id="posterAlign">
+                                    <option value="center">居中</option>
+                                    <option value="left">左对齐</option>
+                                    <option value="bottom">底部</option>
+                                </select>
+                            </div>
+                            <button class="tool-btn primary" id="posterDownload"><i class="fas fa-download"></i>下载海报</button>
+                        </div>
+                        <div class="poster-preview-wrap">
+                            <canvas id="posterCanvas"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 工具：设计风格参考卡 -->
+            <section class="tool-panel" id="tool-design-ref">
+                <div class="tool-header">
+                    <div>
+                        <h2>设计风格参考卡</h2>
+                        <p>常见视觉风格速查：配色、字体、关键词，一键复制色板</p>
+                    </div>
+                </div>
+                <div class="tool-body glass">
+                    <div class="design-ref-grid" id="designRefGrid"></div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- Toast 通知 -->
+    <div class="toast" id="toast" role="alert" aria-live="polite"></div>
+
+    <!-- 工具用途信息弹窗 -->
+    <div class="info-modal" id="infoModal" role="dialog" aria-modal="true" aria-labelledby="infoModalTitle">
+        <div class="info-modal-overlay" id="infoModalOverlay"></div>
+        <div class="info-modal-content glass">
+            <button class="info-modal-close" id="infoModalClose" aria-label="关闭">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="info-modal-icon" id="infoModalIcon"><i class="fas fa-info-circle"></i></div>
+            <h2 class="info-modal-title" id="infoModalTitle">工具名称</h2>
+            <p class="info-modal-desc" id="infoModalDesc">工具详细描述</p>
+            <div class="info-modal-tips" id="infoModalTips"></div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
