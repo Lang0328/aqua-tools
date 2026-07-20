@@ -3833,6 +3833,71 @@ input[type="color"]:active {
 /* 浮动图标装饰 — Apple 风格：去除 */
 .floating-icons { display: none; }
 
+/* ============================================
+   今日人品弹窗：专属 aqua 主题色
+   ============================================ */
+#bonusModal .info-modal-overlay {
+    background: rgba(5, 46, 50, 0.35);
+}
+
+#bonusModal .info-modal-content {
+    background: linear-gradient(145deg, #a7f3d0 0%, #5eead4 50%, #2dd4bf 100%);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    box-shadow: 0 20px 60px rgba(13, 148, 136, 0.35);
+    color: #ffffff;
+}
+
+#bonusModal .info-modal-title {
+    color: #ffffff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+#bonusModal .info-modal-desc {
+    color: rgba(255, 255, 255, 0.85);
+}
+
+#bonusModal .info-modal-close {
+    background: rgba(255, 255, 255, 0.25);
+    color: #ffffff;
+}
+
+#bonusModal .info-modal-close:hover {
+    background: #ffffff;
+    color: #0d9488;
+}
+
+#bonusModal .luck-card-modal {
+    background: #0f3d4d;
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+#bonusModal .luck-card-modal .luck-label {
+    color: rgba(255, 255, 255, 0.65);
+}
+
+#bonusModal .luck-card-modal .luck-value {
+    background: linear-gradient(135deg, #5eead4 0%, #a5f3eb 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+#bonusModal .luck-card-modal .luck-unit {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+#bonusModal .luck-card-modal .luck-bar {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+#bonusModal .luck-card-modal .luck-bar-fill {
+    background: linear-gradient(90deg, #2dd4bf, #5eead4);
+}
+
+#bonusModal .luck-card-modal .luck-msg {
+    color: rgba(255, 255, 255, 0.85);
+}
+
 /* 工具网格区 — Apple 风格 */
 .home-grid-section {
     margin-bottom: 48px;
