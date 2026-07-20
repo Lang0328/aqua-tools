@@ -766,11 +766,6 @@ input, textarea, select, button {
 button { cursor: pointer; border: none; background: none; }
 
 /* ============================================
-   背景装饰 — Apple 风格：纯净，不加装饰
-   ============================================ */
-.bg-decoration { display: none; }
-
-/* ============================================
    液态玻璃
    ============================================ */
 .glass {
@@ -1419,7 +1414,7 @@ button { cursor: pointer; border: none; background: none; }
 }
 .theme-name { flex: 1; text-align: left; }
 .theme-check {
-    color: #0071e3;
+    color: var(--primary);
     font-size: 0.8rem;
     opacity: 0;
     transition: opacity var(--dur-fast, 0.2s) ease;
@@ -2841,6 +2836,25 @@ button { cursor: pointer; border: none; background: none; }
 .toast.error { border-left: 3px solid var(--error); }
 .toast.error i { color: var(--error); }
 
+.toast .toast-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    background: var(--primary);
+    border-radius: 0 0 var(--radius-md) var(--radius-md);
+    width: 100%;
+    transform-origin: left;
+}
+
+.toast.show .toast-bar {
+    animation: toastBarShrink var(--toast-dur, 2.5s) linear forwards;
+}
+
+@keyframes toastBarShrink {
+    to { transform: scaleX(0); }
+}
+
 /* ============================================
    响应式
    ============================================ */
@@ -2912,7 +2926,6 @@ button { cursor: pointer; border: none; background: none; }
         animation-duration: 0.01ms !important;
         transition-duration: 0.01ms !important;
     }
-    .bg-orb { animation: none; }
 }
 
 /* ============================================
@@ -3551,8 +3564,6 @@ input[type="color"]:active {
     z-index: var(--z-bg);
 }
 
-.hero-orb { display: none; }
-
 .hero-content-v2 {
     position: relative;
     z-index: var(--z-content);
@@ -3832,7 +3843,6 @@ input[type="color"]:active {
 }
 
 /* 浮动图标装饰 — Apple 风格：去除 */
-.floating-icons { display: none; }/* 浮动图标装饰 — Apple 风格：去除 */
 .floating-icons { display: none; }
 
 /* 工具网格区 — Apple 风格 */

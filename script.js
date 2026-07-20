@@ -18,12 +18,19 @@
     function showToast(msg, type = 'success') {
         const toast = $('#toast');
         const iconClass = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
-        // 构建稳定结构：图标 + 文本节点，msg 用 textContent 防 XSS
+        // 构建稳定结构：图标 + 文本节点 + 进度条，msg 用 textContent 防 XSS
         if (!toast.querySelector('.toast-msg')) {
-            toast.innerHTML = '<i class="fas toast-icon"></i><span class="toast-msg"></span>';
+            toast.innerHTML = '<i class="fas toast-icon"></i><span class="toast-msg"></span><div class="toast-bar"></div>';
         }
         toast.querySelector('.toast-icon').className = `fas ${iconClass} toast-icon`;
         toast.querySelector('.toast-msg').textContent = msg;
+        // 重置进度条动画
+        const bar = toast.querySelector('.toast-bar');
+        if (bar) {
+            bar.style.animation = 'none';
+            bar.offsetHeight; // 触发回流
+            bar.style.animation = '';
+        }
         toast.className = `toast show ${type}`;
         clearTimeout(toast._timer);
         toast._timer = setTimeout(() => toast.classList.remove('show'), TOAST_DURATION_MS);
@@ -438,6 +445,20 @@
     }
 
     menuToggle.addEventListener('click', toggleSidebar);
+
+    // 移动端：侧边栏右滑关闭手势
+    let touchStartX = 0;
+    sidebar.addEventListener('touchstart', (e) => {
+        if (!isMobile()) return;
+        touchStartX = e.touches[0].clientX;
+    }, { passive: true });
+    sidebar.addEventListener('touchend', (e) => {
+        if (!isMobile()) return;
+        const deltaX = e.changedTouches[0].clientX - touchStartX;
+        if (deltaX < -60 && sidebar.classList.contains('mobile-open')) {
+            sidebar.classList.remove('mobile-open');
+        }
+    });
 
     // ============================================
     // 工具切换
