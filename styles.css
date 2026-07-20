@@ -834,23 +834,14 @@ button { cursor: pointer; border: none; background: none; }
     letter-spacing: -0.02em;
 }
 
-.logo-icon {
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(135deg, #0071e3 0%, #5ac8fa 100%);
-    color: white;
-    border-radius: var(--radius-sm);
-    font-size: 0.9rem;
+.logo-mark {
+    color: var(--primary);
     flex-shrink: 0;
-    box-shadow: 0 2px 8px rgba(0, 113, 227, 0.25);
     transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.logo:hover .logo-icon {
-    transform: scale(1.1) rotate(-5deg);
+.logo:hover .logo-mark {
+    transform: translateX(2px);
 }
 
 .logo-text {
@@ -3336,16 +3327,6 @@ button { cursor: pointer; border: none; background: none; }
 
 .logo:hover {
     transform: scale(1.02);
-}
-
-.logo:hover .logo-icon {
-    animation: logoIconSpin 0.8s var(--ease-ios);
-}
-
-@keyframes logoIconSpin {
-    0% { transform: rotate(0); }
-    50% { transform: rotate(-15deg) scale(1.1); }
-    100% { transform: rotate(0); }
 }
 
 /* ============================================
