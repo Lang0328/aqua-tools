@@ -5326,54 +5326,97 @@ function hello() {
                 </div>
             `;
 
-            buildBoardModel(board);
-            buildInterfaces(board);
+            const nodes = computeNodes(board);
+            buildBoardModel(board, nodes);
+            buildInterfaces(board, nodes);
 
             const main = $('#mainContent');
             if (main) main.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        function buildBoardModel(board) {
-            const model = $('#devBoardModel');
-            model.innerHTML = '';
-            const pcb = document.createElement('div');
-            pcb.className = 'dev-board-pcb';
-            pcb.innerHTML = `<div class="dev-board-chip"><i class="${board.brand ? 'fab' : 'fas'} ${board.icon}"></i></div><div class="dev-board-pcb-label">${board.name}</div>`;
-
+        // 按接口顺序在四边均布编号节点
+        function computeNodes(board) {
             const edges = ['top', 'right', 'bottom', 'left'];
-            const per = { top: [], right: [], bottom: [], left: [] };
-            board.interfaces.forEach((itf, i) => per[edges[i % 4]].push(itf));
-
-            edges.forEach(edge => {
-                const list = per[edge];
-                list.forEach((itf, k) => {
-                    const n = list.length;
-                    const pct = ((k + 1) / (n + 1)) * 100;
-                    const node = document.createElement('button');
-                    node.type = 'button';
-                    node.className = `dev-board-node dev-board-node-${edge}`;
-                    node.dataset.itf = itf.name;
-                    if (edge === 'top') { node.style.left = pct + '%'; node.style.top = '0'; }
-                    if (edge === 'right') { node.style.top = pct + '%'; node.style.right = '0'; }
-                    if (edge === 'bottom') { node.style.left = pct + '%'; node.style.bottom = '0'; }
-                    if (edge === 'left') { node.style.top = pct + '%'; node.style.left = '0'; }
-                    node.innerHTML = `<span class="dev-board-node-dot"><i class="${itf.icon}"></i></span><span class="dev-board-node-label">${itf.name}</span>`;
-                    node.addEventListener('click', () => focusInterface(itf.name, true));
-                    node.addEventListener('mouseenter', () => focusInterface(itf.name, false));
-                    node.addEventListener('mouseleave', clearFocus);
-                    pcb.appendChild(node);
-                });
+            const per = Math.ceil(board.interfaces.length / 4) || 1;
+            return board.interfaces.map((it, i) => {
+                const side = edges[Math.floor(i / per) % 4];
+                const k = i % per;
+                const pos = (k + 1) / (per + 1) * 100;
+                return { itf: it.name, side, pos, num: i + 1 };
             });
-            model.appendChild(pcb);
         }
 
-        function buildInterfaces(board) {
+        // 仿真建模图：优先用 AI 生成的实物图，叠加编号接口节点；图片失败则回退到 schematic
+        function buildBoardModel(board, nodes) {
+            const el = $('#devBoardModel');
+            if (!el) return;
+            el.innerHTML = '';
+            el.classList.remove('has-photo');
+
+            const img = document.createElement('img');
+            img.className = 'dev-board-photo-img';
+            img.src = `assets/boards/${board.id}.png`;
+            img.alt = board.name + ' 仿真建模图';
+            img.loading = 'lazy';
+            img.addEventListener('error', () => {
+                el.classList.remove('has-photo');
+                el.innerHTML = '';
+                renderSchematic(el, board);
+                placeMarks(el.querySelector('.dev-board-pcb'), nodes, false);
+            });
+            el.classList.add('has-photo');
+            el.appendChild(img);
+            placeMarks(el, nodes, true);
+        }
+
+        function renderSchematic(el, board) {
+            const pcb = document.createElement('div');
+            pcb.className = 'dev-board-pcb';
+            pcb.innerHTML = `
+                <span class="dev-board-hole" style="top:5%;left:4%"></span>
+                <span class="dev-board-hole" style="top:5%;right:4%"></span>
+                <span class="dev-board-hole" style="bottom:5%;left:4%"></span>
+                <span class="dev-board-hole" style="bottom:5%;right:4%"></span>
+                <div class="dev-board-silk">${board.name}</div>
+                <div class="dev-board-chip"><i class="${board.brand ? 'fab' : 'fas'} ${board.icon}"></i><span>MCU</span></div>`;
+            el.appendChild(pcb);
+        }
+
+        function placeMarks(host, nodes, onPhoto) {
+            if (!host) return;
+            nodes.forEach(n => {
+                let x, y;
+                if (n.side === 'top') { x = n.pos; y = onPhoto ? 4 : 14; }
+                else if (n.side === 'right') { x = onPhoto ? 96 : 86; y = n.pos; }
+                else if (n.side === 'bottom') { x = n.pos; y = onPhoto ? 96 : 86; }
+                else { x = onPhoto ? 4 : 14; y = n.pos; }
+                const dot = document.createElement('button');
+                dot.type = 'button';
+                dot.className = `dev-board-node dev-board-node-${n.side}`;
+                dot.dataset.itf = n.itf;
+                dot.dataset.num = n.num;
+                dot.style.left = x + '%';
+                dot.style.top = y + '%';
+                dot.title = n.itf;
+                dot.setAttribute('aria-label', n.itf);
+                dot.innerHTML = `<span class="dev-board-node-dot">${n.num}</span>`;
+                dot.addEventListener('click', () => focusInterface(n.itf, true));
+                dot.addEventListener('mouseenter', () => focusInterface(n.itf, false));
+                dot.addEventListener('mouseleave', clearFocus);
+                host.appendChild(dot);
+            });
+        }
+
+        function buildInterfaces(board, nodes) {
             const wrap = $('#devBoardInterfaces');
+            if (!wrap) return;
+            const numOf = name => { const n = nodes.find(x => x.itf === name); return n ? n.num : ''; };
             wrap.innerHTML = `
                 <h3 class="dev-board-section-title"><i class="fas fa-plug"></i> 接口与引脚用途</h3>
-                <p class="dev-board-section-sub">点上方模型上的接口节点，可定位到对应说明；悬停任一处双方会联动高亮</p>
+                <p class="dev-board-section-sub">点亮上方实物图上的编号节点，可定位到对应说明；悬停任一处双方会联动高亮</p>
                 ${board.interfaces.map(itf => `
                     <div class="dev-board-iface" data-itf="${itf.name}">
+                        <span class="dev-board-iface-num">${numOf(itf.name)}</span>
                         <div class="dev-board-iface-icon"><i class="${itf.icon}"></i></div>
                         <div class="dev-board-iface-body">
                             <div class="dev-board-iface-name">${itf.name}</div>

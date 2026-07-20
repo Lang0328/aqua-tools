@@ -7003,17 +7003,18 @@ body.reader-fullscreen .sidebar { display: none; }
 .dev-board-node-left { flex-direction: row-reverse; }
 .dev-board-node-right { flex-direction: row; }
 .dev-board-node-dot {
-    width: 26px;
-    height: 26px;
+    width: 28px;
+    height: 28px;
     border-radius: 50%;
-    background: #0c1f14;
-    border: 2px solid rgba(120, 220, 150, 0.55);
-    color: #7fe3a0;
+    background: rgba(10, 20, 14, 0.92);
+    border: 2px solid #7fe3a0;
+    color: #eafff2;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.72rem;
-    box-shadow: 0 0 0 4px rgba(12, 31, 20, 0.6);
+    font-size: 0.78rem;
+    font-weight: 700;
+    box-shadow: 0 0 0 3px rgba(12, 31, 20, 0.65), 0 2px 8px rgba(0, 0, 0, 0.5);
     transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
     flex-shrink: 0;
 }
@@ -7043,6 +7044,69 @@ body.reader-fullscreen .sidebar { display: none; }
     color: var(--text-secondary);
     text-align: center;
     margin: 0;
+}
+
+/* 仿真实物图模式 */
+.dev-board-model.has-photo { padding: 0; max-width: 480px; }
+.dev-board-photo-img {
+    width: 100%;
+    height: 100%;
+    max-height: 390px;
+    object-fit: contain;
+    border-radius: 16px;
+    background: #0c1f14;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06), 0 14px 34px rgba(0, 0, 0, 0.45);
+    display: block;
+}
+
+/* 接口编号徽标（列表侧） */
+.dev-board-iface-num {
+    flex-shrink: 0;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: rgba(10, 20, 14, 0.9);
+    border: 2px solid rgba(120, 220, 150, 0.55);
+    color: #7fe3a0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.78rem;
+    font-weight: 700;
+    margin-top: 2px;
+}
+.dev-board-iface.is-active .dev-board-iface-num {
+    background: #7fe3a0;
+    color: #06210f;
+    border-color: #7fe3a0;
+}
+
+/* schematic 回退样式 */
+.dev-board-hole {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #0a160e;
+    box-shadow: inset 0 0 0 2px rgba(120, 220, 150, 0.35);
+}
+.dev-board-silk {
+    position: absolute;
+    top: 8%;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.6rem;
+    letter-spacing: 0.5px;
+    color: rgba(180, 230, 190, 0.55);
+    white-space: nowrap;
+    text-align: center;
+    width: 90%;
+}
+.dev-board-chip span {
+    display: block;
+    font-size: 0.6rem;
+    margin-top: 2px;
+    color: rgba(180, 230, 190, 0.85);
 }
 
 /* 详情：头部信息 */
