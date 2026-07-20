@@ -5430,9 +5430,8 @@ function hello() {
                 <p class="dev-board-section-sub">点亮上方实物图上的编号节点，可定位到对应说明；悬停任一处双方会联动高亮</p>
                 ${board.interfaces.map((itf, i) => `
                     <div class="dev-board-iface" data-itf="${itf.name}" style="animation-delay:${(0.24 + i * 0.06).toFixed(2)}s">
-                        <span class="dev-board-iface-num">${numOf(itf.name)}</span>
-                        <div class="dev-board-iface-icon"><i class="${itf.icon}"></i></div>
-                        <div class="dev-board-iface-body">
+                    <span class="dev-board-iface-num">${numOf(itf.name)}</span>
+                    <div class="dev-board-iface-body">
                             <div class="dev-board-iface-name">${itf.name}</div>
                             <div class="dev-board-iface-desc">${itf.desc}</div>
                             <div class="dev-board-iface-example"><i class="fas fa-lightbulb"></i> 常见用法：${itf.example}</div>
