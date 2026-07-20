@@ -626,7 +626,7 @@
             if (msgEl) msgEl.innerHTML = `${fortune.emoji} ${fortune.text}`;
             // 低分时给予微妙的视觉提醒
             if (card) {
-                card.style.setProperty('--luck-mood', score < 30 ? '240, 68, 56' : score < 55 ? '255, 159, 10' : '0, 113, 227');
+                card.style.setProperty('--luck-mood', score < 30 ? '220, 38, 38' : score < 55 ? '168, 85, 247' : '0, 113, 227');
             }
         }
 
@@ -651,9 +651,9 @@
             refresh();
         }
 
-        // 互动
+        // 互动 — 点击卡面刷新人品
         card.addEventListener('click', (e) => {
-            if (e.target.closest('#luckRefresh')) return; // 按钮单独处理
+            if (e.target.closest('#luckRefresh') || e.target.closest('#luckBonusBtn')) return;
             const data = { score: generate(), date: getTodayKey(), ts: Date.now() };
             try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) {}
             if (refreshBtn) {
@@ -663,6 +663,8 @@
             }
             render(data.score);
             showToast(`今日人品 ${data.score} 分`);
+            // 点击卡面时关闭加成面板
+            if (bonusVisible) { bonusVisible = false; bonusPanel.hidden = true; bonusBtn.classList.remove('active'); }
         });
 
         if (refreshBtn) refreshBtn.addEventListener('click', (e) => {
@@ -687,6 +689,48 @@
             const ok = await copyText(msg);
             if (ok) showToast('人品值已复制');
         });
+
+        // 加成面板
+        const bonusBtn = $('#luckBonusBtn');
+        const bonusPanel = $('#luckBonusPanel');
+        let bonusVisible = false;
+
+        const bonusKeys = ['love', 'career', 'wealth', 'health', 'social'];
+        const bonusIdMap = { love: 'barLove', career: 'barCareer', wealth: 'barWealth', health: 'barHealth', social: 'barSocial' };
+        const bonusTextIdMap = { love: 'bonusLove', career: 'bonusCareer', wealth: 'bonusWealth', health: 'bonusHealth', social: 'bonusSocial' };
+        const bonusLabels = { love: '桃花旺盛', career: '事业高升', wealth: '财源广进', health: '身体倍棒', social: '贵人相助' };
+
+        function seededRandom(seed) {
+            let s = seed;
+            return () => { s = (s * 1103515245 + 12345) & 0x7fffffff; return s / 0x7fffffff; };
+        }
+
+        function renderBonus() {
+            const currentScore = parseInt(valueEl ? valueEl.textContent : '50') || 50;
+            const todaySeed = parseInt(getTodayKey().replace(/-/g, '')) + currentScore * 37;
+            const rand = seededRandom(todaySeed);
+            bonusKeys.forEach(key => {
+                const val = Math.round(currentScore * 0.55 + rand() * currentScore * 0.9);
+                const clamped = Math.min(100, Math.max(5, val));
+                const bar = $(bonusIdMap[key]);
+                const text = $(bonusTextIdMap[key]);
+                if (bar) bar.style.width = clamped + '%';
+                if (text) text.textContent = clamped;
+            });
+            // 存储加成数据
+            const bonusData = { date: getTodayKey(), score: currentScore };
+            try { localStorage.setItem(STORAGE_KEY + '-bonus', JSON.stringify(bonusData)); } catch(e) {}
+        }
+
+        function toggleBonus(e) {
+            e.stopPropagation();
+            bonusVisible = !bonusVisible;
+            bonusPanel.hidden = !bonusVisible;
+            bonusBtn.classList.toggle('active', bonusVisible);
+            if (bonusVisible) renderBonus();
+        }
+
+        if (bonusBtn) bonusBtn.addEventListener('click', toggleBonus);
     })();
 
     // ============================================

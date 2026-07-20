@@ -3800,30 +3800,131 @@ input[type="color"]:active {
     transition: color 0.3s;
 }
 
-.luck-refresh {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
+/* 操作按钮组 */
+.luck-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.luck-btn {
     border: 1px solid color-mix(in srgb, var(--accent-active, #0071e3) 20%, transparent);
     background: transparent;
     color: var(--accent-active, #0071e3);
     cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    font-size: 0.85rem;
     transition: background 0.2s, transform 0.3s var(--ease-ios-spring), color 0.2s;
 }
-.luck-refresh:hover {
+.luck-btn:hover {
     background: color-mix(in srgb, var(--accent-active, #0071e3) 12%, transparent);
     color: var(--accent-active, #0071e3);
 }
-.luck-refresh:active { transform: scale(0.88); }
+.luck-btn:active { transform: scale(0.9); }
+
+.luck-refresh {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+}
 .luck-refresh.spin { animation: luckSpin 0.6s ease-out; }
 @keyframes luckSpin {
     from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }
+}
+
+.luck-bonus-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    gap: 1px;
+    padding: 0;
+}
+.luck-bonus-btn.active {
+    background: color-mix(in srgb, var(--accent-active, #0071e3) 16%, transparent);
+    border-color: color-mix(in srgb, var(--accent-active, #0071e3) 40%, transparent);
+}
+
+/* 加成详情面板 */
+.luck-bonus-panel {
+    max-width: 400px;
+    margin: 10px auto 0;
+    background: color-mix(in srgb, var(--accent-active, #0071e3) 4%, var(--bg-card, #fff));
+    border: 1px solid color-mix(in srgb, var(--accent-active, #0071e3) 10%, transparent);
+    border-radius: var(--radius-lg, 16px);
+    padding: 16px 18px;
+    animation: bonusSlideDown 0.35s var(--ease-ios-spring);
+    overflow: hidden;
+}
+.luck-bonus-panel[hidden] { display: none; }
+@keyframes bonusSlideDown {
+    from { opacity: 0; transform: translateY(-12px); max-height: 0; }
+    to { opacity: 1; transform: translateY(0); max-height: 300px; }
+}
+
+.luck-bonus-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.luck-bonus-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.82rem;
+}
+
+.luck-bonus-item > i {
+    width: 22px;
+    text-align: center;
+    font-size: 0.9rem;
+    color: var(--accent-active, #0071e3);
+    flex-shrink: 0;
+}
+
+.bonus-label {
+    width: 34px;
+    font-weight: 500;
+    color: var(--text-muted, #6e6e73);
+    flex-shrink: 0;
+    font-size: 0.78rem;
+}
+
+.bonus-bar {
+    flex: 1;
+    height: 6px;
+    background: var(--bg-soft, #f0f0f5);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.bonus-fill {
+    display: block;
+    height: 100%;
+    border-radius: 3px;
+    width: 0%;
+    background: linear-gradient(90deg, var(--accent-active, #0071e3), #5ac8fa);
+    transition: width 0.5s var(--ease-ios-spring);
+}
+
+.bonus-text {
+    width: 36px;
+    text-align: right;
+    font-weight: 600;
+    color: var(--text, #1d1d1f);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    flex-shrink: 0;
 }
 
 /* 浮动图标装饰 — Apple 风格：去除 */
