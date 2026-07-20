@@ -5312,6 +5312,9 @@ function hello() {
             listView.hidden = true;
             detailView.hidden = false;
             connectorLinesDrawn = false;
+            // 清除旧引导线图层（之前可能附着在 detailView 上），让 getLineLayer 重建并附着到当前板子
+            const oldSvg = $('#devBoardLineLayer');
+            if (oldSvg) oldSvg.remove();
 
             // 头部信息
             $('#devBoardDetailInfo').innerHTML = `
@@ -5449,14 +5452,18 @@ function hello() {
         let connectorLinesDrawn = false;
 
         // 常亮：每个编号节点向板内指一条细绿实线，指向图片上对应的接口位置
+        // 关键：SVG 图层附着在板子（.dev-board-model）上，而不是整个详情视图，
+        // 这样滚动 / 缩放时坐标永远相对板子，线不会跑出板外
         function getLineLayer() {
             let svg = $('#devBoardLineLayer');
+            const host = $('#devBoardModel');
             if (!svg) {
                 svg = document.createElementNS(SVG_NS, 'svg');
                 svg.id = 'devBoardLineLayer';
                 svg.setAttribute('aria-hidden', 'true');
-                const dv = $('#devBoardsDetailView');
-                if (dv) dv.appendChild(svg);
+                if (host) host.appendChild(svg);
+            } else if (host && svg.parentNode !== host) {
+                host.appendChild(svg);
             }
             return svg;
         }
