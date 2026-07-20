@@ -653,7 +653,7 @@
 
         // 互动 — 点击卡面刷新人品
         card.addEventListener('click', (e) => {
-            if (e.target.closest('#luckRefresh') || e.target.closest('#luckBonusBtn')) return;
+            if (e.target.closest('#luckRefresh')) return;
             const data = { score: generate(), date: getTodayKey(), ts: Date.now() };
             try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) {}
             if (refreshBtn) {
@@ -663,8 +663,6 @@
             }
             render(data.score);
             showToast(`今日人品 ${data.score} 分`);
-            // 点击卡面时关闭加成面板
-            if (bonusVisible) { bonusVisible = false; bonusPanel.hidden = true; bonusBtn.classList.remove('active'); }
         });
 
         if (refreshBtn) refreshBtn.addEventListener('click', (e) => {
@@ -690,15 +688,16 @@
             if (ok) showToast('人品值已复制');
         });
 
-        // 加成面板
-        const bonusBtn = $('#luckBonusBtn');
-        const bonusPanel = $('#luckBonusPanel');
-        let bonusVisible = false;
+        // 加成弹窗
+        const bonusModal = $('#bonusModal');
+        const bonusModalOverlay = bonusModal ? bonusModal.querySelector('.bonus-modal-overlay') : null;
+        const bonusModalClose = bonusModal ? bonusModal.querySelector('.bonus-modal-close') : null;
+        const bonusModalScore = $('#bonusModalScore');
+        const bonusTopBtn = $('#luckBonusTopBtn');
 
         const bonusKeys = ['love', 'career', 'wealth', 'health', 'social'];
         const bonusIdMap = { love: 'barLove', career: 'barCareer', wealth: 'barWealth', health: 'barHealth', social: 'barSocial' };
         const bonusTextIdMap = { love: 'bonusLove', career: 'bonusCareer', wealth: 'bonusWealth', health: 'bonusHealth', social: 'bonusSocial' };
-        const bonusLabels = { love: '桃花旺盛', career: '事业高升', wealth: '财源广进', health: '身体倍棒', social: '贵人相助' };
 
         function seededRandom(seed) {
             let s = seed;
@@ -709,6 +708,7 @@
             const currentScore = parseInt(valueEl ? valueEl.textContent : '50') || 50;
             const todaySeed = parseInt(getTodayKey().replace(/-/g, '')) + currentScore * 37;
             const rand = seededRandom(todaySeed);
+            if (bonusModalScore) bonusModalScore.textContent = currentScore;
             bonusKeys.forEach(key => {
                 const val = Math.round(currentScore * 0.55 + rand() * currentScore * 0.9);
                 const clamped = Math.min(100, Math.max(5, val));
@@ -717,20 +717,27 @@
                 if (bar) bar.style.width = clamped + '%';
                 if (text) text.textContent = clamped;
             });
-            // 存储加成数据
             const bonusData = { date: getTodayKey(), score: currentScore };
             try { localStorage.setItem(STORAGE_KEY + '-bonus', JSON.stringify(bonusData)); } catch(e) {}
         }
 
-        function toggleBonus(e) {
-            e.stopPropagation();
-            bonusVisible = !bonusVisible;
-            bonusPanel.hidden = !bonusVisible;
-            bonusBtn.classList.toggle('active', bonusVisible);
-            if (bonusVisible) renderBonus();
+        function showBonusModal() {
+            if (!bonusModal) return;
+            renderBonus();
+            bonusModal.classList.add('show');
         }
 
-        if (bonusBtn) bonusBtn.addEventListener('click', toggleBonus);
+        function hideBonusModal() {
+            if (!bonusModal) return;
+            bonusModal.classList.remove('show');
+        }
+
+        if (bonusTopBtn) bonusTopBtn.addEventListener('click', showBonusModal);
+        if (bonusModalClose) bonusModalClose.addEventListener('click', hideBonusModal);
+        if (bonusModalOverlay) bonusModalOverlay.addEventListener('click', hideBonusModal);
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && bonusModal && bonusModal.classList.contains('show')) hideBonusModal();
+        });
     })();
 
     // ============================================
