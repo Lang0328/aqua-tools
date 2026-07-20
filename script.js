@@ -939,16 +939,10 @@
     function observeCards(grid) {
         // 先注销已有观察
         grid.querySelectorAll('.tool-card-v2').forEach(el => cardRevealObserver.unobserve(el));
-        // 计算列数以确定瀑布延迟
-        requestAnimationFrame(() => {
-            const cols = getComputedStyle(grid).gridTemplateColumns.split(' ').length || 3;
-            grid.querySelectorAll('.tool-card-v2').forEach((el, i) => {
-                const row = Math.floor(i / cols);
-                const col = i % cols;
-                // 左→右 0.04s，上→下 0.08s，更紧凑自然
-                el.style.transitionDelay = (col * 0.04 + row * 0.08).toFixed(2) + 's';
-                cardRevealObserver.observe(el);
-            });
+        // 全部卡立即响应滚动，不做瀑布延迟
+        grid.querySelectorAll('.tool-card-v2').forEach(el => {
+            el.style.transitionDelay = '0s';
+            cardRevealObserver.observe(el);
         });
     }
 
