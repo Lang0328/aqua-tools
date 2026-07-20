@@ -220,6 +220,13 @@
             </div>
 
             <div class="nav-group">
+                <p class="nav-group-title">硬件</p>
+                <a href="#" class="nav-item" data-tool="dev-boards">
+                    <i class="fas fa-microchip"></i>
+                    <span>开发板百科</span>
+                </a>
+            </div>
+            <div class="nav-group">
                 <p class="nav-group-title">系统工具</p>
                 <a href="#" class="nav-item" data-tool="kms">
                     <i class="fas fa-key"></i>
@@ -1887,6 +1894,18 @@
                         <button class="tool-btn primary" id="ipLookupBtn"><i class="fas fa-search"></i> 查询</button>
                         <p class="wm-hint" id="ipStatus">点击「查询」获取本机 IP 信息</p>
                     </div>
+                </div>
+            </section>
+            <section class="tool-panel" id="tool-dev-boards">
+                <div class="tool-header">
+                    <div>
+                        <h2>开发板百科</h2>
+                        <p>涵盖 Arduino / 树莓派 / ESP / STM32 等 15+ 主流开发板，小白也能看懂</p>
+                    </div>
+                </div>
+                <div class="tool-body glass">
+                    <div class="dev-boards-filters" id="devBoardsFilters"></div>
+                    <div class="dev-boards-grid" id="devBoardsGrid"></div>
                 </div>
             </section>
             <section class="tool-panel" id="tool-design-ref">

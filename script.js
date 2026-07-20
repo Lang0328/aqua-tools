@@ -367,6 +367,12 @@
             title: '设计风格参考卡',
             desc: '收录常见视觉设计风格的配色、字体与关键词，帮助快速找灵感，点击色块即可复制色值。',
             tips: ['涵盖极简、玻璃拟态、新拟态、赛博朋克等风格', '点击任意色块复制 HEX', '可作为配色与字体搭配参考', '适合快速确定项目视觉基调']
+        },
+        'dev-boards': {
+            icon: 'fa-microchip',
+            title: '开发板百科',
+            desc: '涵盖 Arduino、树莓派、ESP32、STM32 等 15+ 主流开发板的详细参数、优缺点与适用场景，小白也能看懂。',
+            tips: ['按品牌/架构分类筛选', '展开卡片查看完整参数表', '含难度评级和推荐指数', '适合选型对比与入门学习']
         }
     };
 
@@ -893,6 +899,7 @@
         { id: 'snippets', icon: 'fa-code-branch', title: '代码片段管理', desc: '本地持久化保存', cat: 'dev' },
         { id: 'cron', icon: 'fa-clock-rotate-left', title: 'Cron 表达式', desc: '定时任务构建', cat: 'dev' },
         { id: 'http-status', icon: 'fa-globe', title: 'HTTP 状态码', desc: '速查手册', cat: 'dev' },
+        { id: 'dev-boards', icon: 'fa-microchip', title: '开发板百科', desc: '全品类详解参数', cat: 'dev' },
         { id: 'timestamp', icon: 'fa-stopwatch', title: '时间戳转换', desc: 'Unix 时间互转', cat: 'dev' },
         { id: 'base64', icon: 'fa-exchange-alt', title: 'Base64 编解码', desc: '文本文件互转', cat: 'dev' },
         { id: 'hash', icon: 'fa-fingerprint', title: '哈希计算', desc: 'SHA-256/384/512', cat: 'dev' },
@@ -4953,6 +4960,257 @@ function hello() {
         });
 
         render();
+    })();
+
+    // ============================================
+    // 工具：开发板百科
+    // ============================================
+    (function initDevBoards() {
+        const filtersEl = $('#devBoardsFilters');
+        const grid = $('#devBoardsGrid');
+        if (!filtersEl || !grid) return;
+
+        const boards = [
+            {
+                id: 'arduino-uno-r3', name: 'Arduino Uno R3', cat: 'Arduino',
+                icon: 'fa-microchip', maker: 'Arduino',
+                brief: '全球最流行的入门开发板，基于 ATmega328P 8 位 MCU，生态成熟、教程丰富。',
+                difficulty: 'beginner',
+                specs: { '主控': 'ATmega328P', '主频': '16 MHz', 'Flash': '32 KB', 'SRAM': '2 KB', 'GPIO': '14 数字 + 6 模拟', '电压': '5V', '接口': 'USB-B / UART / SPI / I²C', '尺寸': '68.6×53.4mm', '价格': '¥15–30' },
+                uses: 'LED 流水灯、温湿度传感器、舵机控制、基础 IoT 实验',
+                pros: ['价格极低', '社区最大教程最多', 'Shield 扩展生态', '即插即用无需焊接'],
+                cons: ['性能较弱 8 位', 'RAM 很小仅 2KB', '无 WiFi / 蓝牙'],
+                stars: 5
+            },
+            {
+                id: 'arduino-uno-r4', name: 'Arduino Uno R4 WiFi', cat: 'Arduino',
+                icon: 'fa-microchip', maker: 'Arduino',
+                brief: 'Uno 的现代升级版，搭载 Renesas RA4M1 32 位 ARM Cortex-M4，板载 WiFi 和 LED 矩阵。',
+                difficulty: 'beginner',
+                specs: { '主控': 'Renesas RA4M1 32位', '主频': '48 MHz', 'Flash': '256 KB', 'SRAM': '32 KB', 'GPIO': '14 数字 + 6 模拟', '电压': '5V', '接口': 'USB-C / WiFi / BLE / CAN', '尺寸': '68.6×53.4mm', '价格': '¥120–160' },
+                uses: 'IoT 联网项目、CAN 总线通信、LED 矩阵显示、中级学习',
+                pros: ['32 位性能跃升', '板载 WiFi + BLE', '兼容 Uno 引脚', 'LED 矩阵可玩性高'],
+                cons: ['价格偏高', '社区资源不如 R3 丰富', '部分老旧库需适配'],
+                stars: 4
+            },
+            {
+                id: 'arduino-mega', name: 'Arduino Mega 2560', cat: 'Arduino',
+                icon: 'fa-microchip', maker: 'Arduino',
+                brief: '54 个数字 IO + 16 个模拟输入的大引脚开发板，适合 3D 打印机、机器人等多 IO 项目。',
+                difficulty: 'intermediate',
+                specs: { '主控': 'ATmega2560', '主频': '16 MHz', 'Flash': '256 KB', 'SRAM': '8 KB', 'GPIO': '54 数字 + 16 模拟', '电压': '5V', '接口': 'USB-B / 4×UART / SPI / I²C', '尺寸': '101.5×53.3mm', '价格': '¥50–80' },
+                uses: '3D 打印机主板、多舵机机器人、大型矩阵键盘、CNC 控制',
+                pros: ['IO 极多 70 个', 'Flash 大 256KB', '多串口通信', '3D 打印标配主板'],
+                cons: ['体积较大', '无 WiFi / 蓝牙', '仍是 8 位性能', '功耗较高'],
+                stars: 4
+            },
+            {
+                id: 'arduino-nano', name: 'Arduino Nano', cat: 'Arduino',
+                icon: 'fa-microchip', maker: 'Arduino',
+                brief: '仅有指节大小的微型 Arduino，面包板友好，适合紧凑嵌入式项目。',
+                difficulty: 'beginner',
+                specs: { '主控': 'ATmega328P', '主频': '16 MHz', 'Flash': '32 KB', 'SRAM': '2 KB', 'GPIO': '14 数字 + 8 模拟', '电压': '5V', '接口': 'Mini-USB / UART / SPI / I²C', '尺寸': '43.2×18.5mm', '价格': '¥12–25' },
+                uses: '穿戴设备原型、微型传感器节点、面包板实验',
+                pros: ['极微型 18.5mm', '面包板直插', '价格最低', 'IO 够用'],
+                cons: ['无 USB-C', '无 WiFi / 蓝牙', 'RAM 仍仅 2KB', '调试需串口转接'],
+                stars: 4
+            },
+            {
+                id: 'rpi-5', name: 'Raspberry Pi 5', cat: '树莓派',
+                icon: 'fa-raspberry-pi', brand: true, maker: 'Raspberry Pi 基金会',
+                brief: '2023 年发布的旗舰单板计算机，4 核 Cortex-A76，支持双 4K 输出，可替代桌面电脑。',
+                difficulty: 'intermediate',
+                specs: { 'SoC': 'BCM2712 四核 Cortex-A76', '主频': '2.4 GHz', 'RAM': '4/8 GB LPDDR4X', '存储': 'microSD + M.2 NVMe', 'GPU': 'VideoCore VII', '接口': 'USB3×2 + USB2×2 / PCIe 2.0 / HDMI×2 / WiFi 5 / BLE 5', '尺寸': '85×56mm', '价格': '¥380–650' },
+                uses: '轻量桌面办公、Home Assistant 智能家居、NAS、媒体中心、Docker 容器',
+                pros: ['桌面级性能', 'M.2 NVMe 直连', '实时时钟 + 电源键', 'Pi OS 稳定好用'],
+                cons: ['功耗高需散热', '价格较贵', '无板载 eMMC', 'GPIO 兼容性需注意'],
+                stars: 5
+            },
+            {
+                id: 'rpi-pico', name: 'Raspberry Pi Pico 2 W', cat: '树莓派',
+                icon: 'fa-microchip', maker: 'Raspberry Pi 基金会',
+                brief: 'RP2350 双核微控制器 + WiFi，树莓派官方 MCU 系列，极低功耗实时控制。',
+                difficulty: 'beginner',
+                specs: { '主控': 'RP2350 双核 ARM + RISC-V', '主频': '150 MHz', 'Flash': '4 MB (外挂)', 'SRAM': '520 KB', 'GPIO': '26 个', '电压': '3.3V', '接口': 'USB-C / WiFi / BLE / PIO', '尺寸': '51×21mm', '价格': '¥35–50' },
+                uses: '传感器采集、电机控制、低功耗 IoT、MicroPython 教学',
+                pros: ['超低功耗', 'PIO 可编程 IO', 'WiFi 内置', '双架构 ARM+RISC-V'],
+                cons: ['无 GPU 不做桌面', 'Flash 需外挂', '社区不如 Arduino 成熟'],
+                stars: 4
+            },
+            {
+                id: 'esp32-dev', name: 'ESP32-DevKitC V4', cat: 'ESP',
+                icon: 'fa-wifi', maker: '乐鑫 Espressif',
+                brief: 'IoT 开发王者，240MHz 双核 Xtensa LX6 + 内置 WiFi/BLE，性价比最高。',
+                difficulty: 'beginner',
+                specs: { '主控': 'ESP32-D0WDQ6 双核', '主频': '240 MHz', 'Flash': '4–16 MB', 'SRAM': '520 KB', 'GPIO': '34 个', '电压': '3.3V', '接口': 'micro-USB / WiFi b/g/n / BLE 4.2 / 3×UART / SPI / I²C', '尺寸': '55.3×28mm', '价格': '¥18–35' },
+                uses: '智能家居网关、MQTT 物联网节点、WebSocket 服务器、低功耗蓝牙设备',
+                pros: ['WiFi+BLE 双模内置', '双核 240MHz', '价格极低', 'Arduino IDE 兼容'],
+                cons: ['ADC 精度一般', '引脚电流有限', '功耗比 Pico 高'],
+                stars: 5
+            },
+            {
+                id: 'esp32-s3', name: 'ESP32-S3-DevKitC', cat: 'ESP',
+                icon: 'fa-microchip', maker: '乐鑫 Espressif',
+                brief: 'ESP32 升级版，搭载 USB-OTG、向量指令集和更强的 AI 加速能力。',
+                difficulty: 'intermediate',
+                specs: { '主控': 'ESP32-S3 双核 Xtensa LX7', '主频': '240 MHz', 'Flash': '8–16 MB', 'SRAM': '512 KB + 2MB PSRAM', 'GPIO': '45 个', '电压': '3.3V', '接口': 'USB-OTG / WiFi 4 / BLE 5 / LCD 接口', '尺寸': '54×25mm', '价格': '¥30–60' },
+                uses: 'AI 视觉识别、TFT 屏幕驱动、USB 设备模拟、语音处理',
+                pros: ['USB-OTG 原生', 'AI/向量加速', 'BLE 5.0 长距', 'LCD/Camera 接口'],
+                cons: ['不带完整 5GHz WiFi', '发热略高于原版'],
+                stars: 4
+            },
+            {
+                id: 'esp8266', name: 'NodeMCU ESP8266', cat: 'ESP',
+                icon: 'fa-wifi', maker: '乐鑫 Espressif',
+                brief: '经典款超低成本 WiFi 模块，虽已老旧但至今仍有大量教程和项目沿用。',
+                difficulty: 'beginner',
+                specs: { '主控': 'ESP8266EX 单核', '主频': '80–160 MHz', 'Flash': '4 MB', 'SRAM': '80 KB', 'GPIO': '11 个', '电压': '3.3V', '接口': 'micro-USB / WiFi b/g/n', '尺寸': '48×25mm', '价格': '¥8–15' },
+                uses: 'WiFi 开关、天气时钟、MQTT 数据上报、极简 IoT 节点',
+                pros: ['价格极低 8 元起', 'Arduino IDE 兼容', '功耗极低', '教程最多'],
+                cons: ['单核性能弱', '无蓝牙', 'GPIO 少且部分受限', '已停止新 SDK 开发'],
+                stars: 3
+            },
+            {
+                id: 'stm32-f103', name: 'STM32F103C8T6 蓝药丸', cat: 'STM32',
+                icon: 'fa-cogs', maker: '意法半导体 ST',
+                brief: '最经典的 ARM Cortex-M3 入门开发板，极小体积，工业控制首选。',
+                difficulty: 'intermediate',
+                specs: { '主控': 'STM32F103C8T6 Cortex-M3', '主频': '72 MHz', 'Flash': '64 KB', 'SRAM': '20 KB', 'GPIO': '37 个', '电压': '3.3V', '接口': 'micro-USB / 3×USART / 2×SPI / 2×I²C / CAN / 12位 ADC', '尺寸': '53×22mm', '价格': '¥10–20' },
+                uses: '电机闭环控制、CAN 总线通信、精密 ADC 采集、工业传感器',
+                pros: ['价格极低', '外设丰富专业', 'CAN 总线内置', '实时性极强'],
+                cons: ['上手难度高', '调试器需另购 ST-Link', 'RAM 偏少 20KB'],
+                stars: 3
+            },
+            {
+                id: 'stm32-f407', name: 'STM32F407VET6 黑药丸', cat: 'STM32',
+                icon: 'fa-cogs', maker: '意法半导体 ST',
+                brief: 'Cortex-M4 带 FPU + DSP 指令，168MHz 高频性能，适合音频和实时信号处理。',
+                difficulty: 'advanced',
+                specs: { '主控': 'STM32F407VET6 Cortex-M4 + FPU', '主频': '168 MHz', 'Flash': '512 KB', 'SRAM': '192 KB', 'GPIO': '82 个', '电压': '3.3V', '接口': 'micro-USB OTG / 4×USART / 3×SPI / 3×I²C / 2×CAN / SDIO / FSMC', '尺寸': '69×52mm', '价格': '¥40–70' },
+                uses: '数字音频处理、FSMC 驱动 TFT 屏、多路伺服控制、复杂算法',
+                pros: ['DSP + FPU 强大', 'Flash 大 512KB', 'IO 数量极多', 'FSMC 高速并口'],
+                cons: ['学习曲线陡峭', '体积偏大', '功耗管理复杂'],
+                stars: 3
+            },
+            {
+                id: 'microbit-v2', name: 'BBC micro:bit V2', cat: '教育',
+                icon: 'fa-circle', maker: 'BBC / 微软',
+                brief: '中小学编程教育标准硬件，内置 25 颗 LED 矩阵、喇叭、麦克风和触摸传感器。',
+                difficulty: 'beginner',
+                specs: { '主控': 'nRF52833 Cortex-M4', '主频': '64 MHz', 'Flash': '512 KB', 'SRAM': '128 KB', 'GPIO': '25 个含 5 大引脚', '电压': '3V', '接口': 'micro-USB / BLE 5 / 喇叭 / 麦克风 / 触摸 / 加速度计 / 磁力计', '尺寸': '52×42mm', '价格': '¥120–150' },
+                uses: '中小学 STEM 教学、MakeCode 图形化编程、穿戴原型、互动游戏',
+                pros: ['零基础可用', '传感器内置丰富', '图形化 + Python', '全球教育资源'],
+                cons: ['专业性不足', '价格贵于性能比', '成人开发者不适用'],
+                stars: 4
+            },
+            {
+                id: 'orange-pi-5', name: 'Orange Pi 5', cat: '树莓派',
+                icon: 'fa-microchip', maker: '香橙派',
+                brief: '瑞芯微 RK3588S 八核处理器，性能对标树莓派 5，性价比突出。',
+                difficulty: 'advanced',
+                specs: { 'SoC': 'Rockchip RK3588S 八核', '主频': '2.4 GHz A76×4 + 1.8 GHz A55×4', 'RAM': '4/8/16 GB LPDDR4X', '存储': 'microSD + M.2 NVMe + eMMC', '接口': 'USB3×1 + USB2×2 / HDMI 2.1×2 / 2.5G LAN / WiFi 6', '尺寸': '89×62mm', '价格': '¥400–900' },
+                uses: '高性能 NAS、边缘 AI 推理、Android/Linux 桌面替代、K8s 集群节点',
+                pros: ['八核性能爆表', 'M.2 + eMMC 双存储', '2.5G 网口', 'WiFi 6 + BT 5'],
+                cons: ['软件生态不如树莓派', '社区稍小', '高负载需主动散热'],
+                stars: 4
+            },
+            {
+                id: 'beaglebone-black', name: 'BeagleBone Black', cat: '工业',
+                icon: 'fa-server', maker: 'BeagleBoard.org',
+                brief: 'AM3358 Cortex-A8 工业级单板机，带 PRU 实时协处理器，适合工业控制和实时任务。',
+                difficulty: 'advanced',
+                specs: { '主控': 'TI AM3358 Cortex-A8', '主频': '1 GHz', 'RAM': '512 MB DDR3', '存储': '4 GB eMMC + microSD', 'GPIO': '65 个', '电压': '5V', '接口': 'mini-USB / 1G LAN / 2×PRU 实时核心 / HDMI / 4×UART / 2×CAN', '尺寸': '86.4×53.3mm', '价格': '¥350–500' },
+                uses: '工业 PLC 替代、电机实时控制、数据采集网关、机器人控制',
+                pros: ['PRU 实时核硬实时', '工业级设计', 'GPIO 极多 65 个', 'CAN 总线双通道'],
+                cons: ['RAM 仅 512MB', '处理器性能偏弱', '社区较小', '不推荐做桌面'],
+                stars: 3
+            },
+            {
+                id: 'kendryte-k210', name: 'Sipeed Maix (K210)', cat: 'AI',
+                icon: 'fa-brain', maker: 'Sipeed / 嘉楠科技',
+                brief: '内置 KPU AI 神经网络加速器的 RISC-V 双核芯片，超低价格实现边缘 AI。',
+                difficulty: 'intermediate',
+                specs: { '主控': 'K210 双核 RISC-V 64位', '主频': '400 MHz (可调 800)', 'Flash': '16 MB', 'SRAM': '8 MB', 'GPIO': '48 个', '电压': '5V', '接口': 'USB-C / KPU AI加速 / LCD / Camera / WiFi (模块)', '尺寸': '52×25mm', '价格': '¥50–90' },
+                uses: '人脸识别、物体分类、语音唤醒、车牌识别、AI 视觉教学',
+                pros: ['AI 加速极低功耗', '0.5 TOPS 算力', '价格极低', '屏幕+摄像头直连'],
+                cons: ['非标准 ARM 架构', '软件生态有限', '不适合通用开发'],
+                stars: 3
+            }
+        ];
+
+        const categories = ['全部', ...([...new Set(boards.map(b => b.cat))])];
+        let activeFilter = '全部';
+
+        const diffLabels = { beginner: '新手友好', intermediate: '中等', advanced: '进阶' };
+        const diffClass = { beginner: 'beginner', intermediate: 'intermediate', advanced: 'advanced' };
+
+        function renderFilters() {
+            filtersEl.innerHTML = categories.map(c => {
+                const active = c === activeFilter ? ' active' : '';
+                return `<button class="dev-boards-filter-chip${active}" data-cat="${c}">${c}</button>`;
+            }).join('');
+            filtersEl.querySelectorAll('.dev-boards-filter-chip').forEach(chip => {
+                chip.addEventListener('click', () => {
+                    activeFilter = chip.dataset.cat;
+                    renderFilters();
+                    renderGrid();
+                });
+            });
+        }
+
+        function renderGrid() {
+            const filtered = activeFilter === '全部' ? boards : boards.filter(b => b.cat === activeFilter);
+            grid.innerHTML = filtered.map((b, i) => `
+                <div class="dev-board-card" data-id="${b.id}" data-index="${i}">
+                    <div class="dev-board-card-top">
+                        <div class="dev-board-icon"><i class="${b.brand ? 'fab' : 'fas'} ${b.icon}"></i></div>
+                        <div class="dev-board-info">
+                            <div class="dev-board-name">${b.name}</div>
+                            <div class="dev-board-subtitle">${b.maker}</div>
+                            <span class="dev-board-badge ${diffClass[b.difficulty]}">${diffLabels[b.difficulty]}</span>
+                        </div>
+                        <div style="color:var(--text-secondary);font-size:0.7rem;">${'★'.repeat(b.stars)}${'☆'.repeat(5 - b.stars)}</div>
+                    </div>
+                    <div class="dev-board-card-bottom">
+                        <div class="dev-board-detail">
+                            <div class="dev-board-desc">${b.brief}</div>
+                            <div class="dev-board-specs">
+                                ${Object.entries(b.specs).map(([k, v]) => `
+                                    <div class="dev-board-spec"><span class="dev-board-spec-label">${k}</span><span class="dev-board-spec-value">${v}</span></div>
+                                `).join('')}
+                            </div>
+                            <div class="dev-board-proscons">
+                                <div class="dev-board-pros">
+                                    <div><i class="fas fa-check-circle"></i><strong>优点</strong></div>
+                                    ${b.pros.map(p => `<div>+ ${p}</div>`).join('')}
+                                </div>
+                                <div class="dev-board-cons">
+                                    <div><i class="fas fa-times-circle"></i><strong>缺点</strong></div>
+                                    ${b.cons.map(c => `<div>- ${c}</div>`).join('')}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="dev-board-expand-hint">点击展开查看详细参数 ▼</div>
+                </div>
+            `).join('');
+
+            // 展开 / 收起逻辑
+            grid.querySelectorAll('.dev-board-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    const wasExpanded = card.classList.contains('expanded');
+                    // 先收起同批其他卡片（手风琴效果）
+                    grid.querySelectorAll('.dev-board-card.expanded').forEach(c => c.classList.remove('expanded'));
+                    if (!wasExpanded) {
+                        card.classList.add('expanded');
+                        card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    }
+                });
+            });
+        }
+
+        renderFilters();
+        renderGrid();
     })();
 
     // ============================================
