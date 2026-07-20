@@ -2814,7 +2814,7 @@ button { cursor: pointer; border: none; background: none; }
     left: 50%;
     transform: translateX(-50%) translateY(100px);
     padding: 12px 22px;
-    background: rgba(255, 255, 255, 0.85);
+    background: var(--glass-bg);
     backdrop-filter: var(--glass-blur);
     -webkit-backdrop-filter: var(--glass-blur);
     color: var(--text-strong);
