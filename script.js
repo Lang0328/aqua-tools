@@ -986,6 +986,8 @@
         }
         requestAnimationFrame(update);
     }
+    // 计数与工具总数保持一致，避免硬编码失同步
+    $$('.pill-num').forEach(el => { el.dataset.count = allTools.length; });
     $$('.pill-num').forEach(animateCount);
 
     // ============================================
@@ -5666,7 +5668,7 @@ function hello() {
     // 控制台
     // ============================================
     console.log(
-        '%c💧 Aqua Tools %c· 清新工具箱\n%c36 实用工具 · 天蓝渐变 + 液态玻璃 · 苹果风格动效',
+        '%c💧 Aqua Tools %c· 清新工具箱\n%c' + allTools.length + ' 实用工具 · 天蓝渐变 + 液态玻璃 · 苹果风格动效',
         'color: #0ea5e9; font-size: 22px; font-weight: bold;',
         'color: #475569; font-size: 14px;',
         'color: #0284c7; font-size: 12px;'
