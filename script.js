@@ -667,9 +667,9 @@
                 valueEl.classList.add('bump');
             }
             if (msgEl) msgEl.innerHTML = `${fortune.emoji} ${fortune.text}`;
-            // 低分时给予微妙的视觉提醒
+            // 低分时给予微妙的视觉提醒；颜色引用主题变量，随主题切换自动跟随
             if (card) {
-                card.style.setProperty('--luck-mood', score < 30 ? '220, 38, 38' : score < 55 ? '168, 85, 247' : '0, 113, 227');
+                card.style.setProperty('--luck-mood', score < 30 ? 'var(--luck-bad)' : score < 55 ? 'var(--luck-mid)' : 'var(--luck-good)');
             }
             const barFill = $('#luckBarFill');
             if (barFill) barFill.style.width = score + '%';

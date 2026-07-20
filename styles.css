@@ -80,6 +80,11 @@
     --accent-active: var(--primary);
     --accent-active-soft: color-mix(in srgb, var(--accent-active) 14%, transparent);
 
+    /* 今日人品三档颜色 — 随主题切换（高分=好运色，中分=强调色，低分=警示色） */
+    --luck-good: #34c759;
+    --luck-mid: #0071e3;
+    --luck-bad: #ff3b30;
+
     /* 背景动态光晕颜色 — 随主题切换 */
     --orb-1: rgba(0, 113, 227, 0.08);
     --orb-2: rgba(175, 82, 222, 0.06);
@@ -159,6 +164,11 @@ body, .topbar, .sidebar, .tool-body, .tool-card-v2, .design-ref-card,
     --orb-1: rgba(10, 132, 255, 0.18);
     --orb-2: rgba(175, 82, 222, 0.14);
     --gradient-text: linear-gradient(135deg, #ffffff 0%, #a1a1a6 100%);
+
+    /* 今日人品三档颜色（午夜主题） */
+    --luck-good: #30d158;
+    --luck-mid: #0a84ff;
+    --luck-bad: #ff453a;
 }
 
 /* —— 极光 Aurora —— */
@@ -196,6 +206,11 @@ body, .topbar, .sidebar, .tool-body, .tool-card-v2, .design-ref-card,
     --orb-2: rgba(167, 139, 250, 0.18);
     --orb-3: rgba(6, 182, 212, 0.15);
     --gradient-text: linear-gradient(135deg, #ffffff 0%, #5eead4 50%, #a78bfa 100%);
+
+    /* 今日人品三档颜色（极光主题）— 青绿 / 紫 / 粉红，呼应极光配色 */
+    --luck-good: #2dd4bf;
+    --luck-mid: #a78bfa;
+    --luck-bad: #ff6b81;
     --palette-stage: linear-gradient(145deg, #0a1e2a 0%, #051018 100%);
 }
 
@@ -3704,7 +3719,7 @@ input[type="color"]:active {
    ============================================ */
 .luck-card-v2 {
     background: color-mix(in srgb, var(--accent-active, #0071e3) 4%, var(--bg-card, #fff));
-    border: 1px solid color-mix(in srgb, var(--luck-mood, 0,113,227) 18%, var(--accent-active, #0071e3) 12%, transparent);
+    border: 1px solid color-mix(in srgb, var(--luck-mood, #0071e3) 18%, var(--accent-active, #0071e3) 12%, transparent);
     border-radius: var(--radius-xl, 18px);
     padding: 18px 20px;
     max-width: 400px;
@@ -3715,7 +3730,7 @@ input[type="color"]:active {
     animation: statsFadeIn 1s ease 0.55s both;
     position: relative;
     overflow: hidden;
-    --luck-mood: 0, 113, 227;
+    --luck-mood: var(--luck-good, #34c759);
 }
 .luck-card-v2:hover {
     transform: translateY(-2px);
@@ -3751,7 +3766,7 @@ input[type="color"]:active {
 .luck-value {
     font-size: 2.75rem;
     font-weight: 700;
-    background: linear-gradient(135deg, rgb(var(--luck-mood, 0, 113, 227)) 0%, #5ac8fa 100%);
+    background: linear-gradient(135deg, var(--luck-mood, #0071e3) 0%, color-mix(in srgb, var(--luck-mood, #0071e3) 55%, #ffffff) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -3779,7 +3794,7 @@ input[type="color"]:active {
 .luck-bar-fill {
     height: 100%;
     width: 0%;
-    background: linear-gradient(90deg, rgb(var(--luck-mood, 0, 113, 227)), #5ac8fa);
+    background: linear-gradient(90deg, var(--luck-mood, #0071e3), color-mix(in srgb, var(--luck-mood, #0071e3) 55%, #ffffff));
     border-radius: 2px;
     transition: width 0.8s cubic-bezier(0.34, 1.2, 0.64, 1);
 }
