@@ -488,6 +488,11 @@
     const catAccent = (cat) => cat ? `var(--cat-${cat})` : 'var(--primary)';
 
     function switchTool(toolId) {
+        // 「可信数据空间」是独立子系统，点击直接跳转到其登录页
+        if (toolId === 'data-space') {
+            window.location.href = 'login.html';
+            return;
+        }
         // 如果之前在全屏阅读模式，先退出
         if (toolId !== 'reader') {
             const rp = $('#tool-reader');
@@ -916,7 +921,8 @@
         { id: 'backup', icon: 'fa-database', title: '本地备份箱', desc: 'IndexedDB 存储', cat: 'utility' },
         { id: 'opensource', icon: 'fa-book', title: '开源广场', desc: '本地知识库', cat: 'utility' },
         { id: 'reader', icon: 'fa-book-open', title: '小说阅读器', desc: 'TXT/EPUB 阅读', cat: 'utility' },
-        { id: 'ip-lookup', icon: 'fa-network-wired', title: 'IP 信息', desc: '本机IP与归属地', cat: 'utility' }
+        { id: 'ip-lookup', icon: 'fa-network-wired', title: 'IP 信息', desc: '本机IP与归属地', cat: 'utility' },
+        { id: 'data-space', icon: 'fa-database', title: '可信数据空间', desc: '数据共享平台 · 点击登录进入', cat: 'utility' }
     ];
 
     // --- 卡片滚动驱动动画：从左→右、从上→下进入 / 反向淡出 ---

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>
+可信数据空间登录
+</title>
+
+
+<link rel="stylesheet" href="css/style.css">
+
+
+</head>
+
+
+
+<body class="login-body">
+
+
+
+<div class="login-box">
+
+
+    <div class="login-title">
+
+        <h1>数据安全共享平台</h1>
+        <span class="title-line"></span>
+    </div>
+
+    <div class="form">
+
+        <input
+        id="username"
+        type="text"
+        placeholder="用户名">
+
+
+        <input
+        id="password"
+        type="password"
+        placeholder="密码">
+
+
+        <button onclick="login()">
+            登录
+        </button>
+
+
+        <p id="message"></p>
+
+    </div>
+
+    <div class="login-footer">
+        <p>没有账号？<a href="#" onclick="return false;">立即注册</a></p>
+
+        <div class="demo-tip">
+            <strong>演示账号</strong>
+            <p>管理员：admin / 123456</p>
+            <p>普通用户：user / 123456</p>
+        </div>
+    </div>
+
+</div>
+
+
+<script src="js/login.js"></script>
+
+
+</body>
+
+</html>
