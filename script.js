@@ -487,10 +487,6 @@
     navItems.forEach(item => {
         item.addEventListener('click', (e) => {
             e.preventDefault();
-            if (item.dataset.action === 'luck-bonus') {
-                if (window.__openLuckBonus) window.__openLuckBonus();
-                return;
-            }
             switchTool(item.dataset.tool);
         });
     });
@@ -692,11 +688,12 @@
             if (ok) showToast('人品值已复制');
         });
 
-        // 加成弹窗
+        // 加成弹窗（复用 info-modal 样式）
         const bonusModal = $('#bonusModal');
-        const bonusModalOverlay = bonusModal ? bonusModal.querySelector('.bonus-modal-overlay') : null;
-        const bonusModalClose = bonusModal ? bonusModal.querySelector('.bonus-modal-close') : null;
+        const bonusModalOverlay = $('#bonusModalOverlay');
+        const bonusModalClose = $('#bonusModalClose');
         const bonusModalScore = $('#bonusModalScore');
+        const bonusBtn = $('#luckBonusBtn');
 
         const bonusKeys = ['love', 'career', 'wealth', 'health', 'social'];
         const bonusIdMap = { love: 'barLove', career: 'barCareer', wealth: 'barWealth', health: 'barHealth', social: 'barSocial' };
@@ -735,14 +732,12 @@
             bonusModal.classList.remove('show');
         }
 
+        if (bonusBtn) bonusBtn.addEventListener('click', showBonusModal);
         if (bonusModalClose) bonusModalClose.addEventListener('click', hideBonusModal);
         if (bonusModalOverlay) bonusModalOverlay.addEventListener('click', hideBonusModal);
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && bonusModal && bonusModal.classList.contains('show')) hideBonusModal();
         });
-
-        // 暴露给侧边栏导航调用
-        window.__openLuckBonus = showBonusModal;
     })();
 
     // ============================================
@@ -4389,10 +4384,6 @@ function hello() {
         item.parentNode.replaceChild(clone, item);
         clone.addEventListener('click', (e) => {
             e.preventDefault();
-            if (clone.dataset.action === 'luck-bonus') {
-                if (window.__openLuckBonus) window.__openLuckBonus();
-                return;
-            }
             animatedSwitchTool(clone.dataset.tool);
         });
         // 重新添加涟漪

@@ -68,10 +68,6 @@
                     <i class="fas fa-home"></i>
                     <span>主页</span>
                 </a>
-                <a href="#" class="nav-item nav-action" data-action="luck-bonus" title="查看今日人品加成">
-                    <i class="fas fa-sparkles"></i>
-                    <span>人品加成</span>
-                </a>
             </div>
 
             <div class="nav-group">
@@ -291,6 +287,9 @@
                         </button>
                     </div>
                 </div>
+                <button class="icon-btn" id="luckBonusBtn" aria-label="人品加成" title="查看今日人品加成">
+                    <i class="fas fa-sparkles"></i>
+                </button>
                 <button class="icon-btn info-btn" id="infoBtn" aria-label="工具说明" title="工具详细说明">
                     <i class="fas fa-info-circle"></i>
                 </button>
@@ -1947,46 +1946,49 @@
         </div>
     </div>
 
-    <!-- 人品加成弹窗 -->
-    <div class="bonus-modal" id="bonusModal" role="dialog" aria-modal="true" aria-labelledby="bonusModalTitle">
-        <div class="bonus-modal-overlay"></div>
-        <div class="bonus-modal-content glass">
-            <button class="bonus-modal-close" aria-label="关闭">
+    <!-- 人品加成弹窗（复用 info-modal 样式） -->
+    <div class="info-modal" id="bonusModal" role="dialog" aria-modal="true" aria-labelledby="bonusModalTitle">
+        <div class="info-modal-overlay" id="bonusModalOverlay"></div>
+        <div class="info-modal-content glass">
+            <button class="info-modal-close" id="bonusModalClose" aria-label="关闭">
                 <i class="fas fa-times"></i>
             </button>
-            <div class="bonus-modal-icon"><i class="fas fa-sparkles"></i></div>
-            <h2 class="bonus-modal-title" id="bonusModalTitle">人品加成</h2>
-            <p class="bonus-modal-score">今日人品 <strong id="bonusModalScore">--</strong> 分</p>
-            <div class="bonus-modal-grid">
-                <div class="bonus-modal-item" data-key="love">
-                    <i class="fas fa-heart"></i>
-                    <span class="bonus-mlabel">爱情</span>
-                    <span class="bonus-mbar"><span class="bonus-mfill" id="barLove"></span></span>
-                    <span class="bonus-mtext" id="bonusLove">--</span>
-                </div>
-                <div class="bonus-modal-item" data-key="career">
-                    <i class="fas fa-briefcase"></i>
-                    <span class="bonus-mlabel">事业</span>
-                    <span class="bonus-mbar"><span class="bonus-mfill" id="barCareer"></span></span>
-                    <span class="bonus-mtext" id="bonusCareer">--</span>
-                </div>
-                <div class="bonus-modal-item" data-key="wealth">
-                    <i class="fas fa-coins"></i>
-                    <span class="bonus-mlabel">财运</span>
-                    <span class="bonus-mbar"><span class="bonus-mfill" id="barWealth"></span></span>
-                    <span class="bonus-mtext" id="bonusWealth">--</span>
-                </div>
-                <div class="bonus-modal-item" data-key="health">
-                    <i class="fas fa-shield-heart"></i>
-                    <span class="bonus-mlabel">健康</span>
-                    <span class="bonus-mbar"><span class="bonus-mfill" id="barHealth"></span></span>
-                    <span class="bonus-mtext" id="bonusHealth">--</span>
-                </div>
-                <div class="bonus-modal-item" data-key="social">
-                    <i class="fas fa-users"></i>
-                    <span class="bonus-mlabel">人际</span>
-                    <span class="bonus-mbar"><span class="bonus-mfill" id="barSocial"></span></span>
-                    <span class="bonus-mtext" id="bonusSocial">--</span>
+            <div class="info-modal-icon"><i class="fas fa-sparkles"></i></div>
+            <h2 class="info-modal-title" id="bonusModalTitle">人品加成</h2>
+            <p class="info-modal-desc">今日人品 <strong id="bonusModalScore" style="color:var(--primary);font-size:1.15em;">--</strong> 分</p>
+            <div class="info-modal-tips" id="bonusModalTips">
+                <div class="info-modal-tips-title"><i class="fas fa-wand-magic-sparkles"></i>五大维度运势</div>
+                <div class="bonus-grid">
+                    <div class="bonus-item" data-key="love">
+                        <i class="fas fa-heart"></i>
+                        <span class="bonus-label">爱情</span>
+                        <span class="bonus-bar"><span class="bonus-fill" id="barLove"></span></span>
+                        <span class="bonus-text" id="bonusLove">--</span>
+                    </div>
+                    <div class="bonus-item" data-key="career">
+                        <i class="fas fa-briefcase"></i>
+                        <span class="bonus-label">事业</span>
+                        <span class="bonus-bar"><span class="bonus-fill" id="barCareer"></span></span>
+                        <span class="bonus-text" id="bonusCareer">--</span>
+                    </div>
+                    <div class="bonus-item" data-key="wealth">
+                        <i class="fas fa-coins"></i>
+                        <span class="bonus-label">财运</span>
+                        <span class="bonus-bar"><span class="bonus-fill" id="barWealth"></span></span>
+                        <span class="bonus-text" id="bonusWealth">--</span>
+                    </div>
+                    <div class="bonus-item" data-key="health">
+                        <i class="fas fa-shield-heart"></i>
+                        <span class="bonus-label">健康</span>
+                        <span class="bonus-bar"><span class="bonus-fill" id="barHealth"></span></span>
+                        <span class="bonus-text" id="bonusHealth">--</span>
+                    </div>
+                    <div class="bonus-item" data-key="social">
+                        <i class="fas fa-users"></i>
+                        <span class="bonus-label">人际</span>
+                        <span class="bonus-bar"><span class="bonus-fill" id="barSocial"></span></span>
+                        <span class="bonus-text" id="bonusSocial">--</span>
+                    </div>
                 </div>
             </div>
         </div>
