@@ -3930,22 +3930,23 @@ input[type="color"]:active {
     border-radius: var(--radius-lg);
     cursor: pointer;
     overflow: hidden;
-    transition: opacity 0.55s var(--ease-ios),
-                transform 0.55s var(--ease-ios),
+    transition: opacity 0.45s cubic-bezier(0.22, 0.61, 0.36, 1),
+                transform 0.45s cubic-bezier(0.22, 0.61, 0.36, 1),
                 box-shadow 0.3s ease,
                 border-color 0.3s ease;
+    will-change: opacity, transform;
 }
 
-/* 滚动驱动动画：卡片从左侧上方进入 / 反之退出 */
+/* 滚动驱动动画：卡片从左侧上方微移进入 / 反向淡出 */
 .tool-card-v2.card-hidden {
     opacity: 0;
-    transform: translateX(-36px) translateY(18px);
+    transform: translateX(-20px) translateY(10px);
     pointer-events: none;
 }
 
 .tool-card-v2.card-hidden:hover {
     /* 隐藏时禁用 hover 抬升 */
-    transform: translateX(-36px) translateY(18px);
+    transform: translateX(-20px) translateY(10px);
     box-shadow: none;
     border-color: var(--border);
 }

@@ -925,7 +925,7 @@
         { id: 'ip-lookup', icon: 'fa-network-wired', title: 'IP 信息', desc: '本机IP与归属地', cat: 'utility' }
     ];
 
-    // --- 卡片滚动驱动动画：从左→右、从上→下进入 / 反之退出 ---
+    // --- 卡片滚动驱动动画：从左→右、从上→下进入 / 反向淡出 ---
     const cardRevealObserver = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
@@ -934,7 +934,7 @@
                 entry.target.classList.add('card-hidden');
             }
         });
-    }, { threshold: 0.04, rootMargin: '60px 0px 60px 0px' });
+    }, { threshold: 0.08, rootMargin: '20px 0px 20px 0px' });
 
     function observeCards(grid) {
         // 先注销已有观察
@@ -945,8 +945,8 @@
             grid.querySelectorAll('.tool-card-v2').forEach((el, i) => {
                 const row = Math.floor(i / cols);
                 const col = i % cols;
-                // col 0.06s per step → 左→右；row 0.12s per step → 上→下
-                el.style.transitionDelay = (col * 0.06 + row * 0.12).toFixed(2) + 's';
+                // 左→右 0.04s，上→下 0.08s，更紧凑自然
+                el.style.transitionDelay = (col * 0.04 + row * 0.08).toFixed(2) + 's';
                 cardRevealObserver.observe(el);
             });
         });
