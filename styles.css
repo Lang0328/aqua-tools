@@ -6877,6 +6877,69 @@ body.reader-fullscreen .sidebar { display: none; }
     stroke-width: 2.8;
     opacity: 1;
 }
+
+/* ===== 详情视图动画 ===== */
+@keyframes dbFadeUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes dbModelIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to   { opacity: 1; transform: scale(1); }
+}
+@keyframes dbNodePop {
+    from { opacity: 0; transform: translate(-50%, -50%) scale(0.2); }
+    to   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+@keyframes dbPulse {
+    0%   { transform: scale(0.85); opacity: 0.55; }
+    70%  { opacity: 0; }
+    100% { transform: scale(1.9); opacity: 0; }
+}
+@keyframes dbLineDraw { to { stroke-dashoffset: 0; } }
+
+/* 建模图淡入缩放 */
+.dev-board-model { animation: dbModelIn 0.55s cubic-bezier(.22,.61,.36,1) both; }
+.dev-board-model-hint { animation: dbFadeUp 0.5s ease 0.25s both; }
+/* 信息区各块依次上滑（按子元素顺序 stagger） */
+.dev-board-detail-info > * { animation: dbFadeUp 0.5s ease both; }
+.dev-board-detail-info > *:nth-child(1) { animation-delay: 0s; }
+.dev-board-detail-info > *:nth-child(2) { animation-delay: 0.07s; }
+.dev-board-detail-info > *:nth-child(3) { animation-delay: 0.14s; }
+.dev-board-detail-info > *:nth-child(4) { animation-delay: 0.21s; }
+.dev-board-detail-info > *:nth-child(5) { animation-delay: 0.28s; }
+/* 接口区标题与卡片依次进入（卡片 delay 在 JS 内联设置） */
+.dev-board-interfaces > * { animation: dbFadeUp 0.5s ease backwards; }
+.dev-board-interfaces > h3 { animation-delay: 0.12s; }
+.dev-board-interfaces > p  { animation-delay: 0.18s; }
+/* 返回按钮 */
+.dev-boards-back { animation: dbFadeUp 0.45s ease both; }
+/* 编号节点弹出 + 脉冲光环 */
+.dev-board-node { animation: dbNodePop 0.45s cubic-bezier(.34,1.56,.64,1) both; }
+.dev-board-node-dot { position: relative; }
+.dev-board-node-dot::after {
+    content: "";
+    position: absolute;
+    inset: -3px;
+    border-radius: 50%;
+    border: 2px solid rgba(127, 227, 160, 0.7);
+    animation: dbPulse 2.2s ease-out infinite;
+    pointer-events: none;
+}
+.dev-board-node.is-active .dev-board-node-dot::after { border-color: rgba(124, 255, 176, 0.9); }
+/* 引导线首次描边绘出 */
+.dev-board-link-line.is-draw {
+    stroke-dasharray: 60;
+    stroke-dashoffset: 60;
+    animation: dbLineDraw 0.5s ease forwards;
+}
+@media (prefers-reduced-motion: reduce) {
+    .dev-board-model, .dev-board-model-hint, .dev-board-detail-info > *,
+    .dev-board-interfaces > *, .dev-boards-back, .dev-board-node,
+    .dev-board-link-line.is-draw { animation: none !important; }
+    .dev-board-node-dot::after { display: none; }
+}
+
 .dev-boards-back {
     display: inline-flex;
     align-items: center;

@@ -5309,6 +5309,7 @@ function hello() {
         function openDetail(board) {
             listView.hidden = true;
             detailView.hidden = false;
+            connectorLinesDrawn = false;
 
             // 头部信息
             $('#devBoardDetailInfo').innerHTML = `
@@ -5425,8 +5426,8 @@ function hello() {
             wrap.innerHTML = `
                 <h3 class="dev-board-section-title"><i class="fas fa-plug"></i> 接口与引脚用途</h3>
                 <p class="dev-board-section-sub">点亮上方实物图上的编号节点，可定位到对应说明；悬停任一处双方会联动高亮</p>
-                ${board.interfaces.map(itf => `
-                    <div class="dev-board-iface" data-itf="${itf.name}">
+                ${board.interfaces.map((itf, i) => `
+                    <div class="dev-board-iface" data-itf="${itf.name}" style="animation-delay:${(0.24 + i * 0.06).toFixed(2)}s">
                         <span class="dev-board-iface-num">${numOf(itf.name)}</span>
                         <div class="dev-board-iface-icon"><i class="${itf.icon}"></i></div>
                         <div class="dev-board-iface-body">
@@ -5444,6 +5445,7 @@ function hello() {
         }
 
         const SVG_NS = 'http://www.w3.org/2000/svg';
+        let connectorLinesDrawn = false;
 
         // 常亮：每个编号节点向板内指一条细绿实线，指向图片上对应的接口位置
         function getLineLayer() {
@@ -5480,9 +5482,10 @@ function hello() {
                 line.setAttribute('y1', y2.toFixed(1));
                 line.setAttribute('x2', x3.toFixed(1));
                 line.setAttribute('y2', y3.toFixed(1));
-                line.setAttribute('class', 'dev-board-link-line' + (node.classList.contains('is-active') ? ' is-active' : ''));
+                line.setAttribute('class', 'dev-board-link-line' + (node.classList.contains('is-active') ? ' is-active' : '') + (!connectorLinesDrawn ? ' is-draw' : ''));
                 svg.appendChild(line);
             });
+            connectorLinesDrawn = true;
         }
 
         function focusInterface(name, scroll) {
