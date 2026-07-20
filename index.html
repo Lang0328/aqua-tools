@@ -108,6 +108,18 @@
                     <i class="fas fa-stopwatch"></i>
                     <span>时间戳转换</span>
                 </a>
+                <a href="#" class="nav-item" data-tool="uuid">
+                    <i class="fas fa-fingerprint"></i>
+                    <span>UUID 生成器</span>
+                </a>
+                <a href="#" class="nav-item" data-tool="url-encode">
+                    <i class="fas fa-link"></i>
+                    <span>URL 编解码</span>
+                </a>
+                <a href="#" class="nav-item" data-tool="jwt">
+                    <i class="fas fa-key"></i>
+                    <span>JWT 解码器</span>
+                </a>
             </div>
 
             <div class="nav-group">
@@ -204,6 +216,10 @@
                     <i class="fas fa-terminal"></i>
                     <span>在线终端</span>
                 </a>
+                <a href="#" class="nav-item" data-tool="ip-lookup">
+                    <i class="fas fa-network-wired"></i>
+                    <span>IP 信息</span>
+                </a>
             </div>
 
             <div class="nav-group">
@@ -294,7 +310,7 @@
                             <span class="title-line">原生 JS 实现</span>
                         </h1>
                         <div class="hero-stats-v2">
-                            <div class="stat-pill"><span class="pill-num" data-count="32">0</span><span class="pill-label">工具</span></div>
+                            <div class="stat-pill"><span class="pill-num" data-count="36">0</span><span class="pill-label">工具</span></div>
                         </div>                    </div>
                     <!-- 浮动工具预览图标 -->
                     <div class="floating-icons" aria-hidden="true">
@@ -1746,7 +1762,140 @@
                 </div>
             </section>
 
-            <!-- 工具：设计风格参考卡 -->
+            <!-- 工具：UUID 生成器 -->
+            <section class="tool-panel" id="tool-uuid">
+                <div class="tool-header">
+                    <div>
+                        <h2>UUID 生成器</h2>
+                        <p>生成 UUID v1 / v4 / v7，支持批量创建</p>
+                    </div>
+                </div>
+                <div class="tool-body glass">
+                    <div class="uuid-layout">
+                        <div class="uuid-controls">
+                            <div class="control-group">
+                                <label>版本</label>
+                                <select id="uuidVersion">
+                                    <option value="v4">v4（随机，推荐）</option>
+                                    <option value="v7">v7（时间有序）</option>
+                                </select>
+                            </div>
+                            <div class="control-group">
+                                <label>数量</label>
+                                <select id="uuidCount">
+                                    <option value="1">1 个</option>
+                                    <option value="5">5 个</option>
+                                    <option value="10" selected>10 个</option>
+                                    <option value="20">20 个</option>
+                                    <option value="50">50 个</option>
+                                </select>
+                            </div>
+                            <div class="control-group">
+                                <label>格式</label>
+                                <select id="uuidCase">
+                                    <option value="lower">小写</option>
+                                    <option value="upper">大写</option>
+                                </select>
+                            </div>
+                            <button class="tool-btn primary" id="uuidGenerate"><i class="fas fa-bolt"></i> 生成</button>
+                            <button class="tool-btn" id="uuidCopyAll"><i class="fas fa-copy"></i> 复制全部</button>
+                        </div>
+                        <pre class="code-output" id="uuidOutput" style="min-height:200px;max-height:400px;overflow-y:auto;white-space:pre;font-family:'JetBrains Mono',monospace;">点击「生成」创建 UUID</pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 工具：URL 编解码 -->
+            <section class="tool-panel" id="tool-url-encode">
+                <div class="tool-header">
+                    <div>
+                        <h2>URL 编解码</h2>
+                        <p>URL encode / decode 及 URI 组件编解码</p>
+                    </div>
+                </div>
+                <div class="tool-body glass">
+                    <div class="json-layout">
+                        <div class="json-pane">
+                            <div class="pane-header">
+                                <span>输入</span>
+                                <div class="pane-actions">
+                                    <button class="mini-btn" id="urlEncode"><i class="fas fa-lock"></i> Encode</button>
+                                    <button class="mini-btn" id="urlDecode"><i class="fas fa-lock-open"></i> Decode</button>
+                                    <button class="mini-btn" id="urlClear">清空</button>
+                                </div>
+                            </div>
+                            <textarea id="urlInput" class="text-input code" rows="8" placeholder="输入需要编解码的文本..."></textarea>
+                        </div>
+                        <div class="json-pane">
+                            <div class="pane-header">
+                                <span>输出</span>
+                                <button class="mini-btn" data-target="urlOutput"><i class="fas fa-copy"></i> 复制</button>
+                            </div>
+                            <pre class="code-output" id="urlOutput"><code>结果将显示在这里</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 工具：JWT 解码器 -->
+            <section class="tool-panel" id="tool-jwt">
+                <div class="tool-header">
+                    <div>
+                        <h2>JWT 解码器</h2>
+                        <p>解析 JWT Token 的 Header 与 Payload（不验证签名）</p>
+                    </div>
+                </div>
+                <div class="tool-body glass">
+                    <textarea id="jwtInput" class="text-input code" rows="4" placeholder="粘贴 JWT Token，如：eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"></textarea>
+                    <div class="button-row">
+                        <button class="tool-btn primary" id="jwtDecode"><i class="fas fa-unlock"></i> 解码</button>
+                        <button class="tool-btn" id="jwtClear"><i class="fas fa-eraser"></i> 清空</button>
+                    </div>
+                    <div class="jwt-result" id="jwtResult" style="display:none;">
+                        <div class="jwt-section">
+                            <h3><i class="fas fa-code"></i> Header</h3>
+                            <pre class="code-output" id="jwtHeader"></pre>
+                        </div>
+                        <div class="jwt-section">
+                            <h3><i class="fas fa-file"></i> Payload</h3>
+                            <pre class="code-output" id="jwtPayload"></pre>
+                        </div>
+                        <div class="jwt-section jwt-expiry" id="jwtExpirySec" style="display:none;">
+                            <h3><i class="fas fa-clock"></i> 过期信息</h3>
+                            <p id="jwtExpiryInfo"></p>
+                        </div>
+                    </div>
+                    <p id="jwtError" class="wm-hint" style="display:none;color:var(--color-danger);">Token 格式无效，请检查</p>
+                </div>
+            </section>
+
+            <!-- 工具：IP 信息 -->
+            <section class="tool-panel" id="tool-ip-lookup">
+                <div class="tool-header">
+                    <div>
+                        <h2>IP 信息</h2>
+                        <p>查看本机公网 IP 地址与归属地</p>
+                    </div>
+                </div>
+                <div class="tool-body glass">
+                    <div class="ip-layout">
+                        <div class="ip-card">
+                            <div class="ip-card-label"><i class="fas fa-globe"></i> 公网 IP</div>
+                            <div class="ip-card-value" id="ipAddress">—</div>
+                        </div>
+                        <div class="ip-card">
+                            <div class="ip-card-label"><i class="fas fa-map-marker-alt"></i> 归属地</div>
+                            <div class="ip-card-value" id="ipLocation">—</div>
+                        </div>
+                        <div class="ip-card">
+                            <div class="ip-card-label"><i class="fas fa-building"></i> ISP</div>
+                            <div class="ip-card-value" id="ipIsp">—</div>
+                        </div>
+                        <button class="tool-btn primary" id="ipLookupBtn"><i class="fas fa-search"></i> 查询</button>
+                        <p class="wm-hint" id="ipStatus">点击「查询」获取本机 IP 信息</p>
+                    </div>
+                </div>
+            </section>
             <section class="tool-panel" id="tool-design-ref">
                 <div class="tool-header">
                     <div>

@@ -292,47 +292,40 @@ body, .topbar, .sidebar, .tool-body, .tool-card-v2, .design-ref-card,
     z-index: var(--z-bg);
     pointer-events: none;
     overflow: hidden;
+    contain: layout style paint;
 }
 
-/* 闪烁星空 — 多层径向渐变点阵 */
+/* 闪烁星空 — 精简点阵，减少渲染层数 */
 [data-theme="aurora"] .aurora-stars {
     position: absolute;
     inset: 0;
     background-image:
-        radial-gradient(1px 1px at 8% 12%, rgba(255,255,255,0.7), transparent),
-        radial-gradient(1px 1px at 23% 28%, rgba(255,255,255,0.5), transparent),
+        radial-gradient(1.2px 1.2px at 8% 12%, rgba(255,255,255,0.7), transparent),
+        radial-gradient(1.2px 1.2px at 23% 28%, rgba(255,255,255,0.5), transparent),
         radial-gradient(1.5px 1.5px at 41% 8%, rgba(255,255,255,0.6), transparent),
-        radial-gradient(1px 1px at 58% 22%, rgba(167,139,250,0.5), transparent),
-        radial-gradient(1px 1px at 72% 6%, rgba(255,255,255,0.5), transparent),
+        radial-gradient(1.2px 1.2px at 58% 22%, rgba(167,139,250,0.5), transparent),
+        radial-gradient(1.2px 1.2px at 72% 6%, rgba(255,255,255,0.5), transparent),
         radial-gradient(1.5px 1.5px at 86% 18%, rgba(255,255,255,0.6), transparent),
-        radial-gradient(1px 1px at 12% 38%, rgba(94,234,212,0.5), transparent),
-        radial-gradient(1px 1px at 33% 44%, rgba(255,255,255,0.4), transparent),
-        radial-gradient(1px 1px at 64% 36%, rgba(255,255,255,0.5), transparent),
-        radial-gradient(1.5px 1.5px at 91% 42%, rgba(255,255,255,0.6), transparent),
-        radial-gradient(1px 1px at 18% 58%, rgba(255,255,255,0.3), transparent),
-        radial-gradient(1px 1px at 47% 62%, rgba(167,139,250,0.4), transparent),
-        radial-gradient(1px 1px at 78% 56%, rgba(255,255,255,0.4), transparent),
-        radial-gradient(1px 1px at 27% 74%, rgba(255,255,255,0.3), transparent),
-        radial-gradient(1.5px 1.5px at 56% 78%, rgba(94,234,212,0.4), transparent),
-        radial-gradient(1px 1px at 83% 82%, rgba(255,255,255,0.3), transparent);
-    opacity: 0.7;
-    animation: auroraStarsTwinkle 6s ease-in-out infinite;
+        radial-gradient(1.2px 1.2px at 18% 58%, rgba(255,255,255,0.3), transparent),
+        radial-gradient(1.2px 1.2px at 47% 62%, rgba(167,139,250,0.4), transparent),
+        radial-gradient(1.2px 1.2px at 78% 56%, rgba(255,255,255,0.4), transparent);
+    opacity: 0.65;
+    animation: auroraStarsTwinkle 8s ease-in-out infinite;
 }
 @keyframes auroraStarsTwinkle {
     0%, 100% { opacity: 0.4; }
     50%      { opacity: 0.85; }
 }
 
-/* 流动光帘 — 三条不同色彩与节奏 */
+/* 流动光帘 — 三条不同色彩与节奏（降低模糊/去除 will-change 提升性能） */
 [data-theme="aurora"] .aurora-ribbon {
     position: absolute;
     left: -25%;
     width: 150%;
-    height: 60vh;
-    filter: blur(50px);
-    mix-blend-mode: screen;
-    opacity: 0.55;
-    will-change: transform, opacity;
+    height: 50vh;
+    filter: blur(28px);
+    opacity: 0.5;
+    contain: layout style paint;
 }
 
 /* 光帘 1 — 青绿主调，从顶部流过 */
@@ -340,12 +333,13 @@ body, .topbar, .sidebar, .tool-body, .tool-card-v2, .design-ref-card,
     top: -10%;
     background: linear-gradient(180deg,
         transparent 0%,
-        rgba(45, 212, 191, 0.0) 10%,
-        rgba(45, 212, 191, 0.45) 35%,
-        rgba(94, 234, 212, 0.5) 50%,
-        rgba(20, 184, 166, 0.35) 70%,
+        rgba(45, 212, 191, 0.0) 12%,
+        rgba(45, 212, 191, 0.4) 35%,
+        rgba(94, 234, 212, 0.42) 50%,
+        rgba(20, 184, 166, 0.28) 72%,
         transparent 90%
     );
+    filter: blur(25px);
     transform: skewY(-3deg);
     animation: auroraRibbonFlow1 14s ease-in-out infinite;
 }
@@ -359,18 +353,18 @@ body, .topbar, .sidebar, .tool-body, .tool-card-v2, .design-ref-card,
 /* 光帘 2 — 紫罗兰，中部流动 */
 [data-theme="aurora"] .aurora-ribbon-2 {
     top: 15%;
-    height: 55vh;
+    height: 48vh;
     background: linear-gradient(180deg,
         transparent 0%,
         rgba(167, 139, 250, 0.0) 15%,
-        rgba(167, 139, 250, 0.35) 40%,
-        rgba(196, 181, 253, 0.4) 55%,
-        rgba(139, 92, 246, 0.25) 75%,
+        rgba(167, 139, 250, 0.3) 40%,
+        rgba(196, 181, 253, 0.32) 55%,
+        rgba(139, 92, 246, 0.2) 78%,
         transparent 95%
     );
+    filter: blur(32px);
     transform: skewY(4deg);
-    filter: blur(60px);
-    opacity: 0.45;
+    opacity: 0.4;
     animation: auroraRibbonFlow2 19s ease-in-out infinite;
 }
 @keyframes auroraRibbonFlow2 {
@@ -382,18 +376,18 @@ body, .topbar, .sidebar, .tool-body, .tool-card-v2, .design-ref-card,
 /* 光帘 3 — 青蓝，底部流动 */
 [data-theme="aurora"] .aurora-ribbon-3 {
     top: 35%;
-    height: 50vh;
+    height: 44vh;
     background: linear-gradient(180deg,
         transparent 0%,
         rgba(6, 182, 212, 0.0) 20%,
-        rgba(6, 182, 212, 0.3) 45%,
-        rgba(34, 211, 238, 0.35) 60%,
-        rgba(8, 145, 178, 0.2) 80%,
+        rgba(6, 182, 212, 0.25) 45%,
+        rgba(34, 211, 238, 0.28) 60%,
+        rgba(8, 145, 178, 0.16) 82%,
         transparent 100%
     );
+    filter: blur(28px);
     transform: skewY(-2deg);
-    filter: blur(55px);
-    opacity: 0.4;
+    opacity: 0.35;
     animation: auroraRibbonFlow3 23s ease-in-out infinite;
 }
 @keyframes auroraRibbonFlow3 {
@@ -421,26 +415,23 @@ body, .topbar, .sidebar, .tool-body, .tool-card-v2, .design-ref-card,
 [data-theme="aurora"] body::before { opacity: 0.5; }
 [data-theme="aurora"] body::after  { opacity: 0.4; }
 
-/* —— 极光光帘 4：粉紫青混合，最亮最炫 —— */
+/* —— 极光光帘 4：粉紫青混合，最亮最炫（降低模糊/去除will-change/mix-blend-mode）—— */
 [data-theme="aurora"] .aurora-ribbon-4 {
     top: 5%;
-    height: 45vh;
+    height: 40vh;
     background: linear-gradient(180deg,
         transparent 0%,
         rgba(244, 114, 182, 0.0) 18%,
-        rgba(217, 70, 239, 0.28) 40%,
-        rgba(167, 139, 250, 0.32) 55%,
-        rgba(45, 212, 191, 0.22) 75%,
+        rgba(217, 70, 239, 0.22) 40%,
+        rgba(167, 139, 250, 0.25) 55%,
+        rgba(45, 212, 191, 0.18) 78%,
         transparent 100%
     );
+    filter: blur(35px);
     transform: skewY(3deg);
-    filter: blur(65px);
-    opacity: 0.4;
-    mix-blend-mode: screen;
-    will-change: transform, opacity;
+    opacity: 0.35;
     animation: auroraRibbonFlow4 26s ease-in-out infinite;
-    /* 鼠标视差 — 与 transform 动画叠加 */
-    translate: calc(var(--mx, 0) * -55px) calc(var(--my, 0) * -28px);
+    translate: calc(var(--mx, 0) * -40px) calc(var(--my, 0) * -20px);
 }
 @keyframes auroraRibbonFlow4 {
     0%, 100% { transform: skewY(3deg) translateX(0); opacity: 0.3; }
@@ -459,27 +450,26 @@ body, .topbar, .sidebar, .tool-body, .tool-card-v2, .design-ref-card,
     translate: calc(var(--mx, 0) * -35px) calc(var(--my, 0) * -18px);
 }
 
-/* —— 鼠标轨迹光斑：跟随光标的大范围青绿光晕 —— */
+/* —— 鼠标轨迹光斑：缩小尺寸、降低模糊提升性能 —— */
 [data-theme="aurora"] .aurora-cursor-glow {
     position: absolute;
-    width: 700px;
-    height: 700px;
+    width: 420px;
+    height: 420px;
     border-radius: 50%;
     background:
         radial-gradient(circle at 50% 50%,
-            rgba(45, 212, 191, 0.22) 0%,
-            rgba(94, 234, 212, 0.14) 25%,
-            rgba(167, 139, 250, 0.08) 45%,
-            transparent 65%
+            rgba(45, 212, 191, 0.18) 0%,
+            rgba(94, 234, 212, 0.1) 30%,
+            rgba(167, 139, 250, 0.05) 50%,
+            transparent 70%
         );
     left: 0;
     top: 0;
-    transform: translate(calc(var(--mx-px, 50vw) - 350px), calc(var(--my-px, 50vh) - 350px));
-    mix-blend-mode: screen;
-    filter: blur(40px);
+    transform: translate(calc(var(--mx-px, 50vw) - 210px), calc(var(--my-px, 50vh) - 210px));
+    filter: blur(22px);
     pointer-events: none;
-    will-change: transform;
-    transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1);
+    contain: layout style paint;
+    transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 /* —— 点击波纹容器 —— */
@@ -519,15 +509,14 @@ body, .topbar, .sidebar, .tool-body, .tool-card-v2, .design-ref-card,
     inset: 0;
     border-radius: inherit;
     display: block;
-    background: radial-gradient(circle 220px at var(--card-mx, 50%) var(--card-my, 50%),
-        rgba(45, 212, 191, 0.25) 0%,
-        rgba(94, 234, 212, 0.12) 30%,
-        transparent 60%
+    background: radial-gradient(circle 180px at var(--card-mx, 50%) var(--card-my, 50%),
+        rgba(45, 212, 191, 0.18) 0%,
+        rgba(94, 234, 212, 0.08) 40%,
+        transparent 65%
     );
     opacity: 0;
-    transition: opacity 0.35s ease;
+    transition: opacity 0.3s ease;
     pointer-events: none;
-    mix-blend-mode: screen;
 }
 [data-theme="aurora"] .tool-card-v2:hover::after { opacity: 1; }
 
@@ -554,12 +543,10 @@ body, .topbar, .sidebar, .tool-body, .tool-card-v2, .design-ref-card,
     border-radius: 50%;
     background: var(--p-color, #5eead4);
     box-shadow:
-        0 0 6px var(--p-color, #5eead4),
-        0 0 12px var(--p-color, #5eead4);
+        0 0 4px var(--p-color, #5eead4);
     opacity: 0;
     bottom: -10px;
     left: var(--p-x, 50%);
-    will-change: transform, opacity;
     animation: auroraParticleFloat var(--p-dur, 20s) linear var(--p-delay, 0s) infinite;
 }
 @keyframes auroraParticleFloat {
@@ -6669,6 +6656,36 @@ body.reader-fullscreen .sidebar { display: none; }
     color: var(--text-tertiary, #8e8e93);
     line-height: 1.5;
 }
+
+/* ============================================
+   UUID 生成器 / URL 编解码 / JWT / IP
+   ============================================ */
+
+.uuid-layout { display: flex; flex-direction: column; gap: 16px; }
+.uuid-controls {
+    display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px;
+}
+.uuid-controls .control-group { min-width: 100px; }
+.uuid-controls .tool-btn { padding: 0 16px; height: 38px; }
+
+/* JWT 结果区域 */
+.jwt-result { margin-top: 16px; }
+.jwt-section { margin-bottom: 14px; }
+.jwt-section h3 { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+.jwt-section h3 i { color: var(--cat-dev, #0071e3); }
+.jwt-expiry p { font-size: 0.85rem; color: var(--text, #1d1d1f); margin: 0; }
+
+/* IP 信息卡片 */
+.ip-layout { display: flex; flex-direction: column; gap: 14px; align-items: center; }
+.ip-card {
+    background: var(--bg-soft, #f5f5f7); border-radius: var(--radius-md, 12px);
+    padding: 18px 24px; text-align: center; width: 100%; max-width: 360px;
+}
+.ip-card-label { font-size: 0.82rem; color: var(--text-muted, #6e6e73); margin-bottom: 6px; display: flex; align-items: center; justify-content: center; gap: 6px; }
+.ip-card-label i { color: var(--cat-utility, #38bdf8); }
+.ip-card-value { font-size: 1.25rem; font-weight: 700; color: var(--text-strong, #1d1d1f); word-break: break-all; }
+.ip-layout .tool-btn { margin-top: 4px; }
+.ip-layout .wm-hint { margin-top: 0; }
 
 /* --- 顶栏响应式：窄屏隐藏主页按钮文字、紧凑间距 --- */
 @media (max-width: 640px) {

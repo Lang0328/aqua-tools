@@ -583,7 +583,7 @@
             '#5eead4', '#2dd4bf', '#a78bfa', '#d946ef',
             '#f472b6', '#22d3ee', '#6ee7b7'
         ];
-        const PARTICLE_COUNT = 24;
+        const PARTICLE_COUNT = 10;
         const docEl = document.documentElement;
 
         // 生成浮游粒子（仅在极光主题启用）
@@ -619,25 +619,57 @@
             setTimeout(() => entrySweep.classList.remove('is-firing'), 1700);
         }
 
-        // 鼠标轨迹：归一化坐标 + 像素坐标，喂给 CSS 变量
+        // 鼠标轨迹：rAF 节流，仅更新必要变量
+        let rafPending = false;
+        let lastMx, lastMy, lastMxPx, lastMyPx;
         document.addEventListener('mousemove', (e) => {
             if (docEl.dataset.theme !== 'aurora') return;
-            const mx = (e.clientX / window.innerWidth - 0.5).toFixed(4);
-            const my = (e.clientY / window.innerHeight - 0.5).toFixed(4);
-            docEl.style.setProperty('--mx', mx);
-            docEl.style.setProperty('--my', my);
-            docEl.style.setProperty('--mx-px', e.clientX + 'px');
-            docEl.style.setProperty('--my-px', e.clientY + 'px');
+            const mx = (e.clientX / window.innerWidth - 0.5).toFixed(3);
+            const my = (e.clientY / window.innerHeight - 0.5).toFixed(3);
+            lastMx = mx;
+            lastMy = my;
+            lastMxPx = e.clientX;
+            lastMyPx = e.clientY;
+            if (rafPending) return;
+            rafPending = true;
+            requestAnimationFrame(() => {
+                rafPending = false;
+                docEl.style.setProperty('--mx', lastMx);
+                docEl.style.setProperty('--my', lastMy);
+                docEl.style.setProperty('--mx-px', lastMxPx + 'px');
+                docEl.style.setProperty('--my-px', lastMyPx + 'px');
+            });
+        }, { passive: true });
 
-            // 卡片内部鼠标位置（用于卡片光斑跟随）
+        // 卡片光斑：仅在 hover 时追踪（事件委托）
+        let cardRaf = false;
+        let cardLastX, cardLastY, cardTarget;
+        document.addEventListener('mouseover', (e) => {
+            if (docEl.dataset.theme !== 'aurora') return;
             const card = e.target.closest && e.target.closest('.tool-card-v2');
-            if (card) {
-                const rect = card.getBoundingClientRect();
-                const cx = ((e.clientX - rect.left) / rect.width * 100).toFixed(2);
-                const cy = ((e.clientY - rect.top) / rect.height * 100).toFixed(2);
-                card.style.setProperty('--card-mx', cx + '%');
-                card.style.setProperty('--card-my', cy + '%');
+            if (!card) {
+                if (cardTarget) { cardTarget.style.removeProperty('--card-mx'); cardTarget.style.removeProperty('--card-my'); cardTarget = null; }
+                return;
             }
+            if (cardTarget !== card) {
+                if (cardTarget) { cardTarget.style.removeProperty('--card-mx'); cardTarget.style.removeProperty('--card-my'); }
+                cardTarget = card;
+            }
+        }, { passive: true });
+        document.addEventListener('mousemove', (e) => {
+            if (!cardTarget || docEl.dataset.theme !== 'aurora') return;
+            const rect = cardTarget.getBoundingClientRect();
+            cardLastX = ((e.clientX - rect.left) / rect.width * 100).toFixed(1);
+            cardLastY = ((e.clientY - rect.top) / rect.height * 100).toFixed(1);
+            if (cardRaf) return;
+            cardRaf = true;
+            requestAnimationFrame(() => {
+                cardRaf = false;
+                if (cardTarget) {
+                    cardTarget.style.setProperty('--card-mx', cardLastX + '%');
+                    cardTarget.style.setProperty('--card-my', cardLastY + '%');
+                }
+            });
         }, { passive: true });
 
         // 点击波纹：仅在极光主题下生效
@@ -689,6 +721,9 @@
         { id: 'timestamp', icon: 'fa-stopwatch', title: '时间戳转换', desc: 'Unix 时间互转', cat: 'dev' },
         { id: 'base64', icon: 'fa-exchange-alt', title: 'Base64 编解码', desc: '文本文件互转', cat: 'dev' },
         { id: 'hash', icon: 'fa-fingerprint', title: '哈希计算', desc: 'SHA-256/384/512', cat: 'dev' },
+        { id: 'uuid', icon: 'fa-fingerprint', title: 'UUID 生成器', desc: 'v1 v4 v7 批量生成', cat: 'dev' },
+        { id: 'url-encode', icon: 'fa-link', title: 'URL 编解码', desc: 'encode/decode URI', cat: 'dev' },
+        { id: 'jwt', icon: 'fa-key', title: 'JWT 解码器', desc: '解析 Header/Payload', cat: 'dev' },
         { id: 'word-count', icon: 'fa-align-left', title: '字数统计', desc: '字符段落行数', cat: 'text' },
         { id: 'text-diff', icon: 'fa-code-branch', title: '文本对比', desc: '逐行差异高亮', cat: 'text' },
         { id: 'lorem', icon: 'fa-paragraph', title: '占位文本', desc: '中英文生成', cat: 'text' },
@@ -711,7 +746,8 @@
         { id: 'kms', icon: 'fa-key', title: 'KMS 激活', desc: 'Windows 激活向导', cat: 'utility' },
         { id: 'backup', icon: 'fa-database', title: '本地备份箱', desc: 'IndexedDB 存储', cat: 'utility' },
         { id: 'opensource', icon: 'fa-book', title: '开源广场', desc: '本地知识库', cat: 'utility' },
-        { id: 'reader', icon: 'fa-book-open', title: '小说阅读器', desc: 'TXT/EPUB 阅读', cat: 'utility' }
+        { id: 'reader', icon: 'fa-book-open', title: '小说阅读器', desc: 'TXT/EPUB 阅读', cat: 'utility' },
+        { id: 'ip-lookup', icon: 'fa-network-wired', title: 'IP 信息', desc: '本机IP与归属地', cat: 'utility' }
     ];
 
     function renderToolsGrid(filter = 'all') {
@@ -4760,10 +4796,122 @@ function hello() {
     })();
 
     // ============================================
+    // 工具：UUID 生成器
+    // ============================================
+    (function initUUID() {
+        const btn = $('#uuidGenerate'), out = $('#uuidOutput'), copyAll = $('#uuidCopyAll');
+        if (!btn || !out) return;
+
+        const uuidV4 = () => {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+                const r = Math.random() * 16 | 0;
+                return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+            });
+        };
+        const uuidV7 = () => {
+            const ts = Date.now();
+            const rand = () => Math.floor(Math.random() * 65536);
+            const hex = (n, len) => n.toString(16).padStart(len, '0');
+            const tsStr = hex(ts, 12);
+            return `${tsStr.slice(0,8)}-${tsStr.slice(8)}-7${hex(rand(),3)}-${hex(0x8000 | rand(),4)}-${hex(Math.floor(Math.random() * Math.pow(2,48)), 12)}`;
+        };
+
+        btn.addEventListener('click', () => {
+            const ver = $('#uuidVersion').value;
+            const count = parseInt($('#uuidCount').value);
+            const upperCase = $('#uuidCase').value === 'upper';
+            const gen = ver === 'v7' ? uuidV7 : uuidV4;
+            const uuids = Array.from({ length: count }, () => {
+                const u = gen();
+                return upperCase ? u.toUpperCase() : u;
+            });
+            out.textContent = uuids.join('\n');
+        });
+        copyAll.addEventListener('click', async () => {
+            if (out.textContent === '点击「生成」创建 UUID') return;
+            const ok = await copyText(out.textContent);
+            if (ok) showToast('已复制全部 UUID');
+        });
+    })();
+
+    // ============================================
+    // 工具：URL 编解码
+    // ============================================
+    (function initUrlEncode() {
+        const inp = $('#urlInput'), out = $('#urlOutput');
+        if (!inp || !out) return;
+        const eType = (method, name) => {
+            let result;
+            try { result = method(inp.value); } catch (e) { out.innerHTML = `<span style="color:var(--color-danger)">编码失败：${escapeHtml(e.message)}</span>`; return; }
+            out.innerHTML = `<code>${escapeHtml(result)}</code>`;
+            showToast(name + '完成');
+        };
+        $('#urlEncode').addEventListener('click', () => eType(v => encodeURIComponent(v), 'URL Encode'));
+        $('#urlDecode').addEventListener('click', () => eType(v => decodeURIComponent(v), 'URL Decode'));
+        $('#urlClear').addEventListener('click', () => { inp.value = ''; out.innerHTML = '<code>结果将显示在这里</code>'; });
+    })();
+
+    // ============================================
+    // 工具：JWT 解码器
+    // ============================================
+    (function initJWT() {
+        const inp = $('#jwtInput'), resultDiv = $('#jwtResult'), errP = $('#jwtError');
+        if (!inp) return;
+        $('#jwtDecode').addEventListener('click', () => {
+            resultDiv.style.display = 'none'; errP.style.display = 'none';
+            const token = inp.value.trim();
+            if (!token) { errP.textContent = '请粘贴 JWT Token'; errP.style.display = ''; return; }
+            const parts = token.split('.');
+            if (parts.length !== 3) { errP.textContent = 'Token 格式无效（需为三段 Base64）'; errP.style.display = ''; return; }
+            try {
+                const header = JSON.parse(atob(parts[0].replace(/-/g, '+').replace(/_/g, '/')));
+                const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+                $('#jwtHeader').textContent = JSON.stringify(header, null, 2);
+                $('#jwtPayload').textContent = JSON.stringify(payload, null, 2);
+                const expirySec = $('#jwtExpirySec');
+                if (payload.exp) {
+                    const d = new Date(payload.exp * 1000);
+                    const isExpired = d < new Date();
+                    $('#jwtExpiryInfo').innerHTML = `${isExpired ? '<span style="color:var(--color-danger)">已过期</span>' : '<span style="color:var(--color-success,#34c759)">有效</span>'} — ${d.toLocaleString('zh-CN')} <br/><small>iss: ${payload.iss || '无'} | sub: ${payload.sub || '无'}</small>`;
+                    expirySec.style.display = '';
+                } else {
+                    expirySec.style.display = 'none';
+                }
+                resultDiv.style.display = '';
+            } catch (e) { errP.textContent = '解码失败：' + e.message; errP.style.display = ''; }
+        });
+        $('#jwtClear').addEventListener('click', () => { inp.value = ''; resultDiv.style.display = 'none'; errP.style.display = 'none'; });
+    })();
+
+    // ============================================
+    // 工具：IP 信息
+    // ============================================
+    (function initIPLookup() {
+        const btn = $('#ipLookupBtn'), addr = $('#ipAddress'), loc = $('#ipLocation'), isp = $('#ipIsp'), status = $('#ipStatus');
+        if (!btn) return;
+        const setVal = (el, v) => { el.textContent = v || '—'; };
+        btn.addEventListener('click', async () => {
+            status.textContent = '查询中...';
+            try {
+                const res = await fetch('https://api.ip.sb/geoip', { signal: AbortSignal.timeout(6000) });
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                const d = await res.json();
+                setVal(addr, d.ip);
+                setVal(loc, [d.country, d.region, d.city].filter(Boolean).join(' '));
+                setVal(isp, d.isp || d.organization || '—');
+                status.textContent = '查询完成';
+                setTimeout(() => { status.textContent = '点击「查询」获取本机 IP 信息'; }, 3000);
+            } catch (e) {
+                status.innerHTML = `<span style="color:var(--color-danger)">查询失败：${escapeHtml(e.message)}</span>`;
+            }
+        });
+    })();
+
+    // ============================================
     // 控制台
     // ============================================
     console.log(
-        '%c💧 Aqua Tools %c· 清新工具箱\n%c17+ 实用工具 · 天蓝渐变 + 液态玻璃 · 苹果风格动效',
+        '%c💧 Aqua Tools %c· 清新工具箱\n%c36 实用工具 · 天蓝渐变 + 液态玻璃 · 苹果风格动效',
         'color: #0ea5e9; font-size: 22px; font-weight: bold;',
         'color: #475569; font-size: 14px;',
         'color: #0284c7; font-size: 12px;'
