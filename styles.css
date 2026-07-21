@@ -1101,11 +1101,11 @@ button { cursor: pointer; border: none; background: none; }
     border-radius: 8px;
 }
 
-/* 底部版权 */
+/* 底部版权（位于网页内容最末尾，随页面滚动） */
 .site-footer {
-    flex-shrink: 0;
     text-align: center;
-    padding: 14px 16px 18px;
+    margin-top: 28px;
+    padding: 6px 16px 4px;
     color: var(--text-subtle);
     font-size: 0.8rem;
     background: transparent;
