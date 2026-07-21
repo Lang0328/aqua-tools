@@ -53,11 +53,6 @@
                 <span class="logo-text">Aqua Tools</span>
             </a>
         </div>
-        
-        <div class="search-box">
-            <i class="fas fa-search"></i>
-            <input type="text" id="toolSearch" placeholder="搜索工具..." aria-label="搜索工具">
-        </div>
 
         <nav class="sidebar-nav" aria-label="工具导航">
             <div class="nav-group">
@@ -278,8 +273,9 @@
 
             <div class="topbar-search">
                 <i class="fas fa-search" aria-hidden="true"></i>
-                <input type="text" id="topSearch" placeholder="搜索工具…" autocomplete="off" aria-label="搜索工具">
+                <input type="text" id="topSearch" placeholder="搜索工具…" autocomplete="off" aria-label="搜索工具" role="combobox" aria-expanded="false" aria-controls="topSearchResults" aria-autocomplete="list">
                 <button class="topbar-search-clear" id="topSearchClear" type="button" aria-label="清除搜索" hidden>&times;</button>
+                <ul class="topbar-search-results" id="topSearchResults" role="listbox" hidden></ul>
             </div>
 
             <div class="topbar-actions">

@@ -999,47 +999,118 @@
     // ============================================
     // 工具搜索
     // ============================================
-    // 工具筛选：侧边栏搜索框与顶部搜索框共用
-    function applyToolFilter(rawQ) {
-        const q = (rawQ || '').toLowerCase().trim();
-        navItems.forEach(item => {
-            const text = item.textContent.toLowerCase();
-            item.style.display = text.includes(q) ? '' : 'none';
-        });
-    }
-
-    const toolSearch = $('#toolSearch');
     const topSearch = $('#topSearch');
     const topSearchClear = $('#topSearchClear');
+    const topSearchResults = $('#topSearchResults');
 
-    if (toolSearch) {
-        toolSearch.addEventListener('input', (e) => {
-            applyToolFilter(e.target.value);
-            if (topSearch) topSearch.value = e.target.value;
-        });
+    // 分类中文标签
+    const CAT_LABEL = { dev: '开发', text: '文本', design: '设计', media: '媒体', utility: '工具' };
+    const catLabel = (c) => CAT_LABEL[c] || '工具';
+
+    function escapeHtml(s) {
+        return String(s).replace(/[&<>"']/g, m => (
+            { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]
+        ));
+    }
+    function highlight(text, q) {
+        const safe = escapeHtml(text);
+        const query = (q || '').trim();
+        if (!query) return safe;
+        const idx = text.toLowerCase().indexOf(query.toLowerCase());
+        if (idx === -1) return safe;
+        return escapeHtml(text.slice(0, idx)) +
+            '<mark>' + escapeHtml(text.slice(idx, idx + query.length)) + '</mark>' +
+            escapeHtml(text.slice(idx + query.length));
+    }
+
+    let topMatches = [];
+    let topActive = -1;
+
+    function openDropdown() {
+        if (topSearchResults) topSearchResults.hidden = false;
+        if (topSearch) topSearch.setAttribute('aria-expanded', 'true');
+    }
+    function closeDropdown() {
+        if (topSearchResults) topSearchResults.hidden = true;
+        if (topSearch) topSearch.setAttribute('aria-expanded', 'false');
+        topActive = -1;
+    }
+
+    // 输入即出下拉建议（参考主流站点搜索）
+    function renderTopResults(q) {
+        if (!topSearchResults) return;
+        const query = (q || '').toLowerCase().trim();
+        if (!query) { closeDropdown(); return; }
+        topMatches = allTools.filter(t =>
+            t.title.toLowerCase().includes(query) ||
+            (t.desc && t.desc.toLowerCase().includes(query)) ||
+            t.id.toLowerCase().includes(query)
+        );
+        topActive = -1;
+        if (!topMatches.length) {
+            topSearchResults.innerHTML = `<li class="tsr-empty">未找到与“${escapeHtml(q)}”相关的工具</li>`;
+            openDropdown();
+            return;
+        }
+        topSearchResults.innerHTML = topMatches.map((t, i) => `
+            <li class="tsr-item" role="option" data-index="${i}" data-tool="${t.id}">
+                <span class="tsr-ico"><i class="fas ${t.icon}"${t.brand ? ' data-brand="true"' : ''}></i></span>
+                <span class="tsr-text">
+                    <span class="tsr-name">${highlight(t.title, q)}</span>
+                    <span class="tsr-desc">${escapeHtml(t.desc || '')}</span>
+                </span>
+                <span class="tsr-cat">${catLabel(t.cat)}</span>
+            </li>`).join('');
+        openDropdown();
+    }
+
+    function setActive(idx) {
+        const items = topSearchResults ? topSearchResults.querySelectorAll('.tsr-item') : [];
+        if (!items.length) return;
+        topActive = (idx + items.length) % items.length;
+        items.forEach((el, i) => el.classList.toggle('active', i === topActive));
+        items[topActive].scrollIntoView({ block: 'nearest' });
+    }
+
+    function goTool(toolId) {
+        closeDropdown();
+        switchTool(toolId);
     }
 
     if (topSearch) {
         topSearch.addEventListener('input', (e) => {
-            applyToolFilter(e.target.value);
-            if (toolSearch) toolSearch.value = e.target.value;
             if (topSearchClear) topSearchClear.hidden = !e.target.value;
+            renderTopResults(e.target.value);
+        });
+        topSearch.addEventListener('focus', () => {
+            if (topSearch.value.trim()) renderTopResults(topSearch.value);
         });
         topSearch.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                const q = (topSearch.value || '').toLowerCase().trim();
-                if (q) {
-                    // 跳转到第一个匹配的工具，在内容区显示相关功能
-                    const firstMatch = navItems.find(item => item.style.display !== 'none');
-                    if (firstMatch) switchTool(firstMatch.dataset.tool);
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                if (topSearchResults.hidden) renderTopResults(topSearch.value);
+                else setActive(topActive + 1);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                setActive(topActive - 1);
+            } else if (e.key === 'Enter') {
+                if (!topSearchResults.hidden && topMatches.length) {
+                    const i = topActive >= 0 ? topActive : 0;
+                    goTool(topMatches[i].id);
+                } else if (topSearch.value.trim()) {
+                    const q = topSearch.value.toLowerCase().trim();
+                    const m = allTools.find(t =>
+                        t.title.toLowerCase().includes(q) ||
+                        (t.desc && t.desc.toLowerCase().includes(q))
+                    );
+                    if (m) goTool(m.id);
                 }
-                return;
-            }
-            if (e.key === 'Escape' && topSearch.value) {
-                topSearch.value = '';
-                applyToolFilter('');
-                if (toolSearch) toolSearch.value = '';
-                if (topSearchClear) topSearchClear.hidden = true;
+            } else if (e.key === 'Escape') {
+                if (!topSearchResults.hidden) closeDropdown();
+                else if (topSearch.value) {
+                    topSearch.value = '';
+                    if (topSearchClear) topSearchClear.hidden = true;
+                }
             }
         });
     }
@@ -1047,12 +1118,34 @@
     if (topSearchClear) {
         topSearchClear.addEventListener('click', () => {
             topSearch.value = '';
-            applyToolFilter('');
-            if (toolSearch) toolSearch.value = '';
             topSearchClear.hidden = true;
+            closeDropdown();
             topSearch.focus();
         });
     }
+
+    // 点击下拉项跳转（用 mousedown 防止 input 失焦竞争）
+    if (topSearchResults) {
+        topSearchResults.addEventListener('mousedown', (e) => {
+            const item = e.target.closest('.tsr-item');
+            if (!item || item.dataset.tool === undefined) return;
+            e.preventDefault();
+            goTool(item.dataset.tool);
+        });
+        topSearchResults.addEventListener('mousemove', (e) => {
+            const item = e.target.closest('.tsr-item');
+            if (!item) return;
+            setActive(Number(item.dataset.index));
+        });
+    }
+
+    // 点击搜索框外部关闭下拉
+    document.addEventListener('click', (e) => {
+        if (topSearch && topSearchResults &&
+            !topSearch.closest('.topbar-search').contains(e.target)) {
+            closeDropdown();
+        }
+    });
 
     // ============================================
     // 复制按钮（事件委托）
