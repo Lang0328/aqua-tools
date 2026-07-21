@@ -1,89 +1,28 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 
+
 <head>
 
 <meta charset="UTF-8">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>
-可信数据空间注册
-</title>
+<meta http-equiv="refresh" content="0; url=login.html?mode=register">
+
+<title>跳转到注册</title>
 
 
-<link rel="stylesheet" href="css/style.css">
+<script>
+    window.location.replace("login.html?mode=register");
+</script>
 
 
 </head>
 
 
 
-<body class="login-body">
+<body></body>
 
-
-
-<div class="login-box">
-
-
-    <div class="login-title">
-
-        <h1>创建账号</h1>
-        <span class="title-line"></span>
-    </div>
-
-    <div class="form">
-
-        <input
-        id="username"
-        type="text"
-        placeholder="用户名（至少 3 个字符）">
-
-
-        <input
-        id="password"
-        type="password"
-        placeholder="密码（至少 6 位）">
-
-
-        <input
-        id="confirm"
-        type="password"
-        placeholder="确认密码">
-
-
-        <button onclick="register()">
-            注册
-        </button>
-
-        <a href="index.html" class="login-home-btn" aria-label="返回工具箱主界面">
-            <svg class="home-ico" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
-                <path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M15 18l-6-6 6-6"/>
-            </svg>
-            返回主界面
-        </a>
-
-        <p id="message"></p>
-
-    </div>
-
-    <div class="login-footer">
-        <p>已有账号？<a href="login.html">立即登录</a></p>
-
-        <div class="demo-tip">
-            <strong>说明</strong>
-            <p>账号仅保存在本地浏览器</p>
-            <p>演示账号：admin / 123456</p>
-        </div>
-    </div>
-
-</div>
-
-
-<script src="js/login.js"></script>
-<script src="js/register.js"></script>
-
-
-</body>
 
 </html>

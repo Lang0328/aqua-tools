@@ -15,17 +15,17 @@ function login(){
 
 
     let username =
-    document.getElementById("username").value.trim();
+    document.getElementById("loginUser").value.trim();
 
 
 
     let password =
-    document.getElementById("password").value;
+    document.getElementById("loginPass").value;
 
 
 
     let message =
-    document.getElementById("message");
+    document.getElementById("loginMsg");
 
 
 
@@ -192,3 +192,67 @@ function createToken(){
 
 
 }
+
+
+/* 登录 / 注册 表单切换（带滑动动画） */
+function switchAuth(target){
+
+    let sw =
+    document.querySelector(".auth-switch");
+
+    let loginPanel =
+    document.getElementById("loginPanel");
+
+    let regPanel =
+    document.getElementById("registerPanel");
+
+    let tabs =
+    document.querySelectorAll(".auth-tab");
+
+
+    if(!sw || !loginPanel || !regPanel){
+        return;
+    }
+
+
+    sw.setAttribute("data-active", target);
+
+
+    if(target==="register"){
+
+        loginPanel.classList.remove("active");
+        regPanel.classList.add("active");
+
+    }
+    else{
+
+        regPanel.classList.remove("active");
+        loginPanel.classList.add("active");
+
+    }
+
+
+    tabs.forEach(function(t){
+
+        t.classList.toggle(
+            "active",
+            t.getAttribute("data-target")===target
+        );
+
+    });
+
+}
+
+
+/* 根据 URL 参数 mode=register 默认显示注册面板 */
+(function(){
+
+    if(
+        location.search.indexOf("mode=register")>-1
+    ){
+
+        switchAuth("register");
+
+    }
+
+})();

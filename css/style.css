@@ -680,6 +680,108 @@ footer {
     text-shadow: 0 0 8px rgba(255, 255, 255, 0.6);
 }
 
+/* ===================
+   登录 / 注册 切换标签
+=================== */
+.auth-switch {
+    position: relative;
+    display: flex;
+    background: rgba(255, 255, 255, 0.18);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 25px;
+    padding: 4px;
+    margin-bottom: 26px;
+}
+
+.auth-tab {
+    position: relative;
+    z-index: 1;
+    flex: 1;
+    height: 40px;
+    border: none;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    border-radius: 21px;
+    cursor: pointer;
+    transition: color .35s ease;
+    font-family: inherit;
+}
+
+.auth-tab.active {
+    color: #6a4ec8;
+}
+
+.auth-slider {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    width: calc(50% - 4px);
+    height: 40px;
+    background: #fff;
+    border-radius: 21px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    transition: transform .35s cubic-bezier(.4, 0, .2, 1);
+    z-index: 0;
+}
+
+.auth-switch[data-active="register"] .auth-slider {
+    transform: translateX(100%);
+}
+
+/* 表单面板切换动画 */
+.auth-panel {
+    display: none;
+}
+
+.auth-panel.active {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    margin-bottom: 24px;
+    animation: authPanelIn .4s cubic-bezier(.4, 0, .2, 1) both;
+}
+
+@keyframes authPanelIn {
+    from {
+        opacity: 0;
+        transform: translateX(18px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* 进入登录页动画 */
+.login-box {
+    animation: authEnter .6s cubic-bezier(.34, 1.56, .64, 1) both;
+}
+
+@keyframes authEnter {
+    from {
+        opacity: 0;
+        transform: translateY(26px) scale(.96);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .login-box,
+    .auth-panel.active,
+    .auth-slider,
+    .login-body::before,
+    .login-body::after {
+        animation: none !important;
+        transition: none !important;
+    }
+}
+
 .demo-tip {
     margin-top: 18px;
     padding: 12px 16px;
