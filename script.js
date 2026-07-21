@@ -550,7 +550,7 @@
         const popover = $('#themePopover');
         if (!themeBtn || !popover) return;
         const STORAGE_KEY = 'aqua-theme';
-        const VALID_THEMES = ['aqua', 'midnight', 'aurora'];
+        const VALID_THEMES = ['aqua', 'midnight', 'aurora', 'aurora-light'];
 
         function applyTheme(theme) {
             if (!VALID_THEMES.includes(theme)) theme = 'aqua';
@@ -848,7 +848,7 @@
         // 点击波纹：仅在极光主题下生效
         if (!reducedMotion) {
             document.addEventListener('click', (e) => {
-                if (docEl.dataset.theme !== 'aurora') return;
+                if (docEl.dataset.theme !== 'aurora' && docEl.dataset.theme !== 'aurora-light') return;
                 const ripple = document.createElement('div');
                 ripple.className = 'aurora-ripple';
                 const color = RIPPLE_COLORS[Math.floor(Math.random() * RIPPLE_COLORS.length)];
@@ -864,10 +864,10 @@
         let lastTheme = docEl.dataset.theme || 'aqua';
         const themeObserver = new MutationObserver(() => {
             const cur = docEl.dataset.theme || 'aqua';
-            if (cur === 'aurora' && lastTheme !== 'aurora') {
+            if ((cur === 'aurora' || cur === 'aurora-light') && lastTheme !== cur) {
                 spawnParticles();
                 fireEntrySweep();
-            } else if (cur !== 'aurora') {
+            } else if (cur !== 'aurora' && cur !== 'aurora-light') {
                 if (rippleContainer) rippleContainer.innerHTML = '';
                 if (particlesContainer) particlesContainer.innerHTML = '';
             }
@@ -876,7 +876,7 @@
         themeObserver.observe(docEl, { attributes: true, attributeFilter: ['data-theme'] });
 
         // 首次已是极光（页面刷新保留）则立即生成
-        if (lastTheme === 'aurora') {
+        if (lastTheme === 'aurora' || lastTheme === 'aurora-light') {
             spawnParticles();
         }
     })();
