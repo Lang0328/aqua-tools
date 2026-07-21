@@ -5701,6 +5701,170 @@ input[type="color"]:active {
     gap: 8px;
 }
 
+/* 开源广场：头部操作区（搜索 + 导出） */
+.os-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.os-search-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.os-search-wrap i {
+    position: absolute;
+    left: 12px;
+    color: var(--text-subtle);
+    font-size: 0.8rem;
+    pointer-events: none;
+}
+
+.os-search-wrap input {
+    padding: 8px 12px 8px 32px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: rgba(255, 255, 255, 0.6);
+    color: var(--text-strong);
+    font-size: 0.85rem;
+    width: 200px;
+    transition: border-color var(--dur-fast), box-shadow var(--dur-fast);
+}
+
+.os-search-wrap input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.15);
+}
+
+.os-empty-mini {
+    padding: 20px;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.82rem;
+}
+
+.os-search-head {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+    font-weight: 600;
+}
+
+.os-block-section {
+    font-size: 0.72rem;
+    color: var(--text-subtle);
+    background: rgba(14, 165, 233, 0.1);
+    padding: 2px 8px;
+    border-radius: 999px;
+}
+
+/* 开源广场：轻量模态（替代原生 prompt / confirm） */
+.os-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.45);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    padding: 20px;
+}
+
+.os-modal-overlay.show { opacity: 1; }
+
+.os-modal-card {
+    width: 100%;
+    max-width: 440px;
+    background: var(--bg-glass, #fff);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg, 16px);
+    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.25);
+    padding: 22px;
+    transform: translateY(12px) scale(0.98);
+    transition: transform 0.22s var(--ease-ios, ease);
+}
+
+.os-modal-overlay.show .os-modal-card { transform: translateY(0) scale(1); }
+
+.os-modal-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text-strong);
+    margin-bottom: 16px;
+}
+
+.os-modal-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.os-modal-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.os-modal-field-label {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.os-modal-field-label em {
+    color: var(--error);
+    font-style: normal;
+}
+
+.os-modal-field input,
+.os-modal-field textarea {
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: rgba(255, 255, 255, 0.7);
+    color: var(--text-strong);
+    font-size: 0.9rem;
+    font-family: inherit;
+    resize: vertical;
+}
+
+.os-modal-field input:focus,
+.os-modal-field textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.15);
+}
+
+.os-field-error {
+    border-color: var(--error) !important;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15) !important;
+}
+
+.os-modal-confirm-text {
+    font-size: 0.92rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin-bottom: 20px;
+}
+
+.os-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.os-modal-actions .tool-btn.primary.danger {
+    background: var(--error, #ef4444);
+    border-color: transparent;
+}
+
 @media (max-width: 768px) {
     .chat-modes { grid-template-columns: 1fr; }
     .os-layout { grid-template-columns: 1fr; }

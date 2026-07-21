@@ -2703,26 +2703,134 @@ function hello() {
     const OS_KEY = 'aqua_opensource_v1';
     let osData = { sections: [] };
     let osActiveSection = null;
-    let osEditingBlock = null;
+    let osSearchTerm = '';
+
+    function genOsId() {
+        return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    }
 
     function loadOsData() {
         try {
             osData = JSON.parse(localStorage.getItem(OS_KEY)) || { sections: [] };
+            if (!Array.isArray(osData.sections)) osData.sections = [];
         } catch { osData = { sections: [] }; }
     }
 
     function saveOsData() {
-        localStorage.setItem(OS_KEY, JSON.stringify(osData));
+        try {
+            localStorage.setItem(OS_KEY, JSON.stringify(osData));
+        } catch (e) {
+            showToast('保存失败：本地存储不可用', 'error');
+        }
+    }
+
+    // ---- 轻量表单模态（替代原生 prompt，兼容 iframe 预览） ----
+    function osFormModal({ title, fields, confirmText = '确定', onConfirm }) {
+        const overlay = document.createElement('div');
+        overlay.className = 'os-modal-overlay';
+        const card = document.createElement('div');
+        card.className = 'os-modal-card';
+        card.innerHTML = `
+            <div class="os-modal-title">${escapeHtml(title)}</div>
+            <div class="os-modal-fields">
+                ${fields.map(f => `
+                    <label class="os-modal-field">
+                        <span class="os-modal-field-label">${escapeHtml(f.label)}${f.required ? ' <em>*</em>' : ''}</span>
+                        ${f.type === 'textarea'
+                            ? `<textarea data-field="${f.name}" rows="${f.rows || 6}" placeholder="${escapeHtml(f.placeholder || '')}">${escapeHtml(f.value || '')}</textarea>`
+                            : `<input type="text" data-field="${f.name}" value="${escapeHtml(f.value || '')}" placeholder="${escapeHtml(f.placeholder || '')}">`}
+                    </label>`).join('')}
+            </div>
+            <div class="os-modal-actions">
+                <button class="tool-btn os-modal-cancel">取消</button>
+                <button class="tool-btn primary os-modal-ok">${escapeHtml(confirmText)}</button>
+            </div>`;
+        overlay.appendChild(card);
+        document.body.appendChild(overlay);
+        requestAnimationFrame(() => overlay.classList.add('show'));
+
+        const close = () => {
+            overlay.classList.remove('show');
+            setTimeout(() => overlay.remove(), 220);
+        };
+        card.querySelector('.os-modal-cancel').addEventListener('click', close);
+        overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+        const onKey = (e) => { if (e.key === 'Escape') { close(); document.removeEventListener('keydown', onKey); } };
+        document.addEventListener('keydown', onKey);
+
+        const okBtn = card.querySelector('.os-modal-ok');
+        const first = card.querySelector('[data-field]');
+        if (first) first.focus();
+        card.querySelectorAll('[data-field]').forEach(el => {
+            el.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && el.tagName !== 'TEXTAREA') okBtn.click();
+            });
+        });
+
+        okBtn.addEventListener('click', () => {
+            const values = {};
+            let valid = true;
+            fields.forEach(f => {
+                const el = card.querySelector(`[data-field="${f.name}"]`);
+                const v = (el.value || '').trim();
+                values[f.name] = v;
+                if (f.required && !v) {
+                    valid = false;
+                    el.classList.add('os-field-error');
+                } else {
+                    el.classList.remove('os-field-error');
+                }
+            });
+            if (!valid) { showToast('请填写必填项', 'error'); return; }
+            onConfirm(values);
+            close();
+        });
+    }
+
+    // ---- 轻量确认模态（替代原生 confirm） ----
+    function osConfirm(message, onConfirm, confirmText = '确定') {
+        const overlay = document.createElement('div');
+        overlay.className = 'os-modal-overlay';
+        const card = document.createElement('div');
+        card.className = 'os-modal-card';
+        card.innerHTML = `
+            <div class="os-modal-confirm-text">${escapeHtml(message)}</div>
+            <div class="os-modal-actions">
+                <button class="tool-btn os-modal-cancel">取消</button>
+                <button class="tool-btn primary danger os-modal-ok">${escapeHtml(confirmText)}</button>
+            </div>`;
+        overlay.appendChild(card);
+        document.body.appendChild(overlay);
+        requestAnimationFrame(() => overlay.classList.add('show'));
+        const close = () => { overlay.classList.remove('show'); setTimeout(() => overlay.remove(), 220); };
+        card.querySelector('.os-modal-cancel').addEventListener('click', close);
+        overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+        const onKey = (e) => { if (e.key === 'Escape') { close(); document.removeEventListener('keydown', onKey); } };
+        document.addEventListener('keydown', onKey);
+        const okBtn = card.querySelector('.os-modal-ok');
+        okBtn.focus();
+        okBtn.addEventListener('click', () => { close(); onConfirm(); });
     }
 
     function renderOsSections() {
         const list = $('#osSectionList');
+        if (!list) return;
         list.innerHTML = '';
+        const term = osSearchTerm.trim().toLowerCase();
+        const visible = osData.sections.filter(s =>
+            !term ||
+            s.name.toLowerCase().includes(term) ||
+            (s.description || '').toLowerCase().includes(term)
+        );
         if (osData.sections.length === 0) {
-            list.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:0.85rem;">暂无栏目</div>';
+            list.innerHTML = '<div class="os-empty-mini">暂无栏目，点击「新建栏目」开始</div>';
             return;
         }
-        osData.sections.forEach(s => {
+        if (visible.length === 0) {
+            list.innerHTML = '<div class="os-empty-mini">没有匹配“' + escapeHtml(osSearchTerm) + '”的栏目</div>';
+            return;
+        }
+        visible.forEach(s => {
             const item = document.createElement('div');
             item.className = 'os-section-item' + (s.id === osActiveSection ? ' active' : '');
             item.innerHTML = `
@@ -2731,18 +2839,22 @@ function hello() {
                 <button class="os-section-del" title="删除栏目"><i class="fas fa-times"></i></button>
             `;
             item.addEventListener('click', () => {
+                osSearchTerm = '';
+                const se = $('#osSearch'); if (se) se.value = '';
                 osActiveSection = s.id;
                 renderOsSections();
                 renderOsContent();
             });
-            item.querySelector('.os-section-del').addEventListener('click', async (e) => {
+            item.querySelector('.os-section-del').addEventListener('click', (e) => {
                 e.stopPropagation();
-                if (!confirm(`确定删除栏目"${s.name}"及其所有内容？`)) return;
-                osData.sections = osData.sections.filter(x => x.id !== s.id);
-                if (osActiveSection === s.id) osActiveSection = null;
-                saveOsData();
-                renderOsSections();
-                renderOsContent();
+                osConfirm(`确定删除栏目“${s.name}”及其 ${s.blocks.length} 条内容？此操作不可恢复。`, () => {
+                    osData.sections = osData.sections.filter(x => x.id !== s.id);
+                    if (osActiveSection === s.id) osActiveSection = null;
+                    saveOsData();
+                    renderOsSections();
+                    renderOsContent();
+                    showToast('栏目已删除');
+                }, '删除');
             });
             list.appendChild(item);
         });
@@ -2750,15 +2862,41 @@ function hello() {
 
     function renderOsContent() {
         const content = $('#osContent');
+        if (!content) return;
+        const term = osSearchTerm.trim().toLowerCase();
+
+        if (term) {
+            const results = [];
+            osData.sections.forEach(s => {
+                s.blocks.forEach(b => {
+                    if (b.title.toLowerCase().includes(term) || (b.content || '').toLowerCase().includes(term)) {
+                        results.push({ section: s, block: b });
+                    }
+                });
+            });
+            content.innerHTML = results.length === 0
+                ? '<div class="os-empty"><i class="fas fa-search"></i><p>没有匹配“' + escapeHtml(osSearchTerm) + '”的内容</p></div>'
+                : '<div class="os-search-head">搜索“' + escapeHtml(osSearchTerm) + '” · 共 ' + results.length + ' 条结果</div>' +
+                  results.map(r => `
+                    <div class="os-block">
+                        <div class="os-block-header">
+                            <div class="os-block-title">${escapeHtml(r.block.title)}</div>
+                            <div class="os-block-section">${escapeHtml(r.section.name)}</div>
+                        </div>
+                        <div class="os-block-content">${escapeHtml(r.block.content)}</div>
+                        <div class="os-block-meta">发布于 ${new Date(r.block.createdAt).toLocaleString('zh-CN')}${r.block.updatedAt ? ' · 已编辑' : ''}</div>
+                    </div>`).join('');
+            return;
+        }
+
         const section = osData.sections.find(s => s.id === osActiveSection);
-        
         if (!section) {
             content.innerHTML = '<div class="os-empty"><i class="fas fa-book-open"></i><p>选择左侧栏目查看内容，或新建栏目开始</p></div>';
             return;
         }
-        
-        const blocksHtml = section.blocks.length === 0 
-            ? '<div class="os-empty"><i class="fas fa-pen"></i><p>这个栏目还没有内容，点击"发布内容"开始</p></div>'
+
+        const blocksHtml = section.blocks.length === 0
+            ? '<div class="os-empty"><i class="fas fa-pen"></i><p>这个栏目还没有内容，点击「发布内容」开始</p></div>'
             : section.blocks.map(b => `
                 <div class="os-block">
                     <div class="os-block-header">
@@ -2772,7 +2910,7 @@ function hello() {
                     <div class="os-block-meta">发布于 ${new Date(b.createdAt).toLocaleString('zh-CN')}${b.updatedAt ? ' · 已编辑' : ''}</div>
                 </div>
             `).join('');
-        
+
         content.innerHTML = `
             <div class="os-content-header">
                 <div class="os-content-title">${escapeHtml(section.name)}</div>
@@ -2780,84 +2918,90 @@ function hello() {
             </div>
             <div class="os-blocks">${blocksHtml}</div>
         `;
-        
+
         $('#osNewBlock').addEventListener('click', () => openOsEditor());
-        $$('#osContent [data-edit]').forEach(btn => {
-            btn.addEventListener('click', () => openOsEditor(btn.dataset.edit));
-        });
-        $$('#osContent [data-del]').forEach(btn => {
-            btn.addEventListener('click', () => {
-                if (!confirm('确定删除这条内容？')) return;
+        $$('#osContent [data-edit]').forEach(btn => btn.addEventListener('click', () => openOsEditor(btn.dataset.edit)));
+        $$('#osContent [data-del]').forEach(btn => btn.addEventListener('click', () => {
+            osConfirm('确定删除这条内容？', () => {
                 section.blocks = section.blocks.filter(b => b.id !== btn.dataset.del);
                 saveOsData();
                 renderOsSections();
                 renderOsContent();
-            });
-        });
+                showToast('内容已删除');
+            }, '删除');
+        }));
     }
 
     function openOsEditor(blockId = null) {
         const section = osData.sections.find(s => s.id === osActiveSection);
         if (!section) return;
-        
         const block = blockId ? section.blocks.find(b => b.id === blockId) : null;
-        osEditingBlock = blockId;
-        
-        const editor = document.createElement('div');
-        editor.className = 'os-editor';
-        editor.innerHTML = `
-            <input type="text" id="osBlockTitle" placeholder="标题..." value="${block ? escapeHtml(block.title) : ''}">
-            <textarea id="osBlockContent" rows="8" placeholder="内容... 支持纯文本">${block ? escapeHtml(block.content) : ''}</textarea>
-            <div class="os-editor-actions">
-                <button class="tool-btn primary" id="osSaveBlock"><i class="fas fa-save"></i>保存</button>
-                <button class="tool-btn" id="osCancelBlock">取消</button>
-            </div>
-        `;
-        
-        $('#osContent').insertBefore(editor, $('#osContent').firstChild);
-        $('#osBlockTitle').focus();
-        
-        $('#osSaveBlock').addEventListener('click', () => {
-            const title = $('#osBlockTitle').value.trim();
-            const content = $('#osBlockContent').value.trim();
-            if (!title) { showToast('请输入标题', 'error'); return; }
-            
-            if (osEditingBlock) {
-                const b = section.blocks.find(x => x.id === osEditingBlock);
-                if (b) {
-                    b.title = title;
-                    b.content = content;
-                    b.updatedAt = Date.now();
+        osFormModal({
+            title: block ? '编辑内容' : '发布内容',
+            confirmText: block ? '保存' : '发布',
+            fields: [
+                { name: 'title', label: '标题', value: block ? block.title : '', placeholder: '例如：Vue 3 组合式 API 笔记', required: true },
+                { name: 'content', label: '内容', type: 'textarea', value: block ? block.content : '', placeholder: '支持纯文本，记录要点、链接、代码片段…', rows: 8 }
+            ],
+            onConfirm: (v) => {
+                if (block) {
+                    block.title = v.title;
+                    block.content = v.content;
+                    block.updatedAt = Date.now();
+                } else {
+                    section.blocks.push({ id: genOsId(), title: v.title, content: v.content, createdAt: Date.now() });
                 }
-            } else {
-                section.blocks.push({
-                    id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
-                    title, content, createdAt: Date.now()
-                });
+                saveOsData();
+                renderOsSections();
+                renderOsContent();
+                showToast(block ? '已保存' : '已发布');
             }
-            saveOsData();
-            renderOsSections();
-            renderOsContent();
-            showToast('已保存');
         });
-        
-        $('#osCancelBlock').addEventListener('click', renderOsContent);
     }
 
-    $('#osNewSection').addEventListener('click', () => {
-        const name = prompt('请输入栏目名称：');
-        if (!name || !name.trim()) return;
-        osData.sections.push({
-            id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
-            name: name.trim(),
-            description: '',
-            blocks: []
+    function openNewSectionModal() {
+        osFormModal({
+            title: '新建栏目',
+            confirmText: '创建',
+            fields: [
+                { name: 'name', label: '栏目名称', value: '', placeholder: '例如：前端框架', required: true },
+                { name: 'description', label: '简介（可选）', value: '', placeholder: '一句话描述这个栏目' }
+            ],
+            onConfirm: (v) => {
+                const sec = { id: genOsId(), name: v.name, description: v.description, blocks: [] };
+                osData.sections.push(sec);
+                osActiveSection = sec.id;
+                osSearchTerm = '';
+                const se = $('#osSearch'); if (se) se.value = '';
+                saveOsData();
+                renderOsSections();
+                renderOsContent();
+                showToast('栏目已创建');
+            }
         });
-        osActiveSection = osData.sections[osData.sections.length - 1].id;
-        saveOsData();
-        renderOsSections();
+    }
+
+    function exportOsData() {
+        if (osData.sections.length === 0) { showToast('还没有内容可导出', 'error'); return; }
+        const blob = new Blob([JSON.stringify(osData, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'aqua-opensource-' + new Date().toISOString().slice(0, 10) + '.json';
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast('已导出 JSON');
+    }
+
+    $('#osNewSection').addEventListener('click', openNewSectionModal);
+    const osSearchEl = $('#osSearch');
+    if (osSearchEl) osSearchEl.addEventListener('input', (e) => {
+        osSearchTerm = e.target.value;
         renderOsContent();
+        renderOsSections();
     });
+    const osExportBtn = $('#osExport');
+    if (osExportBtn) osExportBtn.addEventListener('click', exportOsData);
 
     loadOsData();
     renderOsSections();
