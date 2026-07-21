@@ -109,6 +109,32 @@ body {
     transform: translateY(-1px);
 }
 
+/* 返回主界面按钮（与退出登录同款风格） */
+.home-btn {
+    margin-left: 12px;
+    padding: 8px 22px;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.22);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    transition: all .3s ease;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.home-btn:hover {
+    background: rgba(255, 255, 255, 0.4);
+    transform: translateY(-1px);
+    color: #fff;
+}
+
 /* ===================
    导航栏
 =================== */
@@ -1635,6 +1661,12 @@ input[type="file"] {
     }
 
     .logout {
+        margin-left: 8px;
+        padding: 6px 12px;
+        font-size: 13px;
+    }
+
+    .home-btn {
         margin-left: 8px;
         padding: 6px 12px;
         font-size: 13px;
