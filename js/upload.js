@@ -168,18 +168,37 @@ async function uploadFile(){
 
 
     // =====================
-    // 6.保存数据
+    // 6.保存数据到本地数据库
     // =====================
 
+    let record = {
+
+        id: dataID,
+
+        name: name,
+
+        filename: file.name,
+
+        fileType: file.type,
+
+        size: file.size,
+
+        owner: getCurrentUser().username,
+
+        hash: hash,
+
+        uploadTime: new Date().toLocaleString(),
+
+        description: description,
+
+        storage: "TDS Local Database",
+
+        encrypted: encrypted
+
+    };
 
 
-    localStorage.setItem(
-
-        dataID,
-
-        encrypted
-
-    );
+    await dbAddFile(record);
 
 
 

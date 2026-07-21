@@ -1,13 +1,10 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 
-
 <head>
 
 <meta charset="UTF-8">
-
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 
 <title>数据安全查询</title>
     <style>
@@ -15,36 +12,22 @@
         .header,.nav{background:#6a4ec8}
         [data-ico]{display:inline-block;width:24px;height:24px;vertical-align:middle}
     </style>
-    <link rel="stylesheet" href="css/style.css?v=2">
+    <link rel="stylesheet" href="css/style.css?v=3">
 
-
-
-<script src="js/icons.js?v=2"></script>
-<script src="js/modal.js"></script>
-<script src="js/auth.js"></script>
-
-<script src="js/crypto.js"></script>
-
+    <script src="js/icons.js?v=2"></script>
+    <script src="js/modal.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/crypto.js"></script>
     <script src="js/permission.js"></script>
     <script src="js/log.js"></script>
 
-
-
 </head>
-
-
-
 
 
 <body onload="document.documentElement.style.opacity=1;checkLogin()">
 
 
-
-
-
-
 <header class="header">
-
 
 <div class="logo">
 
@@ -53,18 +36,13 @@
 </div>
 
 
-
-
 <div class="user-info">
-
 
 当前用户：
 
 <span id="username">
 
 </span>
-
-
 
 
 <button
@@ -80,8 +58,6 @@ onclick="logout()">
 </header>
 
 
-
-
 <nav class="nav">
     <a href="dataspace.html">首页</a>
     <a href="upload.html">数据上传</a>
@@ -92,14 +68,7 @@ onclick="logout()">
 </nav>
 
 
-
-
-
-
-
-
 <main class="container">
-
 
 
 <section class="welcome">
@@ -123,24 +92,19 @@ onclick="logout()">
 </section>
 
 
-
-
-
 <section class="upload-panel">
 
 
 <h2>
 
 查询加密数据
+
 </h2>
-
-
 
 
 <div class="search-form">
     <label class="form-label">数据编号</label>
     <input id="dataID" type="text" placeholder="请输入 TDS-xxxx 数据编号">
-
 
 <button
 
@@ -155,8 +119,6 @@ onclick="searchData()">
 </div>
 
 
-
-
 <div id="result"
 
 style="margin-top:30px;">
@@ -168,7 +130,13 @@ style="margin-top:30px;">
 </section>
 
 
+<section class="list-panel">
 
+    <h2><span data-ico="folder"></span> 数据存储列表</h2>
+    <p class="list-tip">所有已登录用户均可查看、下载、删除以下数据，没有权限差异。</p>
+    <div id="fileList"></div>
+
+</section>
 
 
 <section class="flow">
@@ -177,6 +145,7 @@ style="margin-top:30px;">
 <h2>
 
 数据访问流程
+
 </h2>
 
 
@@ -191,11 +160,7 @@ style="margin-top:30px;">
 </div>
 
 
-
-
 <div class="arrow">→</div>
-
-
 
 
 <div class="flow-node">
@@ -206,11 +171,7 @@ style="margin-top:30px;">
 </div>
 
 
-
-
 <div class="arrow">→</div>
-
-
 
 
 <div class="flow-node">
@@ -221,11 +182,7 @@ style="margin-top:30px;">
 </div>
 
 
-
-
 <div class="arrow">→</div>
-
-
 
 
 <div class="flow-node">
@@ -242,11 +199,7 @@ style="margin-top:30px;">
 </section>
 
 
-
-
 </main>
-
-
 
 
 <footer>
@@ -256,17 +209,14 @@ style="margin-top:30px;">
 </footer>
 
 
-
-
 <script>
-
 
 window.onload=function(){
 
 
 let user =
-getCurrentUser();
 
+getCurrentUser();
 
 
 if(user){
@@ -274,17 +224,16 @@ if(user){
 }
 
 
-}
+renderFileList();
 
+
+}
 
 </script>
 
 
-
-
+<script src="js/db.js"></script>
 <script src="js/data.js"></script>
-
-
 
 
 </body>

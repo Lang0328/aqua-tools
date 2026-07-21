@@ -256,6 +256,7 @@
     <script src="js/log.js"></script>
     <script src="js/crypto.js"></script>
     <script src="js/permission.js"></script>
+    <script src="js/db.js"></script>
     <script src="js/data.js"></script>
 </head>
 <body onload="document.documentElement.style.opacity=1;checkLogin()">
@@ -499,7 +500,7 @@ function renderRequestLogs() {
     Icon.init();
 }
 
-// 下载已批准申请对应的数据内容文件
+// 下载数据内容文件（所有已登录用户均可，无角色权限差异）
 async function downloadApprovedData(dataID) {
     const user = getCurrentUser();
     if (!user) {
@@ -507,28 +508,7 @@ async function downloadApprovedData(dataID) {
         return;
     }
 
-    // 检查该用户对此数据的申请是否已过期
-    const requests = getRequests();
-    const req = requests.find(r => r.dataID === dataID &&
-        (user.role === "admin" ? true : r.requester === user.username));
-    if (req && req.status === "expired") {
-        showAlert("该数据的授权已过期，无法下载");
-        return;
-    }
-
-    const encrypted = localStorage.getItem(dataID);
-    if (!encrypted) {
-        showAlert("数据编号 " + dataID + " 不存在或已被删除");
-        return;
-    }
-
-    // 权限校验：管理员或被授权用户（已批准申请会自动授权）才可下载
-    if (user.role !== "admin" && !checkAccess(dataID)) {
-        showAlert("您没有下载该数据的权限（申请可能未授权或权限已被撤销）");
-        return;
-    }
-
-    // 调用 data.js 中的解密下载函数（含权限校验、下载标识、审计日志）
+    // 调用 data.js 中的解密下载函数（从本地数据库读取、含下载标识与审计日志）
     await downloadData(dataID);
 
     // 下载后刷新申请记录与日志
