@@ -999,13 +999,56 @@
     // ============================================
     // 工具搜索
     // ============================================
-    $('#toolSearch').addEventListener('input', (e) => {
-        const q = e.target.value.toLowerCase().trim();
+    // 工具筛选：侧边栏搜索框与顶部搜索框共用
+    function applyToolFilter(rawQ) {
+        const q = (rawQ || '').toLowerCase().trim();
         navItems.forEach(item => {
             const text = item.textContent.toLowerCase();
             item.style.display = text.includes(q) ? '' : 'none';
         });
-    });
+    }
+
+    const toolSearch = $('#toolSearch');
+    const topSearch = $('#topSearch');
+    const topSearchClear = $('#topSearchClear');
+
+    if (toolSearch) {
+        toolSearch.addEventListener('input', (e) => {
+            applyToolFilter(e.target.value);
+            if (topSearch) topSearch.value = e.target.value;
+        });
+    }
+
+    if (topSearch) {
+        topSearch.addEventListener('input', (e) => {
+            applyToolFilter(e.target.value);
+            if (toolSearch) toolSearch.value = e.target.value;
+            if (topSearchClear) topSearchClear.hidden = !e.target.value;
+            // 顶部搜索时若侧边栏折叠则自动展开，便于查看过滤结果
+            if (isCollapsed()) {
+                sidebar.classList.remove('collapsed');
+                mainContent.classList.remove('expanded');
+            }
+        });
+        topSearch.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && topSearch.value) {
+                topSearch.value = '';
+                applyToolFilter('');
+                if (toolSearch) toolSearch.value = '';
+                if (topSearchClear) topSearchClear.hidden = true;
+            }
+        });
+    }
+
+    if (topSearchClear) {
+        topSearchClear.addEventListener('click', () => {
+            topSearch.value = '';
+            applyToolFilter('');
+            if (toolSearch) toolSearch.value = '';
+            topSearchClear.hidden = true;
+            topSearch.focus();
+        });
+    }
 
     // ============================================
     // 复制按钮（事件委托）
