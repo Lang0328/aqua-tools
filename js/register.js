@@ -110,6 +110,12 @@ function register(){
         JSON.stringify(userInfo)
     );
 
+    // 记住登录态：写入本地存储，使新注册用户被“记住”
+    localStorage.setItem(
+        "tds_user",
+        JSON.stringify(userInfo)
+    );
+
 
     window.location.href = "dataspace.html";
 

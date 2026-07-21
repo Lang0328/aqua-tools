@@ -52,13 +52,7 @@ function login(){
 
 
 
-        sessionStorage.setItem(
-
-            "user",
-
-            JSON.stringify(userInfo)
-
-        );
+        persistUser(userInfo);
 
 
 
@@ -97,13 +91,7 @@ function login(){
 
 
 
-        sessionStorage.setItem(
-
-            "user",
-
-            JSON.stringify(userInfo)
-
-        );
+        persistUser(userInfo);
 
 
 
@@ -142,10 +130,7 @@ function login(){
             };
 
 
-            sessionStorage.setItem(
-                "user",
-                JSON.stringify(userInfo)
-            );
+            persistUser(userInfo);
 
 
             window.location.href=
@@ -191,6 +176,13 @@ function createToken(){
     );
 
 
+}
+
+
+// 记住登录态：同时写入 session 与本地存储，使注册/登录用户被“记住”
+function persistUser(userInfo){
+    sessionStorage.setItem("user", JSON.stringify(userInfo));
+    localStorage.setItem("tds_user", JSON.stringify(userInfo));
 }
 
 
@@ -252,6 +244,20 @@ function switchAuth(target){
     ){
 
         switchAuth("register");
+
+    }
+
+})();
+
+
+/* 已记住登录态则直接进入主界面，无需重复登录 */
+(function(){
+
+    if(
+        localStorage.getItem("tds_user")
+    ){
+
+        window.location.href = "dataspace.html";
 
     }
 

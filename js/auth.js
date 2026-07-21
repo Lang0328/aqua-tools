@@ -15,7 +15,7 @@ function checkLogin(){
 
 
     let user =
-    sessionStorage.getItem("user");
+    getCurrentUser();
 
 
 
@@ -68,6 +68,21 @@ function getCurrentUser(){
     }
 
 
+    // 尝试从本地存储恢复登录态，使注册/登录用户被“记住”
+    let remembered =
+    localStorage.getItem("tds_user");
+
+
+    if(remembered){
+
+
+        sessionStorage.setItem("user", remembered);
+        return JSON.parse(remembered);
+
+
+    }
+
+
     return null;
 
 
@@ -84,6 +99,12 @@ function logout(){
 
     sessionStorage.removeItem(
         "user"
+    );
+
+
+    // 同时清除本地记住的登录态，确保真正退出
+    localStorage.removeItem(
+        "tds_user"
     );
 
 
