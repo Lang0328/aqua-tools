@@ -264,59 +264,62 @@ body, .topbar, .sidebar, .tool-body, .tool-card-v2, .design-ref-card,
 /* —— 淡色极光 Aurora Light —— */
 [data-theme="aurora-light"] {
     color-scheme: light;
-    --bg-base: #eaf2fb;
-    --bg-soft: #e1ecf7;
-    --bg-card: rgba(255, 255, 255, 0.74);
-    --bg-card-hover: rgba(255, 255, 255, 0.92);
+    /* 冷蓝天空氛围底 — 明显区别于 aqua 的纯白 */
+    --bg-base: #d7e6fb;
+    --bg-soft: #cbddf6;
+    --bg-card: rgba(255, 255, 255, 0.66);
+    --bg-card-hover: rgba(255, 255, 255, 0.86);
 
-    --text: #15293d;
-    --text-strong: #0b1f33;
-    --text-muted: #3a5673;
-    --text-subtle: #67809a;
+    --text: #14283f;
+    --text-strong: #0a1c33;
+    --text-muted: #365272;
+    --text-subtle: #5f7a99;
 
-    --border: rgba(59, 130, 246, 0.18);
-    --border-strong: rgba(59, 130, 246, 0.32);
+    --border: rgba(79, 124, 255, 0.22);
+    --border-strong: rgba(79, 124, 255, 0.38);
 
-    --primary: #3b82f6;
-    --primary-light: #60a5fa;
-    --primary-dark: #2563eb;
-    --accent: #3b82f6;
-    --accent-2: #22d3ee;
+    /* 主色偏靛青，拉开与 aqua 的 Apple 蓝 (#0071e3) */
+    --primary: #4f7cff;
+    --primary-light: #7aa0ff;
+    --primary-dark: #3355e6;
+    --accent: #4f7cff;
+    --accent-2: #38bdf8;
 
-    --glass-bg: rgba(255, 255, 255, 0.62);
-    --glass-border: rgba(255, 255, 255, 0.65);
-    --glass-shadow: 0 4px 22px rgba(59, 130, 246, 0.1);
+    --glass-bg: rgba(255, 255, 255, 0.55);
+    --glass-border: rgba(255, 255, 255, 0.6);
+    --glass-shadow: 0 4px 24px rgba(79, 124, 255, 0.14);
 
-    --shadow-sm: 0 1px 3px rgba(30, 64, 120, 0.08);
-    --shadow-md: 0 4px 12px rgba(30, 64, 120, 0.1);
-    --shadow-lg: 0 8px 28px rgba(30, 64, 120, 0.14);
+    --shadow-sm: 0 1px 3px rgba(30, 58, 138, 0.1);
+    --shadow-md: 0 4px 14px rgba(30, 58, 138, 0.12);
+    --shadow-lg: 0 10px 32px rgba(30, 58, 138, 0.18);
 
-    --gradient-text: linear-gradient(135deg, #2563eb 0%, #22d3ee 100%);
+    --gradient-text: linear-gradient(135deg, #3355e6 0%, #38bdf8 100%);
 
-    --luck-good: #3b82f6;
-    --luck-mid: #22d3ee;
+    --luck-good: #4f7cff;
+    --luck-mid: #38bdf8;
     --luck-bad: #e11d48;
-    --palette-stage: linear-gradient(145deg, #eaf2fb 0%, #e1ecf7 100%);
+    --palette-stage: linear-gradient(145deg, #d7e6fb 0%, #cbddf6 100%);
 
-    --bonus-bg-1: #3b82f6;
-    --bonus-bg-2: #22d3ee;
+    --bonus-bg-1: #4f7cff;
+    --bonus-bg-2: #38bdf8;
     --bonus-fg: #ffffff;
     --bonus-close-bg: rgba(255, 255, 255, 0.3);
     --bonus-close-hover-bg: #ffffff;
-    --bonus-close-hover-fg: #2563eb;
+    --bonus-close-hover-fg: #3355e6;
     --bonus-card-bg: rgba(255, 255, 255, 0.32);
     --bonus-card-fg: #ffffff;
     --bonus-card-muted: rgba(255, 255, 255, 0.85);
     --bonus-score-1: #ffffff;
     --bonus-score-2: #bfdbfe;
 
-    --orb-1: rgba(59, 130, 246, 0.2);
-    --orb-2: rgba(56, 189, 248, 0.16);
+    --orb-1: rgba(79, 124, 255, 0.26);
+    --orb-2: rgba(56, 189, 248, 0.2);
 
+    /* 更强的天空渐变氛围，凸显极光感 */
     --app-bg:
-        radial-gradient(120% 90% at 0% 0%, rgba(59, 130, 246, 0.12), transparent 55%),
-        radial-gradient(120% 90% at 100% 100%, rgba(56, 189, 248, 0.1), transparent 55%),
-        var(--bg-base);
+        radial-gradient(130% 100% at 0% 0%, rgba(79, 124, 255, 0.2), transparent 58%),
+        radial-gradient(130% 100% at 100% 100%, rgba(56, 189, 248, 0.16), transparent 58%),
+        linear-gradient(170deg, #d7e6fb 0%, #c4d9f5 100%);
 }
 
 /* —— 淡色极光天空：共享极光动画，配色改为柔和浅色 —— */
@@ -351,15 +354,15 @@ body, .topbar, .sidebar, .tool-body, .tool-card-v2, .design-ref-card,
     width: 150%;
     height: 50vh;
     filter: blur(30px);
-    opacity: 0.7;
+    opacity: 0.9;
     contain: layout style paint;
 }
 [data-theme="aurora-light"] .aurora-ribbon-1 {
     top: -10%;
     background: linear-gradient(180deg,
-        transparent 0%, rgba(59, 130, 246, 0.0) 12%,
-        rgba(59, 130, 246, 0.3) 35%, rgba(96, 165, 250, 0.32) 50%,
-        rgba(37, 99, 235, 0.2) 72%, transparent 90%);
+        transparent 0%, rgba(79, 124, 255, 0.0) 12%,
+        rgba(79, 124, 255, 0.42) 35%, rgba(122, 160, 255, 0.44) 50%,
+        rgba(51, 85, 230, 0.28) 72%, transparent 90%);
     filter: blur(28px);
     transform: skewY(-3deg);
     animation: auroraRibbonFlow1 14s ease-in-out infinite;
@@ -368,12 +371,12 @@ body, .topbar, .sidebar, .tool-body, .tool-card-v2, .design-ref-card,
 [data-theme="aurora-light"] .aurora-ribbon-2 {
     top: 15%; height: 48vh;
     background: linear-gradient(180deg,
-        transparent 0%, rgba(147, 197, 253, 0.0) 15%,
-        rgba(147, 197, 253, 0.24) 40%, rgba(191, 219, 254, 0.26) 55%,
-        rgba(96, 165, 250, 0.16) 78%, transparent 95%);
+        transparent 0%, rgba(122, 160, 255, 0.0) 15%,
+        rgba(122, 160, 255, 0.34) 40%, rgba(165, 200, 255, 0.36) 55%,
+        rgba(79, 124, 255, 0.22) 78%, transparent 95%);
     filter: blur(34px);
     transform: skewY(4deg);
-    opacity: 0.7;
+    opacity: 0.85;
     animation: auroraRibbonFlow2 19s ease-in-out infinite;
     translate: calc(var(--mx, 0) * 40px) calc(var(--my, 0) * 20px);
 }
@@ -381,29 +384,29 @@ body, .topbar, .sidebar, .tool-body, .tool-card-v2, .design-ref-card,
     top: 35%; height: 44vh;
     background: linear-gradient(180deg,
         transparent 0%, rgba(56, 189, 248, 0.0) 20%,
-        rgba(56, 189, 248, 0.22) 45%, rgba(125, 211, 252, 0.24) 60%,
-        rgba(14, 165, 233, 0.14) 82%, transparent 100%);
+        rgba(56, 189, 248, 0.34) 45%, rgba(125, 211, 252, 0.36) 60%,
+        rgba(14, 165, 233, 0.2) 82%, transparent 100%);
     filter: blur(30px);
     transform: skewY(-2deg);
-    opacity: 0.6;
+    opacity: 0.78;
     animation: auroraRibbonFlow3 23s ease-in-out infinite;
     translate: calc(var(--mx, 0) * -35px) calc(var(--my, 0) * -18px);
 }
 [data-theme="aurora-light"] .aurora-veil-glow {
     position: absolute; inset: 0;
     background: radial-gradient(ellipse 90% 50% at 50% 0%,
-        rgba(59, 130, 246, 0.12) 0%, transparent 60%);
+        rgba(79, 124, 255, 0.18) 0%, transparent 60%);
     animation: auroraGlowPulse 10s ease-in-out infinite;
 }
 [data-theme="aurora-light"] .aurora-ribbon-4 {
     top: 5%; height: 40vh;
     background: linear-gradient(180deg,
         transparent 0%, rgba(34, 211, 238, 0.0) 18%,
-        rgba(34, 211, 238, 0.18) 40%, rgba(56, 189, 248, 0.2) 55%,
-        rgba(59, 130, 246, 0.14) 78%, transparent 100%);
+        rgba(34, 211, 238, 0.26) 40%, rgba(56, 189, 248, 0.28) 55%,
+        rgba(79, 124, 255, 0.2) 78%, transparent 100%);
     filter: blur(36px);
     transform: skewY(3deg);
-    opacity: 0.55;
+    opacity: 0.7;
     animation: auroraRibbonFlow4 26s ease-in-out infinite;
     translate: calc(var(--mx, 0) * -40px) calc(var(--my, 0) * -20px);
 }
@@ -1851,11 +1854,11 @@ button { cursor: pointer; border: none; background: none; }
         0 0 8px rgba(45, 212, 191, 0.25);
 }
 .swatch-aurora-light {
-    background: linear-gradient(135deg, #eaf2fb 50%, #3b82f6 50%);
+    background: linear-gradient(135deg, #d7e6fb 50%, #4f7cff 50%);
     box-shadow:
         inset 0 1px 2px rgba(255, 255, 255, 0.6),
         0 1px 2px rgba(0, 0, 0, 0.1),
-        0 0 8px rgba(59, 130, 246, 0.35);
+        0 0 8px rgba(79, 124, 255, 0.4);
 }
 .theme-name { flex: 1; text-align: left; }
 .theme-check {
