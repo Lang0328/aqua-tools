@@ -15,7 +15,7 @@ function login(){
 
 
     let username =
-    document.getElementById("username").value;
+    document.getElementById("username").value.trim();
 
 
 
@@ -118,9 +118,46 @@ function login(){
     else{
 
 
-        message.innerHTML=
-        "用户名或密码错误";
+        let users=
+        JSON.parse(
+            localStorage.getItem(
+                "dataspace_users"
+            ) || "[]"
+        );
 
+
+        let found=
+        users.find(
+            u=>u.username===username
+            && u.password===password
+        );
+
+
+        if(found){
+
+            let userInfo={
+                username:found.username,
+                role:found.role||"user",
+                token:createToken()
+            };
+
+
+            sessionStorage.setItem(
+                "user",
+                JSON.stringify(userInfo)
+            );
+
+
+            window.location.href=
+            "dataspace.html";
+
+        }
+        else{
+
+            message.innerHTML=
+            "用户名或密码错误";
+
+        }
 
     }
 

@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 
-
 <head>
 
 <meta charset="UTF-8">
@@ -9,7 +8,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>
-可信数据空间登录
+可信数据空间注册
 </title>
 
 
@@ -29,7 +28,7 @@
 
     <div class="login-title">
 
-        <h1>数据安全共享平台</h1>
+        <h1>创建账号</h1>
         <span class="title-line"></span>
     </div>
 
@@ -38,17 +37,23 @@
         <input
         id="username"
         type="text"
-        placeholder="用户名">
+        placeholder="用户名（至少 3 个字符）">
 
 
         <input
         id="password"
         type="password"
-        placeholder="密码">
+        placeholder="密码（至少 6 位）">
 
 
-        <button onclick="login()">
-            登录
+        <input
+        id="confirm"
+        type="password"
+        placeholder="确认密码">
+
+
+        <button onclick="register()">
+            注册
         </button>
 
         <a href="index.html" class="login-home-btn" aria-label="返回工具箱主界面">
@@ -63,12 +68,12 @@
     </div>
 
     <div class="login-footer">
-        <p>没有账号？<a href="register.html">立即注册</a></p>
+        <p>已有账号？<a href="login.html">立即登录</a></p>
 
         <div class="demo-tip">
-            <strong>演示账号</strong>
-            <p>管理员：admin / 123456</p>
-            <p>普通用户：user / 123456</p>
+            <strong>说明</strong>
+            <p>账号仅保存在本地浏览器</p>
+            <p>演示账号：admin / 123456</p>
         </div>
     </div>
 
@@ -76,6 +81,7 @@
 
 
 <script src="js/login.js"></script>
+<script src="js/register.js"></script>
 
 
 </body>
