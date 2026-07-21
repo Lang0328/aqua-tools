@@ -1024,13 +1024,17 @@
             applyToolFilter(e.target.value);
             if (toolSearch) toolSearch.value = e.target.value;
             if (topSearchClear) topSearchClear.hidden = !e.target.value;
-            // 顶部搜索时若侧边栏折叠则自动展开，便于查看过滤结果
-            if (isCollapsed()) {
-                sidebar.classList.remove('collapsed');
-                mainContent.classList.remove('expanded');
-            }
         });
         topSearch.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                const q = (topSearch.value || '').toLowerCase().trim();
+                if (q) {
+                    // 跳转到第一个匹配的工具，在内容区显示相关功能
+                    const firstMatch = navItems.find(item => item.style.display !== 'none');
+                    if (firstMatch) switchTool(firstMatch.dataset.tool);
+                }
+                return;
+            }
             if (e.key === 'Escape' && topSearch.value) {
                 topSearch.value = '';
                 applyToolFilter('');
