@@ -1105,11 +1105,10 @@ button { cursor: pointer; border: none; background: none; }
 .site-footer {
     flex-shrink: 0;
     text-align: center;
-    padding: 16px 16px 22px;
+    padding: 14px 16px 18px;
     color: var(--text-subtle);
     font-size: 0.8rem;
-    border-top: 1px solid var(--border);
-    background: var(--bg-card);
+    background: transparent;
 }
 
 .site-footer span {
