@@ -17,6 +17,7 @@
     <script src="js/modal.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/countup.js"></script>
+    <script src="js/db.js"></script>
 </head>
 
 
@@ -102,8 +103,8 @@
                 数据资源
             </h3>
 
-            <strong data-count="128" data-duration="700">
-                128
+            <strong id="statData" data-count="0" data-duration="700">
+                0
             </strong>
 
             <p>
@@ -121,8 +122,8 @@
                 用户数量
             </h3>
 
-            <strong data-count="16" data-duration="600">
-                16
+            <strong id="statUsers" data-count="0" data-duration="600">
+                0
             </strong>
 
             <p>
@@ -141,8 +142,8 @@
                 今日访问
             </h3>
 
-            <strong data-count="42" data-duration="650">
-                42
+            <strong id="statVisits" data-count="0" data-duration="650">
+                0
             </strong>
 
             <p>
@@ -414,7 +415,48 @@
             if (user) {
                 document.getElementById("username").innerHTML = user.username + " (" + user.role + ")";
             }
+            loadStats();
         })();
+
+        // 实时统计：数据资源 / 用户数量 / 今日访问
+        async function loadStats() {
+            // 数据资源数：本地数据库（IndexedDB）中已存储的文件数
+            let dataCount = 0;
+            try {
+                dataCount = (await dbGetAllFiles()).length;
+            } catch (e) {}
+
+            // 用户数量：注册用户 + 演示账号（admin / user）
+            let users = [];
+            try {
+                users = JSON.parse(localStorage.getItem("dataspace_users") || "[]");
+            } catch (e) {}
+            let userCount = users.length + 2;
+
+            // 今日访问：访问日志中日期为今天的记录数
+            const today = new Date().toLocaleDateString();
+            let logs = [];
+            try {
+                logs = JSON.parse(localStorage.getItem("logs") || "[]");
+            } catch (e) {}
+            const visitCount = logs.filter(function (l) {
+                return l && l.time && String(l.time).indexOf(today) === 0;
+            }).length;
+
+            setCount("statData", dataCount);
+            setCount("statUsers", userCount);
+            setCount("statVisits", visitCount);
+        }
+
+        function setCount(id, val) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.setAttribute("data-count", val);
+            el.textContent = val;
+            if (typeof window.animateCount === "function") {
+                window.animateCount(el);
+            }
+        }
     </script>
 </body>
 

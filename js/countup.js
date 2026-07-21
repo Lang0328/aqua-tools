@@ -75,6 +75,9 @@
         });
     }
 
+    // 暴露给外部，便于动态更新数值后重放滚动动画
+    window.animateCount = animateCount;
+
     // 页面加载完成后启动
     if (document.readyState === "loading") {
         document.addEventListener("DOMContentLoaded", initAll);
