@@ -591,10 +591,18 @@
                 const x = e.clientX - rect.left - rect.width / 2;
                 const y = e.clientY - rect.top - rect.height / 2;
                 card.style.transform = `perspective(700px) rotateX(${(-y / 12).toFixed(2)}deg) rotateY(${(x / 12).toFixed(2)}deg)`;
+                // 跟随光标的水光高光位置
+                card.style.setProperty('--mx', (((e.clientX - rect.left) / rect.width) * 100).toFixed(1) + '%');
+                card.style.setProperty('--my', (((e.clientY - rect.top) / rect.height) * 100).toFixed(1) + '%');
                 lastTiltCard = card;
             });
             tiltGrid.addEventListener('mouseleave', () => {
-                if (lastTiltCard) { lastTiltCard.style.transform = ''; lastTiltCard = null; }
+                if (lastTiltCard) {
+                    lastTiltCard.style.transform = '';
+                    lastTiltCard.style.removeProperty('--mx');
+                    lastTiltCard.style.removeProperty('--my');
+                    lastTiltCard = null;
+                }
             });
         }
 

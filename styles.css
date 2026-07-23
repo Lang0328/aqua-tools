@@ -375,14 +375,16 @@ body, .topbar, .sidebar, .tool-body, .tool-card-v2, .design-ref-card,
     --accent: #5b6cff;
     --accent-2: #22d3ee;
 
-    /* 液态玻璃核心：强模糊 + 内高光(白) + 内暗边(黑) + 柔和外阴影 */
-    --glass-bg: rgba(255, 255, 255, 0.42);
+    /* 液态玻璃核心：强模糊 + 斜切高光(左上亮/右下暗) + 柔和外发光 + 柔和外阴影 */
+    --glass-bg: rgba(255, 255, 255, 0.4);
     --glass-blur: saturate(220%) blur(26px);
-    --glass-border: rgba(255, 255, 255, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.75);
     --glass-shadow:
-        inset 0 1px 1px rgba(255, 255, 255, 0.7),
-        inset 0 -1px 1px rgba(20, 20, 40, 0.08),
-        0 8px 32px rgba(31, 38, 135, 0.18);
+        inset 0 1.5px 1px rgba(255, 255, 255, 0.92),
+        inset 1px 0 1px rgba(255, 255, 255, 0.45),
+        inset -1.5px -1.5px 1.5px rgba(50, 55, 95, 0.3),
+        inset 0 0 16px rgba(255, 255, 255, 0.2),
+        0 10px 34px rgba(31, 38, 135, 0.2);
 
     --shadow-sm: 0 1px 3px rgba(31, 38, 135, 0.1);
     --shadow-md: 0 4px 14px rgba(31, 38, 135, 0.14);
@@ -408,12 +410,13 @@ body, .topbar, .sidebar, .tool-body, .tool-card-v2, .design-ref-card,
     --bonus-score-2: #dbe2ff;
 
     /* 详情弹窗玻璃（液态玻璃） */
-    --modal-bg: rgba(255, 255, 255, 0.5);
-    --modal-border: rgba(255, 255, 255, 0.7);
+    --modal-bg: rgba(255, 255, 255, 0.48);
+    --modal-border: rgba(255, 255, 255, 0.75);
     --modal-shadow:
-        inset 0 1px 1px rgba(255, 255, 255, 0.7),
-        inset 0 -1px 1px rgba(20, 20, 40, 0.08),
-        0 24px 70px rgba(31, 38, 135, 0.28);
+        inset 0 1.5px 1px rgba(255, 255, 255, 0.92),
+        inset -1.5px -1.5px 1.5px rgba(50, 55, 95, 0.3),
+        inset 0 0 18px rgba(255, 255, 255, 0.2),
+        0 24px 70px rgba(31, 38, 135, 0.32);
     --modal-overlay: rgba(20, 24, 50, 0.3);
     --modal-tips-bg: rgba(91, 108, 255, 0.1);
 
@@ -448,7 +451,7 @@ body, .topbar, .sidebar, .tool-body, .tool-card-v2, .design-ref-card,
     100% { transform: scale(1.06) translate(0, 0) rotate(0deg); }
 }
 
-/* 液态玻璃卡片：玻璃质感 + 折射高光层 + 3D 倾斜（文字保持清晰） */
+/* 液态玻璃卡片：玻璃质感 + 折射流光 + 跟随光标水光 + 3D 倾斜（文字保持清晰） */
 [data-theme="liquid-glass"] .tool-card-v2 {
     position: relative;
     overflow: hidden;
@@ -464,27 +467,81 @@ body, .topbar, .sidebar, .tool-body, .tool-card-v2, .design-ref-card,
 }
 [data-theme="liquid-glass"] .tool-card-v2 > * {
     position: relative;
-    z-index: 1;
+    z-index: 2;
 }
-[data-theme="liquid-glass"] .tool-card-v2::after {
+
+/* 跟随光标的水光高光（screen 混合 → 湿玻璃反光感） */
+[data-theme="liquid-glass"] .tool-card-v2::before {
     content: '';
     position: absolute;
     inset: 0;
-    z-index: 0;
+    z-index: 1;
     border-radius: inherit;
-    background: linear-gradient(140deg,
-        rgba(255, 255, 255, 0.6) 0%,
-        rgba(255, 255, 255, 0.05) 38%,
-        rgba(255, 255, 255, 0.22) 100%);
+    background:
+        radial-gradient(130px 130px at var(--mx, 26%) var(--my, 14%),
+            rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0) 62%),
+        radial-gradient(80% 60% at 50% 122%, rgba(91, 108, 255, 0.2), transparent 72%);
+    mix-blend-mode: screen;
+    opacity: 0.85;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+/* 折射扭曲的斜向流光（经 SVG 位移贴图扭曲，呈液态光泽） */
+[data-theme="liquid-glass"] .tool-card-v2::after {
+    content: '';
+    display: block;
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    border-radius: inherit;
+    background: linear-gradient(135deg,
+        rgba(255, 255, 255, 0.65) 0%,
+        rgba(255, 255, 255, 0.04) 36%,
+        rgba(255, 255, 255, 0.28) 70%,
+        rgba(255, 255, 255, 0.05) 100%);
     filter: url(#liquid-glass-distortion);
     opacity: 0.9;
     pointer-events: none;
 }
 [data-theme="liquid-glass"] .tool-card-v2:hover {
     box-shadow:
-        inset 0 1px 1px rgba(255, 255, 255, 0.8),
-        inset 0 -1px 1px rgba(20, 20, 40, 0.1),
-        0 14px 40px rgba(31, 38, 135, 0.26);
+        inset 0 1.5px 1px rgba(255, 255, 255, 0.95),
+        inset 1px 0 1px rgba(255, 255, 255, 0.5),
+        inset -1.5px -1.5px 1.5px rgba(50, 55, 95, 0.34),
+        inset 0 0 18px rgba(255, 255, 255, 0.24),
+        0 16px 44px rgba(31, 38, 135, 0.28);
+}
+[data-theme="liquid-glass"] .tool-card-v2:hover::before {
+    opacity: 1;
+}
+
+/* 顶栏 / 侧边栏：作为浮动玻璃直接折射背景 + 斜切高光边缘（轻量滤镜保证可读） */
+[data-theme="liquid-glass"] .topbar {
+    backdrop-filter: saturate(200%) blur(18px) url(#liquid-glass-ui);
+    -webkit-backdrop-filter: saturate(200%) blur(18px);
+    box-shadow:
+        inset 0 1.5px 1px rgba(255, 255, 255, 0.92),
+        inset 0 -1px 1px rgba(50, 55, 95, 0.22),
+        0 8px 28px rgba(31, 38, 135, 0.16);
+}
+[data-theme="liquid-glass"] .sidebar {
+    backdrop-filter: saturate(200%) blur(18px) url(#liquid-glass-ui);
+    -webkit-backdrop-filter: saturate(200%) blur(18px);
+}
+/* 顶栏顶部一道长条高光，强化玻璃厚度 */
+[data-theme="liquid-glass"] .topbar::before {
+    content: '';
+    position: absolute;
+    left: 0; right: 0; top: 0;
+    height: 1.5px;
+    background: linear-gradient(90deg,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.85) 30%,
+        rgba(255, 255, 255, 0.85) 70%,
+        rgba(255, 255, 255, 0) 100%);
+    pointer-events: none;
+    z-index: 1;
 }
 
 /* —— 淡色极光天空：共享极光动画，配色改为柔和浅色 —— */
