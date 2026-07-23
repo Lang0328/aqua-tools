@@ -550,7 +550,7 @@
         const popover = $('#themePopover');
         if (!themeBtn || !popover) return;
         const STORAGE_KEY = 'aqua-theme';
-        const VALID_THEMES = ['aqua', 'midnight', 'aurora', 'aurora-light'];
+        const VALID_THEMES = ['aqua', 'midnight', 'aurora', 'aurora-light', 'liquid-glass'];
 
         function applyTheme(theme) {
             if (!VALID_THEMES.includes(theme)) theme = 'aqua';
@@ -564,12 +564,39 @@
                 opt.classList.toggle('is-active', opt.dataset.theme === theme);
             });
             try { localStorage.setItem(STORAGE_KEY, theme); } catch (e) {}
+            // 离开液态玻璃主题时复位卡片 3D 倾斜
+            if (theme !== 'liquid-glass') {
+                $$('.tool-card-v2').forEach(c => { c.style.transform = ''; });
+            }
         }
 
         // 初始化激活态（主题已由 head 内联脚本应用）
         let saved = 'aqua';
         try { saved = localStorage.getItem(STORAGE_KEY) || 'aqua'; } catch (e) {}
         applyTheme(saved);
+
+        // 液态玻璃：鼠标 3D 倾斜（仅该主题生效）
+        const tiltGrid = $('.tools-grid-v2');
+        let lastTiltCard = null;
+        if (tiltGrid) {
+            tiltGrid.addEventListener('mousemove', (e) => {
+                if (document.documentElement.dataset.theme !== 'liquid-glass') return;
+                const card = e.target.closest('.tool-card-v2');
+                if (!card) return;
+                if (lastTiltCard && lastTiltCard !== card) {
+                    lastTiltCard.style.transform = '';
+                    lastTiltCard = null;
+                }
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left - rect.width / 2;
+                const y = e.clientY - rect.top - rect.height / 2;
+                card.style.transform = `perspective(700px) rotateX(${(-y / 12).toFixed(2)}deg) rotateY(${(x / 12).toFixed(2)}deg)`;
+                lastTiltCard = card;
+            });
+            tiltGrid.addEventListener('mouseleave', () => {
+                if (lastTiltCard) { lastTiltCard.style.transform = ''; lastTiltCard = null; }
+            });
+        }
 
         function togglePopover(force) {
             const willOpen = force !== undefined ? force : popover.hidden;
