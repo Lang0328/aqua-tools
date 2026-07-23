@@ -440,15 +440,9 @@ body, .topbar, .sidebar, .tool-body, .tool-card-v2, .design-ref-card,
         radial-gradient(55% 55% at 50% 50%, rgba(255, 209, 102, 0.4), transparent 65%),
         linear-gradient(135deg, #eef1f8, #e7ecfb);
     filter: url(#liquid-glass-distortion);
-    animation: liquidDrift 28s ease-in-out infinite;
 }
 [data-theme="liquid-glass"] .liquid-bg {
     display: block;
-}
-@keyframes liquidDrift {
-    0%   { transform: scale(1.06) translate(0, 0) rotate(0deg); }
-    50%  { transform: scale(1.12) translate(-2%, 2%) rotate(0.5deg); }
-    100% { transform: scale(1.06) translate(0, 0) rotate(0deg); }
 }
 
 /* 液态玻璃卡片：玻璃质感 + 折射流光 + 跟随光标水光 + 3D 倾斜（文字保持清晰） */
@@ -461,7 +455,6 @@ body, .topbar, .sidebar, .tool-body, .tool-card-v2, .design-ref-card,
     border: 1px solid var(--glass-border);
     box-shadow: var(--glass-shadow);
     transform-style: preserve-3d;
-    will-change: transform;
     transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
                 box-shadow 0.3s ease;
 }
@@ -487,7 +480,7 @@ body, .topbar, .sidebar, .tool-body, .tool-card-v2, .design-ref-card,
     transition: opacity 0.3s ease;
 }
 
-/* 折射扭曲的斜向流光（经 SVG 位移贴图扭曲，呈液态光泽） */
+/* 斜向流光（纯 CSS 渐变，不套 SVG 滤镜，避免大量卡片逐像素计算卡顿） */
 [data-theme="liquid-glass"] .tool-card-v2::after {
     content: '';
     display: block;
@@ -500,7 +493,6 @@ body, .topbar, .sidebar, .tool-body, .tool-card-v2, .design-ref-card,
         rgba(255, 255, 255, 0.04) 36%,
         rgba(255, 255, 255, 0.28) 70%,
         rgba(255, 255, 255, 0.05) 100%);
-    filter: url(#liquid-glass-distortion);
     opacity: 0.9;
     pointer-events: none;
 }
@@ -518,7 +510,7 @@ body, .topbar, .sidebar, .tool-body, .tool-card-v2, .design-ref-card,
 
 /* 顶栏 / 侧边栏：作为浮动玻璃直接折射背景 + 斜切高光边缘（轻量滤镜保证可读） */
 [data-theme="liquid-glass"] .topbar {
-    backdrop-filter: saturate(200%) blur(18px) url(#liquid-glass-ui);
+    backdrop-filter: saturate(200%) blur(18px);
     -webkit-backdrop-filter: saturate(200%) blur(18px);
     box-shadow:
         inset 0 1.5px 1px rgba(255, 255, 255, 0.92),
@@ -526,7 +518,7 @@ body, .topbar, .sidebar, .tool-body, .tool-card-v2, .design-ref-card,
         0 8px 28px rgba(31, 38, 135, 0.16);
 }
 [data-theme="liquid-glass"] .sidebar {
-    backdrop-filter: saturate(200%) blur(18px) url(#liquid-glass-ui);
+    backdrop-filter: saturate(200%) blur(18px);
     -webkit-backdrop-filter: saturate(200%) blur(18px);
 }
 /* 顶栏顶部一道长条高光，强化玻璃厚度 */
