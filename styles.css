@@ -1666,23 +1666,23 @@ button { cursor: pointer; border: none; background: none; }
     border-bottom: none;
     flex-shrink: 0;
     margin: 0;
-    /* 左下、右下圆角；两侧留边让圆角在桌面端可见 */
+    /* 左下、右下圆角 */
     border-radius: 0 0 18px 18px;
     box-shadow: none;
-    /* 向下拉长约 1cm（52px → 90px） */
-    min-height: 90px;
+    /* 全宽占满；高度 52px + 约 0.5cm（减半厘米）≈ 72px */
+    min-height: 72px;
     height: auto;
     position: fixed;
     top: 0;
-    left: calc(var(--sidebar-width) + 16px);
-    right: 16px;
+    left: var(--sidebar-width);
+    right: 0;
     z-index: var(--z-sticky);
     transition: left 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* 侧边栏折叠时，fixed 顶栏同步右移 */
 .main-content.expanded .topbar {
-    left: calc(var(--sidebar-collapsed) + 16px);
+    left: var(--sidebar-collapsed);
 }
 
 /* 渐变下边替代硬边框，让顶栏与内容柔和衔接，减少割裂感 */
@@ -1917,7 +1917,7 @@ button { cursor: pointer; border: none; background: none; }
     flex: 1;
     overflow-y: auto;
     overflow-x: hidden;
-    padding: 90px 20px 32px;
+    padding: 72px 20px 32px;
     -webkit-overflow-scrolling: touch;
 }
 
