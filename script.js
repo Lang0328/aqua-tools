@@ -452,6 +452,14 @@
 
     menuToggle.addEventListener('click', toggleSidebar);
 
+    // 移动端：点击遮罩关闭侧边栏
+    const sidebarOverlay = $('#sidebarOverlay');
+    if (sidebarOverlay) {
+        sidebarOverlay.addEventListener('click', () => {
+            if (isMobile()) sidebar.classList.remove('mobile-open');
+        });
+    }
+
     // 移动端：侧边栏右滑关闭手势
     let touchStartX = 0;
     sidebar.addEventListener('touchstart', (e) => {

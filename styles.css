@@ -1286,6 +1286,19 @@ button { cursor: pointer; border: none; background: none; }
     overflow: hidden;
 }
 
+/* 移动端侧边栏遮罩（仅移动端生效，见下方媒体查询） */
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.42);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    z-index: calc(var(--z-dropdown) - 1);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
 /* 折叠态：完全隐藏侧边栏 */
 .sidebar.collapsed {
     width: 0;
@@ -1636,6 +1649,10 @@ button { cursor: pointer; border: none; background: none; }
     transition: margin-left 0.35s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     z-index: var(--z-content);
+    /* 成为真正的滚动容器，让内部 sticky 顶栏生效（修复置顶） */
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
 }
 
 .main-content.expanded {
@@ -1891,8 +1908,8 @@ button { cursor: pointer; border: none; background: none; }
    工具容器
    ============================================ */
 .tool-container {
-    flex: 1;
-    overflow-y: auto;
+    flex: 1 0 auto;
+    overflow: visible;
     padding: 24px 20px 32px;
 }
 
@@ -3537,52 +3554,53 @@ button { cursor: pointer; border: none; background: none; }
     .cron-builders { grid-template-columns: repeat(2, 1fr); }
 }
 
+/* ============================================================
+   手机端适配（≤768px）— 全面重做
+   ============================================================ */
 @media (max-width: 768px) {
+    /* --- 侧边栏：全屏抽屉 + 遮罩 --- */
     .sidebar {
-        width: var(--sidebar-width);
+        width: min(82vw, 300px);
         transform: translateX(-100%);
         box-shadow: var(--shadow-lg);
     }
-    
     .sidebar.mobile-open { transform: translateX(0); }
-    
-    .sidebar.collapsed {
-        width: var(--sidebar-width);
-        transform: translateX(-100%);
-    }
-    
+    .sidebar.collapsed,
+    .sidebar.collapsed.mobile-open { width: min(82vw, 300px); }
+    .sidebar.collapsed { transform: translateX(-100%); }
     .sidebar.collapsed.mobile-open { transform: translateX(0); }
-    
-    .main-content, .main-content.expanded {
+
+    /* 遮罩仅在移动端侧栏打开时显示 */
+    .sidebar.mobile-open ~ .sidebar-overlay {
+        display: block;
+        opacity: 1;
+    }
+
+    .main-content,
+    .main-content.expanded {
         margin-left: 0;
     }
-    
+
+    /* 左上角悬浮打开按钮 */
     .fab-open {
-        top: 16px;
-        left: 16px;
+        top: calc(12px + env(safe-area-inset-top, 0px));
+        left: 12px;
         width: 44px;
         height: 44px;
     }
-    
-    .tool-container { padding: 16px 12px 24px; }
-    .tool-body { padding: 20px 16px; }
-    
-    .diff-inputs { grid-template-columns: 1fr; }
+
+    /* --- 内容区 --- */
+    .tool-container { padding: 14px 12px 28px; }
+    .tool-body { padding: 18px 14px; }
+
+    /* 通用双栏布局折叠为单栏 */
+    .diff-inputs,
     .compress-preview { grid-template-columns: 1fr; }
-    
-    .convert-layout {
-        flex-direction: column;
-        align-items: stretch;
-    }
-    
-    .swap-btn {
-        transform: rotate(90deg);
-        margin: 0 auto;
-    }
-    
+    .convert-layout { flex-direction: column; align-items: stretch; }
+    .swap-btn { transform: rotate(90deg); margin: 0 auto; }
     .swap-btn:hover { transform: rotate(270deg); }
-    
-    /* 顶栏：移动端贴顶全宽，去掉悬浮间距，避免置顶留缝 */
+
+    /* --- 顶栏：真正吸顶（sticky 生效）、贴顶全宽、刘海安全区 --- */
     .topbar {
         margin: 0;
         padding: 8px 12px;
@@ -3593,10 +3611,23 @@ button { cursor: pointer; border: none; background: none; }
         flex-wrap: wrap;
         justify-content: flex-start;
         border-radius: 0;
+        position: sticky;
+        top: 0;
+    }
+    .title-wrap { min-width: 0; }
+    .page-title {
+        font-size: 1.05rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
     /* 操作区推到右侧，左侧元素自然成组 */
-    .topbar-actions { margin-left: auto; gap: 2px; }
-    .page-title { font-size: 1rem; }
+    .topbar-actions {
+        margin-left: auto;
+        gap: 2px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+    }
     /* 搜索框换行到第二行并占满整行 */
     .topbar-search {
         order: 5;
@@ -3607,14 +3638,60 @@ button { cursor: pointer; border: none; background: none; }
     /* 实时时钟在窄屏隐藏，节省空间 */
     .tb-clock { display: none; }
     .icon-btn { width: 34px; height: 34px; }
-    .page-title { font-size: 1.05rem; }
+
+    /* 主题下拉在窄屏改为底部对齐、不溢出右侧 */
+    .theme-popover {
+        right: 8px;
+        left: auto;
+    }
+
+    /* --- 工具网格：两列紧凑 --- */
+    .tools-grid-v2 {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 10px;
+    }
+    .tool-card-v2 { padding: 18px 16px; }
+
+    /* 工具头部标题换行 */
+    .tool-header {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    .tool-header h2 { font-size: 1.4rem; }
+
+    /* 主页 Hero 缩放 */
+    .hero-title-v2 { font-size: 2.1rem; }
+    .hero-title-v2 .title-line { display: block; }
+    .section-tabs {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
     .cron-builders { grid-template-columns: 1fr; }
-    .hero-title-v2 { font-size: 2.2rem; }
     .cron-output { font-size: 1.8rem; letter-spacing: 2px; }
-    .section-tabs { width: 100%; overflow-x: auto; }
+
+    /* 弹窗：移动端改为底部抽屉、全宽 */
+    .info-modal {
+        align-items: flex-end;
+        justify-content: stretch;
+        padding: 0;
+    }
+    .info-modal-content {
+        max-width: 100%;
+        width: 100%;
+        border-radius: 18px 18px 0 0;
+        padding: 28px 20px calc(28px + env(safe-area-inset-bottom, 0px));
+        transform: translateY(100%);
+        text-align: left;
+    }
+    .info-modal.show .info-modal-content {
+        transform: translateY(0);
+    }
 }
 
-/* 超窄屏（手机竖屏）：导航栏进一步压缩，隐藏全屏按钮 */
+/* ============================================================
+   超窄屏（手机竖屏，≤480px）— 进一步压缩导航栏
+   ============================================================ */
 @media (max-width: 480px) {
     .topbar {
         padding: 6px 10px;
@@ -3625,6 +3702,17 @@ button { cursor: pointer; border: none; background: none; }
     .icon-btn { width: 32px; height: 32px; }
     .page-title { font-size: 0.95rem; }
     .topbar-search { margin-top: 4px; }
+    .menu-toggle { width: 36px; height: 36px; }
+    .home-btn { width: 32px; height: 32px; }
+
+    .tools-grid-v2 {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 8px;
+    }
+    .tool-card-v2 { padding: 16px 14px; }
+    .hero-title-v2 { font-size: 1.8rem; }
+    .tool-container { padding: 12px 10px 24px; }
+    .tool-body { padding: 16px 12px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
