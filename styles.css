@@ -3579,6 +3579,8 @@ button { cursor: pointer; border: none; background: none; }
     .main-content,
     .main-content.expanded {
         margin-left: 0;
+        /* 用动态视口高度，避免顶栏被手机地址栏/状态栏盖住顶部几像素（"差一点"根因） */
+        height: 100dvh;
     }
 
     /* 左上角悬浮打开按钮 */
