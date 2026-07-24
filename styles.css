@@ -1274,8 +1274,8 @@ button { cursor: pointer; border: none; background: none; }
     width: var(--sidebar-width);
     height: 100vh;
     background: var(--glass-bg);
-    backdrop-filter: var(--glass-blur);
-    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
     border-right: 1px solid var(--border);
     display: flex;
     flex-direction: column;
@@ -1660,8 +1660,8 @@ button { cursor: pointer; border: none; background: none; }
     justify-content: space-between;
     padding: 0 18px;
     background: var(--glass-bg);
-    backdrop-filter: var(--glass-blur);
-    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
     border-bottom: none;
     flex-shrink: 0;
     margin: 0;
