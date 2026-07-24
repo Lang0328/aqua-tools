@@ -965,7 +965,11 @@
         { id: 'opensource', icon: 'fa-book', title: '开源广场', desc: '本地知识库', cat: 'utility' },
         { id: 'reader', icon: 'fa-book-open', title: '小说阅读器', desc: 'TXT/EPUB 阅读', cat: 'utility' },
         { id: 'ip-lookup', icon: 'fa-network-wired', title: 'IP 信息', desc: '本机IP与归属地', cat: 'utility' },
-        { id: 'data-space', icon: 'fa-database', title: '可信数据空间', desc: '数据共享平台 · 点击登录进入', cat: 'utility' }
+        { id: 'data-space', icon: 'fa-database', title: '可信数据空间', desc: '数据共享平台 · 点击登录进入', cat: 'utility' },
+        { id: 'copywriter', icon: 'fa-comment-dots', title: '文案生成器', desc: '朋友圈/小红书文案', cat: 'fun' },
+        { id: 'lottery', icon: 'fa-dice', title: '抽奖助手', desc: '转盘/骰子/抽签', cat: 'fun' },
+        { id: 'truth-dare', icon: 'fa-heart', title: '真心话/匹配度', desc: '破冰神器', cat: 'fun' },
+        { id: 'resume', icon: 'fa-id-card', title: '简历/名片', desc: '一键生成导出', cat: 'fun' }
     ];
 
     // --- 卡片滚动驱动动画：从左→右、从上→下进入 / 反向淡出 ---

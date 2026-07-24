@@ -262,6 +262,26 @@
                     <span>可信数据空间</span>
                 </a>
             </div>
+
+            <div class="nav-group">
+                <p class="nav-group-title">趣味社交</p>
+                <a href="#" class="nav-item" data-tool="copywriter">
+                    <i class="fas fa-comment-dots"></i>
+                    <span>文案生成器</span>
+                </a>
+                <a href="#" class="nav-item" data-tool="lottery">
+                    <i class="fas fa-dice"></i>
+                    <span>抽奖助手</span>
+                </a>
+                <a href="#" class="nav-item" data-tool="truth-dare">
+                    <i class="fas fa-heart"></i>
+                    <span>真心话 / 匹配度</span>
+                </a>
+                <a href="#" class="nav-item" data-tool="resume">
+                    <i class="fas fa-id-card"></i>
+                    <span>简历 / 名片</span>
+                </a>
+            </div>
         </nav>
     </aside>
 
@@ -365,6 +385,7 @@
                         <button class="section-tab" data-filter="design">设计</button>
                         <button class="section-tab" data-filter="media">媒体</button>
                         <button class="section-tab" data-filter="utility">实用</button>
+                        <button class="section-tab" data-filter="fun">趣味</button>
                     </div>
                     <div class="tools-grid-v2" id="toolsGridV2"></div>
                 </div>
@@ -1978,6 +1999,183 @@
                 </div>
             </section>
 
+            <!-- 工具：文案生成器 -->
+            <section class="tool-panel" id="tool-copywriter">
+                <div class="tool-header">
+                    <div>
+                        <h2>朋友圈 / 小红书文案生成器</h2>
+                        <p>选场景一键生成多条文案，可复制也能导出分享卡</p>
+                    </div>
+                </div>
+                <div class="tool-body glass">
+                    <div class="cw-scenarios" id="cwScenarios"></div>
+                    <div class="tool-row">
+                        <button class="tool-btn primary" id="cwGen"><i class="fas fa-wand-magic-sparkles"></i>生成文案</button>
+                        <button class="tool-btn" id="cwAgain"><i class="fas fa-rotate"></i>换一批</button>
+                        <button class="tool-btn" id="cwShare"><i class="fas fa-image"></i>导出分享卡</button>
+                    </div>
+                    <div class="cw-results" id="cwResults"></div>
+                </div>
+            </section>
+
+            <!-- 工具：抽奖助手 -->
+            <section class="tool-panel" id="tool-lottery">
+                <div class="tool-header">
+                    <div>
+                        <h2>抽奖助手</h2>
+                        <p>幸运大转盘 / 掷骰子 / 抽签，群聊年会直播抽奖直接用，无需登录</p>
+                    </div>
+                </div>
+                <div class="tool-body glass">
+                    <div class="sub-tabs" id="lotteryTabs">
+                        <button class="sub-tab active" data-lm="wheel">幸运大转盘</button>
+                        <button class="sub-tab" data-lm="dice">掷骰子</button>
+                        <button class="sub-tab" data-lm="draw">抽签</button>
+                    </div>
+                    <div class="control-group">
+                        <label>选项（每行 / 逗号分隔一个）</label>
+                        <textarea id="lotteryOptions" class="text-input lottery-options">张三
+李四
+王五
+赵六
+孙七
+周八</textarea>
+                    </div>
+                    <div id="lotWheelBox">
+                        <div class="wheel-wrap">
+                            <div class="wheel-pointer"></div>
+                            <canvas id="lotteryWheel" width="640" height="640"></canvas>
+                            <button class="wheel-center" id="lotSpin">GO</button>
+                        </div>
+                        <div class="lottery-hint" id="lotWheelHint">点击中间 GO 开始抽奖</div>
+                    </div>
+                    <div id="lotDiceBox" style="display:none">
+                        <div class="tool-row">
+                            <label style="margin:0">骰子数</label>
+                            <select id="diceCount" class="text-input" style="width:auto">
+                                <option>1</option><option selected>2</option><option>3</option>
+                            </select>
+                            <button class="tool-btn primary" id="diceRoll"><i class="fas fa-dice"></i>掷骰子</button>
+                        </div>
+                        <div class="dice-area" id="diceArea"></div>
+                        <div class="lottery-hint" id="diceHint"></div>
+                    </div>
+                    <div id="lotDrawBox" style="display:none">
+                        <button class="tool-btn primary" id="drawBtn" style="margin:10px 0"><i class="fas fa-hand-pointer"></i>抽一个</button>
+                        <div class="draw-result" id="drawResult"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 工具：真心话大冒险 / 群友匹配度 -->
+            <section class="tool-panel" id="tool-truth-dare">
+                <div class="tool-header">
+                    <div>
+                        <h2>真心话大冒险 / 群友匹配度</h2>
+                        <p>聚会破冰神器，匹配结果可生成分享卡</p>
+                    </div>
+                </div>
+                <div class="tool-body glass">
+                    <div class="sub-tabs" id="tdTabs">
+                        <button class="sub-tab active" data-td="td">真心话大冒险</button>
+                        <button class="sub-tab" data-td="match">群友匹配度</button>
+                    </div>
+                    <div id="tdBox">
+                        <div class="tool-row">
+                            <button class="sub-tab active" id="tdModeTruth" data-mode="truth">真心话</button>
+                            <button class="sub-tab" id="tdModeDare" data-mode="dare">大冒险</button>
+                            <button class="tool-btn primary" id="tdPick" style="margin-left:auto"><i class="fas fa-random"></i>抽一个</button>
+                        </div>
+                        <div class="td-card"><div class="td-text" id="tdText">点击「抽一个」开始</div></div>
+                    </div>
+                    <div id="matchBox" style="display:none">
+                        <div class="match-form">
+                            <input class="text-input" id="matchA" placeholder="第一个人昵称">
+                            <input class="text-input" id="matchB" placeholder="第二个人昵称">
+                            <button class="tool-btn primary" id="matchBtn"><i class="fas fa-heart"></i>测一测</button>
+                        </div>
+                        <div class="match-result" id="matchResult" style="display:none">
+                            <div class="match-score" id="matchScore">0%</div>
+                            <div class="match-bar"><div class="match-bar-fill" id="matchBarFill"></div></div>
+                            <div class="match-verdict" id="matchVerdict"></div>
+                            <button class="tool-btn" id="matchShare" style="margin-top:12px"><i class="fas fa-image"></i>生成分享卡</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 工具：简历 / 名片一键生成 -->
+            <section class="tool-panel" id="tool-resume">
+                <div class="tool-header">
+                    <div>
+                        <h2>简历 / 名片一键生成</h2>
+                        <p>填表实时预览，名片导出 PNG，简历打印为 PDF</p>
+                    </div>
+                </div>
+                <div class="tool-body glass">
+                    <div class="sub-tabs" id="resumeTabs">
+                        <button class="sub-tab active" data-rt="card">名片</button>
+                        <button class="sub-tab" data-rt="resume">简历</button>
+                    </div>
+                    <div id="ncBox">
+                        <div class="nc-grid">
+                            <div class="nc-form">
+                                <input class="text-input" id="ncName" placeholder="姓名" value="林小满">
+                                <input class="text-input" id="ncTitle" placeholder="职位 / 头衔" value="全栈工程师">
+                                <input class="text-input" id="ncPhone" placeholder="电话" value="138-0000-0000">
+                                <input class="text-input" id="ncEmail" placeholder="邮箱" value="hi@example.com">
+                                <input class="text-input" id="ncCompany" placeholder="公司" value="Aqua Studio">
+                                <input class="text-input" id="ncTag" placeholder="标语 / 标签" value="把想法变成产品">
+                                <label style="font-size:.9rem;color:var(--text-muted)">主题色</label>
+                                <input type="color" id="ncColor" value="#ff375f" style="width:100%;height:42px;border:none;background:none;cursor:pointer">
+                                <button class="tool-btn primary" id="ncDownload"><i class="fas fa-download"></i>下载名片 PNG</button>
+                            </div>
+                            <div class="nc-preview">
+                                <div class="nc-card" id="ncCard">
+                                    <div>
+                                        <div class="nc-name" id="ncNameV">林小满</div>
+                                        <div class="nc-title" id="ncTitleV">全栈工程师</div>
+                                    </div>
+                                    <div>
+                                        <div class="nc-contact" id="ncContactV">138-0000-0000 · hi@example.com</div>
+                                        <div class="nc-contact" id="ncCompanyV">Aqua Studio</div>
+                                        <span class="nc-tag" id="ncTagV">把想法变成产品</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="resumeBox" style="display:none">
+                        <div class="nc-grid">
+                            <div class="nc-form">
+                                <input class="text-input" id="rpName" placeholder="姓名" value="林小满">
+                                <input class="text-input" id="rpGoal" placeholder="求职意向" value="前端 / 全栈开发">
+                                <input class="text-input" id="rpMeta" placeholder="电话 · 邮箱 · 城市" value="138-0000-0000 · hi@example.com · 上海">
+                                <input class="text-input" id="rpEdu" placeholder="教育背景" value="XX 大学 · 计算机科学 · 2018-2022">
+                                <textarea class="text-input" id="rpExp" rows="4" placeholder="工作/项目经历（每行一条）">某科技公司 · 前端工程师 · 2022-至今
+主导 XX 项目，性能提升 40%</textarea>
+                                <textarea class="text-input" id="rpSkill" rows="3" placeholder="技能（每行一条）">JavaScript / TypeScript
+React / Vue
+Node.js</textarea>
+                                <div class="rp-export-row">
+                                    <button class="tool-btn primary" id="rpPrint"><i class="fas fa-print"></i>打印 / 存 PDF</button>
+                                </div>
+                            </div>
+                            <div class="nc-preview">
+                                <div class="resume-preview" id="resumePrint">
+                                    <div class="rp-name" id="rpNameV">林小满</div>
+                                    <div class="rp-meta" id="rpGoalV">求职意向：前端 / 全栈开发</div>
+                                    <h3>联系方式</h3><div class="rp-sec" id="rpMetaV">138-0000-0000 · hi@example.com · 上海</div>
+                                    <h3>教育背景</h3><div class="rp-sec" id="rpEduV">XX 大学 · 计算机科学 · 2018-2022</div>
+                                    <h3>经历</h3><div class="rp-sec" id="rpExpV"></div>
+                                    <h3>技能</h3><div class="rp-sec" id="rpSkillV"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             <footer class="site-footer">
                 <span>© vio-linist 2026</span>
             </footer>
@@ -2029,5 +2227,6 @@
     </div>
 
     <script src="script.js"></script>
+    <script src="js/fun-tools.js"></script>
 </body>
 </html>
