@@ -1,0 +1,466 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>可信数据空间数据共享平台</title>
+    <style>
+        html{opacity:0;transition:opacity .15s ease-out}
+        .header,.nav{background:#6a4ec8}
+        [data-ico]{display:inline-block;width:24px;height:24px;vertical-align:middle}
+    </style>
+    <link rel="stylesheet" href="css/style.css?v=2">
+
+    <script src="js/icons.js?v=2"></script>
+    <script src="js/modal.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/countup.js"></script>
+    <script src="js/db.js"></script>
+</head>
+
+
+<body onload="document.documentElement.style.opacity=1;checkLogin()">
+
+
+<!-- 顶部标题栏 -->
+<header class="header">
+
+    <div class="logo">
+        <span data-ico="lock"></span>可信数据空间数据共享平台
+    </div>
+
+
+    <div class="user-info">
+
+        当前用户：
+        <span id="username"></span>
+
+        <a href="index.html" class="home-btn">返回主界面</a>
+
+        <button 
+        class="logout"
+        onclick="logout()">
+        退出登录
+        </button>
+
+    </div>
+
+
+</header>
+
+
+
+<!-- 导航栏 -->
+
+<nav class="nav">
+    <a href="dataspace.html" class="active">首页</a>
+    <a href="upload.html">数据上传</a>
+    <a href="data.html">数据查询</a>
+    <a href="permission.html">权限管理</a>
+    <a href="request.html">授权申请</a>
+    <a href="log.html">访问日志</a>
+</nav>
+
+
+
+
+<!-- 主体内容 -->
+
+<main class="container">
+
+
+    <!-- 欢迎区域 -->
+
+    <section class="welcome">
+
+
+        <h1>
+            可信数据空间
+        </h1>
+
+
+        <p>
+            面向多主体数据共享场景，
+            提供数据安全存储、身份认证、
+            权限控制以及访问追踪能力。
+        </p>
+
+
+    </section>
+
+
+
+
+    <!-- 数据统计 -->
+
+
+    <section class="statistics">
+
+
+        <div class="stat-card">
+
+            <h3>
+                数据资源
+            </h3>
+
+            <strong id="statData" data-count="0" data-duration="700">
+                0
+            </strong>
+
+            <p>
+                已加密存储
+            </p>
+
+        </div>
+
+
+
+
+        <div class="stat-card">
+
+            <h3>
+                用户数量
+            </h3>
+
+            <strong id="statUsers" data-count="0" data-duration="600">
+                0
+            </strong>
+
+            <p>
+                已认证用户
+            </p>
+
+        </div>
+
+
+
+
+
+        <div class="stat-card">
+
+            <h3>
+                今日访问
+            </h3>
+
+            <strong id="statVisits" data-count="0" data-duration="650">
+                0
+            </strong>
+
+            <p>
+                数据访问记录
+            </p>
+
+        </div>
+
+
+
+
+
+        <div class="stat-card">
+
+            <h3>
+                安全状态
+            </h3>
+
+            <strong class="safe">
+
+                正常
+
+            </strong>
+
+            <p>
+                AES加密开启
+            </p>
+
+        </div>
+
+
+    </section>
+
+
+
+
+
+
+    <!-- 功能模块 -->
+
+
+    <h2>
+        系统功能
+    </h2>
+
+
+
+    <section class="modules">
+
+
+        <div class="module-card">
+
+            <div class="icon">
+                <span data-ico="folder"></span>
+            </div>
+
+
+            <h3>
+                数据上传
+            </h3>
+
+
+            <p>
+                上传数据并自动进行加密处理。
+            </p>
+
+
+        </div>
+
+
+
+
+        <div class="module-card">
+
+            <div class="icon">
+                <span data-ico="search"></span>
+            </div>
+
+
+            <h3>
+                数据查询
+            </h3>
+
+
+            <p>
+                根据权限查看共享数据。
+            </p>
+
+
+        </div>
+
+
+
+
+        <div class="module-card">
+
+            <div class="icon">
+                <span data-ico="shield"></span>
+            </div>
+
+
+            <h3>
+                权限管理
+            </h3>
+
+
+            <p>
+                控制不同用户访问范围。
+            </p>
+
+
+        </div>
+
+
+
+
+        <div class="module-card">
+
+            <div class="icon">
+                <span data-ico="scroll"></span>
+            </div>
+
+
+            <h3>
+                访问日志
+            </h3>
+
+
+            <p>
+                记录数据访问行为，实现追踪。
+            </p>
+
+
+        </div>
+
+
+
+    </section>
+
+
+
+
+
+
+    <!-- 数据共享流程 -->
+
+
+    <section class="flow">
+
+
+        <h2>
+            可信数据共享流程
+        </h2>
+
+
+
+        <div class="flow-container">
+
+
+            <div class="flow-node">
+
+                <span data-ico="hospital"></span>
+                <div class="flow-node-text">
+                    <div class="flow-node-title">数据提供方</div>
+                    <div class="flow-node-sub">医疗机构A</div>
+                </div>
+
+            </div>
+
+
+
+            <div class="arrow">→</div>
+
+
+
+
+            <div class="flow-node">
+
+                <span data-ico="lock"></span>
+                <div class="flow-node-text">
+                    <div class="flow-node-title">数据加密</div>
+                    <div class="flow-node-sub">AES保护</div>
+                </div>
+
+            </div>
+
+
+
+
+            <div class="arrow">
+
+                →
+
+            </div>
+
+
+
+
+            <div class="flow-node">
+
+                <span data-ico="globe"></span>
+                <div class="flow-node-text">
+                    <div class="flow-node-title">可信数据空间</div>
+                    <div class="flow-node-sub">安全管理</div>
+                </div>
+
+            </div>
+
+
+
+
+            <div class="arrow">
+
+                →
+
+            </div>
+
+
+
+
+            <div class="flow-node">
+
+                <span data-ico="user"></span>
+                <div class="flow-node-text">
+                    <div class="flow-node-title">数据使用方</div>
+                    <div class="flow-node-sub">医疗机构B</div>
+                </div>
+
+            </div>
+
+
+
+
+        </div>
+
+
+    </section>
+
+
+
+
+
+
+
+</main>
+
+
+
+
+
+<footer>
+
+
+    © 2026 可信数据空间安全与隐私保护研究 Demo
+
+
+</footer>
+
+
+
+
+
+
+
+
+    <script>
+        (function() {
+            const user = getCurrentUser();
+            if (user) {
+                document.getElementById("username").innerHTML = user.username + " (" + user.role + ")";
+            }
+            loadStats();
+        })();
+
+        // 实时统计：数据资源 / 用户数量 / 今日访问
+        async function loadStats() {
+            // 数据资源数：本地数据库（IndexedDB）中已存储的文件数
+            let dataCount = 0;
+            try {
+                dataCount = (await dbGetAllFiles()).length;
+            } catch (e) {}
+
+            // 用户数量：注册用户 + 演示账号（admin / user）
+            let users = [];
+            try {
+                users = JSON.parse(localStorage.getItem("dataspace_users") || "[]");
+            } catch (e) {}
+            let userCount = users.length + 2;
+
+            // 今日访问：访问日志中日期为今天的记录数
+            const today = new Date().toLocaleDateString();
+            let logs = [];
+            try {
+                logs = JSON.parse(localStorage.getItem("logs") || "[]");
+            } catch (e) {}
+            const visitCount = logs.filter(function (l) {
+                return l && l.time && String(l.time).indexOf(today) === 0;
+            }).length;
+
+            setCount("statData", dataCount);
+            setCount("statUsers", userCount);
+            setCount("statVisits", visitCount);
+        }
+
+        function setCount(id, val) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.setAttribute("data-count", val);
+            el.textContent = val;
+            if (typeof window.animateCount === "function") {
+                window.animateCount(el);
+            }
+        }
+    </script>
+</body>
+
+
+</html>

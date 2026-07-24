@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>数据安全查询</title>
+    <style>
+        html{opacity:0;transition:opacity .15s ease-out}
+        .header,.nav{background:#6a4ec8}
+        [data-ico]{display:inline-block;width:24px;height:24px;vertical-align:middle}
+    </style>
+    <link rel="stylesheet" href="css/style.css?v=3">
+
+    <script src="js/icons.js?v=2"></script>
+    <script src="js/modal.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/crypto.js"></script>
+    <script src="js/permission.js"></script>
+    <script src="js/log.js"></script>
+
+</head>
+
+
+<body onload="document.documentElement.style.opacity=1;checkLogin()">
+
+
+<header class="header">
+
+<div class="logo">
+
+<span data-ico="lock"></span> 可信数据空间数据共享平台
+
+</div>
+
+
+<div class="user-info">
+
+当前用户：
+
+<span id="username">
+
+</span>
+
+<a href="dataspace.html" class="home-btn">返回主界面</a>
+
+<button
+class="logout"
+onclick="logout()">
+
+退出登录
+
+</button>
+
+</div>
+
+</header>
+
+
+<nav class="nav">
+    <a href="dataspace.html">首页</a>
+    <a href="upload.html">数据上传</a>
+    <a class="active">数据查询</a>
+    <a href="permission.html">权限管理</a>
+    <a href="request.html">授权申请</a>
+    <a href="log.html">访问日志</a>
+</nav>
+
+
+<main class="container">
+
+
+<section class="welcome">
+
+
+<h1>
+
+<span data-ico="search"></span> 数据安全查询
+
+</h1>
+
+
+<p>
+
+通过数据编号访问可信数据空间中的加密数据，
+经过身份验证后恢复原始文件。
+
+</p>
+
+
+</section>
+
+
+<section class="upload-panel">
+
+
+<h2>
+
+查询加密数据
+
+</h2>
+
+
+<div class="search-form">
+    <label class="form-label">数据编号</label>
+    <input id="dataID" type="text" placeholder="请输入 TDS-xxxx 数据编号">
+
+<button
+
+class="primary-btn"
+
+onclick="searchData()">
+
+查询数据
+
+</button>
+
+</div>
+
+
+<div id="result"
+
+style="margin-top:30px;">
+
+
+</div>
+
+
+</section>
+
+
+<section class="list-panel">
+
+    <h2><span data-ico="folder"></span> 数据存储列表</h2>
+    <p class="list-tip">所有已登录用户均可查看、下载、删除以下数据，没有权限差异。</p>
+    <div id="fileList"></div>
+
+</section>
+
+
+<section class="flow">
+
+
+<h2>
+
+数据访问流程
+
+</h2>
+
+
+<div class="flow-container">
+
+
+<div class="flow-node">
+    <span data-ico="search"></span>
+    <div class="flow-node-text">
+        <div class="flow-node-title">数据查询</div>
+    </div>
+</div>
+
+
+<div class="arrow">→</div>
+
+
+<div class="flow-node">
+    <span data-ico="lock"></span>
+    <div class="flow-node-text">
+        <div class="flow-node-title">权限验证</div>
+    </div>
+</div>
+
+
+<div class="arrow">→</div>
+
+
+<div class="flow-node">
+    <span data-ico="unlock"></span>
+    <div class="flow-node-text">
+        <div class="flow-node-title">解密恢复</div>
+    </div>
+</div>
+
+
+<div class="arrow">→</div>
+
+
+<div class="flow-node">
+    <span data-ico="file"></span>
+    <div class="flow-node-text">
+        <div class="flow-node-title">文件下载</div>
+    </div>
+</div>
+
+
+</div>
+
+
+</section>
+
+
+</main>
+
+
+<footer>
+
+© 2026 可信数据空间安全与隐私保护研究 Demo
+
+</footer>
+
+
+<script>
+
+window.onload=function(){
+
+
+let user =
+
+getCurrentUser();
+
+
+if(user){
+    document.getElementById("username").innerHTML = user.username + " (" + user.role + ")";
+}
+
+
+renderFileList();
+
+
+}
+
+</script>
+
+
+<script src="js/db.js"></script>
+<script src="js/data.js"></script>
+
+
+</body>
+
+</html>

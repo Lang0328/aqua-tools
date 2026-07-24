@@ -1,0 +1,292 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>权限管理 - 可信数据空间</title>
+    <style>
+        html{opacity:0;transition:opacity .15s ease-out}
+        .header,.nav{background:#6a4ec8}
+        [data-ico]{display:inline-block;width:24px;height:24px;vertical-align:-2px}
+        h1,h2{display:flex;align-items:baseline;gap:10px}
+        h1 [data-ico],h2 [data-ico]{width:26px;height:26px;vertical-align:baseline}
+    </style>
+    <link rel="stylesheet" href="css/style.css?v=2">
+    <style>
+        h1 .svg-ico,h2 .svg-ico{vertical-align:middle !important;margin-right:0 !important}
+        .perm-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            padding: 35px;
+            margin-top: 30px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 8px 24px rgba(106, 78, 200, 0.1);
+        }
+        .perm-form {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-width: 450px;
+            width: 100%;
+        }
+        .perm-form label {
+            font-weight: bold;
+            margin-top: 8px;
+            color: #4a4266;
+        }
+        .perm-form input {
+            width: 100%;
+            height: 42px;
+            padding: 0 14px;
+            border: 1px solid rgba(155, 109, 255, 0.3);
+            border-radius: 20px;
+            font-size: 15px;
+            background: rgba(255, 255, 255, 0.7);
+            color: #333;
+            transition: all .3s ease;
+        }
+        .perm-form input:focus {
+            outline: none;
+            border-color: #9b6dff;
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 0 0 3px rgba(155, 109, 255, 0.12);
+        }
+        .perm-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            min-width: 700px;
+        }
+        .perm-table th, .perm-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(155, 109, 255, 0.15);
+            white-space: nowrap;
+        }
+        .perm-table th {
+            background: rgba(155, 109, 255, 0.15);
+            color: #6a4ec8;
+            font-weight: bold;
+        }
+        .perm-table tr:hover {
+            background: rgba(155, 109, 255, 0.06);
+        }
+        .danger-btn {
+            padding: 6px 16px;
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 13px;
+            white-space: nowrap;
+            transition: all .3s ease;
+            box-shadow: 0 4px 10px rgba(231, 76, 60, 0.3);
+        }
+        .danger-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 14px rgba(231, 76, 60, 0.4);
+        }
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #9b8eb5;
+        }
+        @media screen and (max-width: 768px) {
+            .perm-panel {
+                padding: 20px 15px;
+            }
+            .perm-table th, .perm-table td {
+                padding: 8px 10px;
+                font-size: 13px;
+            }
+            .perm-form {
+                max-width: 100%;
+            }
+        }
+    </style>
+    <script src="js/icons.js?v=2"></script>
+    <script src="js/modal.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/log.js"></script>
+    <script src="js/permission.js"></script>
+</head>
+<body onload="document.documentElement.style.opacity=1;checkLogin()">
+
+<header class="header">
+    <div class="logo"><span data-ico="lock"></span> 可信数据空间数据共享平台</div>
+    <div class="user-info">
+        当前用户：
+        <span id="username"></span>
+        <a href="dataspace.html" class="home-btn">返回主界面</a>
+        <button class="logout" onclick="logout()">退出登录</button>
+    </div>
+</header>
+
+<nav class="nav">
+    <a href="dataspace.html">首页</a>
+    <a href="upload.html">数据上传</a>
+    <a href="data.html">数据查询</a>
+    <a href="permission.html" class="active">权限管理</a>
+    <a href="request.html">授权申请</a>
+    <a href="log.html">访问日志</a>
+</nav>
+
+<main class="container">
+
+    <section class="welcome">
+        <h1 style="display:flex !important;align-items:center !important;gap:10px !important;"><span data-ico="shield" style="width:28px !important;height:28px !important;display:inline-flex !important;align-items:center !important;justify-content:center !important;flex-shrink:0 !important;"></span> 权限管理</h1>
+        <p>管理员可在此授权或撤销用户对加密数据的访问权限，实现基于角色的访问控制（RBAC）。</p>
+    </section>
+
+    <!-- 管理员: 授权表单 -->
+    <section class="perm-panel" id="adminPanel" style="display:none;">
+        <h2>授权数据访问</h2>
+        <div class="perm-form">
+            <div class="form-group">
+                <label class="form-label">数据编号</label>
+                <input id="permDataID" placeholder="例: TDS-1720000000000">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">数据名称</label>
+                <input id="permDataName" placeholder="例: 医疗诊断数据">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">授权用户</label>
+                <input id="permUser" placeholder="例: user">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">过期时间</label>
+                <input id="permExpire" placeholder="例: 2026-12-31（留空为永久）">
+            </div>
+
+            <button class="primary-btn" onclick="handleGrant()"><span data-ico="lock"></span> 确认授权</button>
+            <p id="permMsg" style="margin-top:10px;color:#6a4ec8;"></p>
+        </div>
+    </section>
+
+    <!-- 权限列表 -->
+    <section class="perm-panel">
+        <h2 id="permListTitle">权限记录</h2>
+        <div id="permTableContainer">
+            <p class="empty-state">加载中...</p>
+        </div>
+    </section>
+
+</main>
+
+<footer>© 2026 可信数据空间安全与隐私保护研究 Demo</footer>
+
+<script>
+window.onload = function() {
+    const user = getCurrentUser();
+    if (user) {
+        document.getElementById("username").innerHTML = user.username + " (" + user.role + ")";
+
+        if (user.role === "admin") {
+            document.getElementById("adminPanel").style.display = "block";
+            renderAdminPermissions();
+        } else {
+            document.getElementById("permListTitle").innerText = "我的数据权限";
+            renderUserPermissions();
+        }
+    }
+};
+
+function handleGrant() {
+    const dataID = document.getElementById("permDataID").value.trim();
+    const dataName = document.getElementById("permDataName").value.trim();
+    const allowedUser = document.getElementById("permUser").value.trim();
+    const expireTime = document.getElementById("permExpire").value.trim();
+
+    if (!dataID || !allowedUser) {
+        showAlert("数据编号和授权用户为必填项");
+        return;
+    }
+
+    if (grantPermission(dataID, dataName, allowedUser, expireTime || "永久")) {
+        document.getElementById("permMsg").innerText = "授权成功：" + dataID + " → " + allowedUser;
+        document.getElementById("permDataID").value = "";
+        document.getElementById("permDataName").value = "";
+        document.getElementById("permUser").value = "";
+        document.getElementById("permExpire").value = "";
+        renderAdminPermissions();
+    }
+}
+
+function renderAdminPermissions() {
+    const perms = getAllPermissions();
+    const container = document.getElementById("permTableContainer");
+
+    if (perms.length === 0) {
+        container.innerHTML = '<p class="empty-state">暂无权限记录</p>';
+        return;
+    }
+
+        let html = '<div class="table-wrapper"><table class="perm-table"><thead><tr>' +
+            '<th>权限ID</th><th>数据编号</th><th>数据名称</th>' +
+            '<th>所有者</th><th>授权用户</th><th>过期时间</th>' +
+            '<th>授权时间</th><th>操作</th>' +
+            '</tr></thead><tbody>';
+
+        perms.forEach(p => {
+            html += '<tr>' +
+                '<td>' + p.id + '</td>' +
+                '<td>' + p.dataID + '</td>' +
+                '<td>' + p.dataName + '</td>' +
+                '<td>' + p.owner + '</td>' +
+                '<td>' + p.allowedUser + '</td>' +
+                '<td>' + p.expireTime + '</td>' +
+                '<td>' + p.grantedAt + '</td>' +
+                '<td><button class="danger-btn" onclick="handleRevoke(\'' + p.id + '\')">撤销</button></td>' +
+                '</tr>';
+        });
+
+        html += '</tbody></table></div>';
+        container.innerHTML = html;
+}
+
+function renderUserPermissions() {
+    const perms = getMyPermissions();
+    const container = document.getElementById("permTableContainer");
+
+    if (perms.length === 0) {
+        container.innerHTML = '<p class="empty-state">暂无授权记录，请联系管理员申请数据访问权限</p>';
+        return;
+    }
+
+        let html = '<div class="table-wrapper"><table class="perm-table"><thead><tr>' +
+            '<th>数据编号</th><th>数据名称</th><th>所有者</th>' +
+            '<th>过期时间</th><th>授权时间</th>' +
+            '</tr></thead><tbody>';
+
+        perms.forEach(p => {
+            html += '<tr>' +
+                '<td>' + p.dataID + '</td>' +
+                '<td>' + p.dataName + '</td>' +
+                '<td>' + p.owner + '</td>' +
+                '<td>' + p.expireTime + '</td>' +
+                '<td>' + p.grantedAt + '</td>' +
+                '</tr>';
+        });
+
+        html += '</tbody></table></div>';
+        container.innerHTML = html;
+}
+
+function handleRevoke(permID) {
+    showConfirm("确认撤销该授权？", function() {
+        if (revokePermission(permID)) {
+            renderAdminPermissions();
+        }
+    });
+}
+</script>
+
+</body>
+</html>
