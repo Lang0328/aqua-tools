@@ -1649,10 +1649,6 @@ button { cursor: pointer; border: none; background: none; }
     transition: margin-left 0.35s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     z-index: var(--z-content);
-    /* 成为真正的滚动容器，让内部 sticky 顶栏生效（修复置顶） */
-    overflow-y: auto;
-    overflow-x: hidden;
-    -webkit-overflow-scrolling: touch;
 }
 
 .main-content.expanded {
@@ -1674,9 +1670,17 @@ button { cursor: pointer; border: none; background: none; }
     box-shadow: none;
     min-height: 52px;
     height: 52px;
-    position: sticky;
+    position: fixed;
     top: 0;
+    left: var(--sidebar-width);
+    right: 0;
     z-index: var(--z-sticky);
+    transition: left 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 侧边栏折叠时，fixed 顶栏同步右移 */
+.main-content.expanded .topbar {
+    left: var(--sidebar-collapsed);
 }
 
 /* 渐变下边替代硬边框，让顶栏与内容柔和衔接，减少割裂感 */
@@ -1908,9 +1912,11 @@ button { cursor: pointer; border: none; background: none; }
    工具容器
    ============================================ */
 .tool-container {
-    flex: 1 0 auto;
-    overflow: visible;
-    padding: 24px 20px 32px;
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 52px 20px 32px;
+    -webkit-overflow-scrolling: touch;
 }
 
 .tool-panel {
@@ -3579,7 +3585,7 @@ button { cursor: pointer; border: none; background: none; }
     .main-content,
     .main-content.expanded {
         margin-left: 0;
-        /* 用动态视口高度，避免顶栏被手机地址栏/状态栏盖住顶部几像素（"差一点"根因） */
+        /* 动态视口：避免被手机地址栏/状态栏吃掉顶部 */
         height: 100dvh;
     }
 
@@ -3591,8 +3597,10 @@ button { cursor: pointer; border: none; background: none; }
         height: 44px;
     }
 
-    /* --- 内容区 --- */
-    .tool-container { padding: 14px 12px 28px; }
+    /* --- 内容区：顶部给 fixed 顶栏留安全区+基础高度 --- */
+    .tool-container {
+        padding: calc(52px + env(safe-area-inset-top, 0px)) 12px 28px;
+    }
     .tool-body { padding: 18px 14px; }
 
     /* 通用双栏布局折叠为单栏 */
@@ -3602,7 +3610,12 @@ button { cursor: pointer; border: none; background: none; }
     .swap-btn { transform: rotate(90deg); margin: 0 auto; }
     .swap-btn:hover { transform: rotate(270deg); }
 
-    /* --- 顶栏：真正吸顶（sticky 生效）、贴顶全宽、刘海安全区 --- */
+    /* --- 顶栏：fixed 真正贴顶全宽、刘海安全区 --- */
+    .topbar,
+    .main-content.expanded .topbar {
+        left: 0;
+        right: 0;
+    }
     .topbar {
         margin: 0;
         padding: 8px 12px;
@@ -3613,7 +3626,7 @@ button { cursor: pointer; border: none; background: none; }
         flex-wrap: wrap;
         justify-content: flex-start;
         border-radius: 0;
-        position: sticky;
+        position: fixed;
         top: 0;
     }
     .title-wrap { min-width: 0; }
@@ -3713,7 +3726,9 @@ button { cursor: pointer; border: none; background: none; }
     }
     .tool-card-v2 { padding: 16px 14px; }
     .hero-title-v2 { font-size: 1.8rem; }
-    .tool-container { padding: 12px 10px 24px; }
+    .tool-container {
+        padding: calc(52px + env(safe-area-inset-top, 0px)) 10px 24px;
+    }
     .tool-body { padding: 16px 12px; }
 }
 
