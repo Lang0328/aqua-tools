@@ -969,7 +969,8 @@
         { id: 'copywriter', icon: 'fa-comment-dots', title: '文案生成器', desc: '朋友圈/小红书文案', cat: 'fun' },
         { id: 'lottery', icon: 'fa-dice', title: '抽奖助手', desc: '转盘/骰子/抽签', cat: 'fun' },
         { id: 'truth-dare', icon: 'fa-heart', title: '真心话/匹配度', desc: '破冰神器', cat: 'fun' },
-        { id: 'resume', icon: 'fa-id-card', title: '简历/名片', desc: '一键生成导出', cat: 'fun' }
+        { id: 'resume', icon: 'fa-id-card', title: '简历/名片', desc: '一键生成导出', cat: 'fun' },
+        { id: 'fanqie', icon: 'fa-book-open', title: '番茄小说下载', desc: '搜索下载 TXT', cat: 'fun' }
     ];
 
     // --- 卡片滚动驱动动画：从左→右、从上→下进入 / 反向淡出 ---

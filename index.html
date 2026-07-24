@@ -281,6 +281,10 @@
                     <i class="fas fa-id-card"></i>
                     <span>简历 / 名片</span>
                 </a>
+                <a href="#" class="nav-item" data-tool="fanqie">
+                    <i class="fas fa-book-open"></i>
+                    <span>番茄小说下载</span>
+                </a>
             </div>
         </nav>
     </aside>
@@ -2172,6 +2176,49 @@ Node.js</textarea>
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 工具：番茄小说下载器 -->
+            <section class="tool-panel" id="tool-fanqie">
+                <div class="tool-header">
+                    <div>
+                        <h2>番茄小说下载器</h2>
+                        <p>搜索小说、批量获取章节、导出 TXT（仅限个人备份用途，请勿传播）</p>
+                    </div>
+                </div>
+                <div class="tool-body glass">
+                    <div class="tool-row">
+                        <input class="text-input" id="fqSearch" placeholder="输入书名 / 作者，如：诡秘之主" style="flex:1;min-width:200px">
+                        <button class="tool-btn primary" id="fqSearchBtn"><i class="fas fa-search"></i>搜索</button>
+                    </div>
+                    <details class="fq-adv">
+                        <summary>高级选项（可选）</summary>
+                        <div class="tool-row" style="margin-top:10px">
+                            <input class="text-input" id="fqApi" placeholder="接口地址（本机服务填 http://localhost:8787，可在此覆盖）" style="flex:1;min-width:180px">
+                            <input class="text-input" id="fqCookie" placeholder="Cookie（被拦截时填入浏览器 Cookie，留空不加）" style="flex:1;min-width:180px">
+                        </div>
+                    </details>
+                    <div class="fq-books" id="fqBooks"></div>
+                    <div class="fq-detail" id="fqDetail" style="display:none">
+                        <div class="tool-row">
+                            <span id="fqBookMeta" class="fq-meta"></span>
+                            <span id="fqChapCount" class="fq-meta"></span>
+                            <button class="tool-btn" id="fqLoadChapters" style="margin-left:auto">加载章节</button>
+                        </div>
+                        <div class="tool-row">
+                            <label style="margin:0">下载范围</label>
+                            <select id="fqRange" class="text-input" style="width:auto">
+                                <option value="all">全部章节</option>
+                                <option value="50">前 50 章</option>
+                                <option value="100">前 100 章</option>
+                                <option value="200">前 200 章</option>
+                            </select>
+                            <button class="tool-btn primary" id="fqDownload"><i class="fas fa-download"></i>下载 TXT</button>
+                            <span id="fqProgress" class="fq-meta"></span>
+                        </div>
+                        <div class="fq-log" id="fqLog"></div>
                     </div>
                 </div>
             </section>

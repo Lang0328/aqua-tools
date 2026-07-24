@@ -8582,3 +8582,23 @@ body.reader-fullscreen .sidebar { display: none; }
     #resumePrint, #resumePrint * { visibility: visible; }
     #resumePrint { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none; }
 }
+
+/* ---------- 5. 番茄小说下载器 ---------- */
+.fq-books { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; margin-top: 16px; }
+.fq-book {
+    display: flex; gap: 12px; padding: 12px; border: 1px solid var(--border); border-radius: 12px;
+    background: var(--bg-soft, #f5f5f7); cursor: pointer; transition: var(--transition); align-items: center;
+}
+[data-theme="midnight"] .fq-book, [data-theme="aurora"] .fq-book { background: rgba(255,255,255,.06); }
+.fq-book:hover { border-color: var(--cat-fun); }
+.fq-book img { width: 56px; height: 76px; object-fit: cover; border-radius: 6px; background: #ddd; flex: none; }
+.fq-book .fb-title { font-weight: 600; color: var(--text-strong, #1d1d1f); }
+.fq-book .fb-author { font-size: .82rem; color: var(--text-muted); margin-top: 4px; }
+.fq-meta { font-size: .9rem; color: var(--text-muted); }
+.fq-log {
+    margin-top: 12px; max-height: 180px; overflow: auto; font-size: .85rem; color: var(--text-muted);
+    background: var(--bg-soft, #f5f5f7); border-radius: 8px; padding: 10px 12px; white-space: pre-wrap; line-height: 1.6;
+}
+[data-theme="midnight"] .fq-log, [data-theme="aurora"] .fq-log { background: rgba(255,255,255,.06); }
+.fq-adv { margin-top: 12px; }
+.fq-adv summary { cursor: pointer; color: var(--text-muted); font-size: .9rem; user-select: none; }

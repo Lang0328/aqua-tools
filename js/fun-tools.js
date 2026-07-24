@@ -564,3 +564,148 @@
         });
     }
 })();
+
+/* ============================================================
+   番茄小说下载器（前端部分）
+   调用 CloudBase HTTP 云函数：搜索 / 章节列表 / 批量取章
+   整本 TXT 在浏览器端拼装后触发下载。
+   仅限个人备份用途，请勿传播。
+   ============================================================ */
+(function () {
+    'use strict';
+    const $ = (s) => document.querySelector(s);
+
+    // 默认指向本机服务（运行 cloudfunctions/fanqie/server.js 后填 http://localhost:8787）
+    // 接入 CloudBase 后，可在此填云函数地址，或在面板“高级选项”里临时覆盖
+    const FANQIE_API = 'http://localhost:8787';
+
+    let currentBook = null;
+    let currentChapters = [];
+
+    function apiBase() {
+        const v = $('#fqApi') && $('#fqApi').value.trim();
+        return (v || FANQIE_API);
+    }
+    function log(msg) {
+        const el = $('#fqLog');
+        if (el) { el.textContent += msg + '\n'; el.scrollTop = el.scrollHeight; }
+    }
+    async function callApi(params) {
+        const base = apiBase();
+        if (!base || base === 'REPLACE_WITH_CLOUD_FUNCTION_URL') {
+            alert('请先在「高级选项」里填写云函数接口地址（部署后会自动填入）');
+            throw new Error('no-api');
+        }
+        const cookie = $('#fqCookie') && $('#fqCookie').value.trim();
+        const qs = new URLSearchParams(params);
+        if (cookie) qs.set('cookie', cookie);
+        const res = await fetch(base + '?' + qs.toString(), { method: 'GET' });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.json();
+    }
+
+    async function searchBook() {
+        const q = $('#fqSearch').value.trim();
+        if (!q) return;
+        $('#fqBooks').innerHTML = '<div class="fq-meta">搜索中…</div>';
+        $('#fqDetail').style.display = 'none';
+        currentBook = null; currentChapters = [];
+        try {
+            const r = await callApi({ action: 'search', q });
+            if (r.debug) { $('#fqBooks').innerHTML = '<div class="fq-meta">未解析到结果，原始返回：<br>' + escapeHtml(r.debug) + '</div>'; return; }
+            const books = r.books || [];
+            if (!books.length) { $('#fqBooks').innerHTML = '<div class="fq-meta">没有找到相关小说</div>'; return; }
+            $('#fqBooks').innerHTML = books.map((b, i) =>
+                '<div class="fq-book" data-i="' + i + '">' +
+                '<img src="' + (b.cover || '') + '" onerror="this.style.visibility=\'hidden\'" alt="">' +
+                '<div><div class="fb-title">' + escapeHtml(b.title) + '</div>' +
+                '<div class="fb-author">' + escapeHtml(b.author || '') + '</div></div></div>'
+            ).join('');
+            $('#fqBooks').querySelectorAll('.fq-book').forEach(el => {
+                el.addEventListener('click', () => {
+                    currentBook = books[+el.dataset.i];
+                    showBook(currentBook);
+                });
+            });
+        } catch (e) {
+            $('#fqBooks').innerHTML = '<div class="fq-meta">搜索失败：' + escapeHtml(e.message) + '</div>';
+        }
+    }
+
+    function showBook(b) {
+        $('#fqDetail').style.display = 'block';
+        $('#fqBookMeta').textContent = b.title + ' · ' + (b.author || '');
+        $('#fqChapCount').textContent = '';
+        $('#fqProgress').textContent = '';
+        $('#fqLog').textContent = '';
+        currentChapters = [];
+    }
+
+    async function loadChapters() {
+        if (!currentBook) return;
+        $('#fqChapCount').textContent = '加载章节中…';
+        try {
+            const r = await callApi({ action: 'chapters', bookId: currentBook.id });
+            if (r.debug) { $('#fqChapCount').textContent = '章节解析失败'; log('原始返回: ' + r.debug); return; }
+            currentChapters = r.chapters || [];
+            $('#fqChapCount').textContent = '共 ' + currentChapters.length + ' 章';
+        } catch (e) {
+            $('#fqChapCount').textContent = '加载失败';
+            log('加载章节失败：' + e.message);
+        }
+    }
+
+    async function downloadBook() {
+        if (!currentBook || !currentChapters.length) { alert('请先加载章节'); return; }
+        let list = currentChapters;
+        const range = $('#fqRange').value;
+        if (range !== 'all') list = list.slice(0, parseInt(range, 10));
+        if (!list.length) return;
+
+        const BATCH = 20;
+        let txt = currentBook.title + '（' + (currentBook.author || '') + '）\n\n';
+        log('开始下载，共 ' + list.length + ' 章…');
+        $('#fqDownload').disabled = true;
+        try {
+            for (let i = 0; i < list.length; i += BATCH) {
+                const slice = list.slice(i, i + BATCH);
+                const ids = slice.map(c => c.id).join(',');
+                try {
+                    const r = await callApi({ action: 'batch', ids });
+                    const chs = r.chapters || [];
+                    for (const ch of chs) {
+                        txt += '\n' + (ch.title || '') + '\n\n' + (ch.content || '') + '\n';
+                    }
+                    const done = Math.min(i + BATCH, list.length);
+                    $('#fqProgress').textContent = '已获取 ' + done + ' / ' + list.length;
+                    log('已获取 ' + done + ' / ' + list.length);
+                } catch (e) {
+                    log('批次失败（' + slice.length + ' 章）：' + e.message);
+                }
+            }
+            const blob = new Blob([txt], { type: 'text/plain;charset=utf-8' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = (currentBook.title || 'fanqie') + '.txt';
+            a.click();
+            URL.revokeObjectURL(a.href);
+            log('下载完成：' + (currentBook.title || 'fanqie') + '.txt');
+        } finally {
+            $('#fqDownload').disabled = false;
+        }
+    }
+
+    function escapeHtml(s) {
+        return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+
+    function init() {
+        const sb = $('#fqSearchBtn'); if (!sb) return;
+        sb.addEventListener('click', searchBook);
+        $('#fqSearch').addEventListener('keydown', e => { if (e.key === 'Enter') searchBook(); });
+        $('#fqLoadChapters').addEventListener('click', loadChapters);
+        $('#fqDownload').addEventListener('click', downloadBook);
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+    else init();
+})();
