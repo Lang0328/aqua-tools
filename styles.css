@@ -450,8 +450,8 @@ body, .topbar, .sidebar, .tool-body, .tool-card-v2, .design-ref-card,
     position: relative;
     overflow: hidden;
     background: var(--glass-bg);
-    backdrop-filter: var(--glass-blur);
-    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
     border: 1px solid var(--glass-border);
     box-shadow: var(--glass-shadow);
     transform-style: preserve-3d;
@@ -2781,8 +2781,8 @@ button { cursor: pointer; border: none; background: none; }
     text-align: center;
     transition: var(--transition);
     background: var(--glass-bg);
-    backdrop-filter: var(--glass-blur);
-    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
     border: 1px solid var(--glass-border);
 }
 
