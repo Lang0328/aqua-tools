@@ -19,7 +19,7 @@
         // 尽早应用已保存主题，避免刷新时主题闪烁
         (function() {
             try {
-                var t = localStorage.getItem('aqua-theme') || 'aqua';
+                var t = localStorage.getItem('aqua-theme') || 'liquid-glass';
                 if (t !== 'aqua') document.documentElement.dataset.theme = t;
             } catch (e) {}
         })();

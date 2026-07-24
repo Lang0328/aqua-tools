@@ -561,7 +561,7 @@
         const VALID_THEMES = ['aqua', 'midnight', 'aurora', 'aurora-light', 'liquid-glass'];
 
         function applyTheme(theme) {
-            if (!VALID_THEMES.includes(theme)) theme = 'aqua';
+            if (!VALID_THEMES.includes(theme)) theme = 'liquid-glass';
             if (theme === 'aqua') {
                 delete document.documentElement.dataset.theme;
             } else {
@@ -579,8 +579,8 @@
         }
 
         // 初始化激活态（主题已由 head 内联脚本应用）
-        let saved = 'aqua';
-        try { saved = localStorage.getItem(STORAGE_KEY) || 'aqua'; } catch (e) {}
+        let saved = 'liquid-glass';
+        try { saved = localStorage.getItem(STORAGE_KEY) || 'liquid-glass'; } catch (e) {}
         applyTheme(saved);
 
         // 液态玻璃：鼠标 3D 倾斜（仅该主题生效）
