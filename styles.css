@@ -510,19 +510,18 @@ body, .topbar, .sidebar, .tool-body, .tool-card-v2, .design-ref-card,
 
 /* 顶栏 / 侧边栏：作为浮动玻璃直接折射背景 + 斜切高光边缘（轻量滤镜保证可读） */
 [data-theme="liquid-glass"] .topbar {
-    backdrop-filter: saturate(200%) blur(18px);
-    -webkit-backdrop-filter: saturate(200%) blur(18px);
-    box-shadow:
-        inset 0 1.5px 1px rgba(255, 255, 255, 0.92),
-        inset 0 -1px 1px rgba(50, 55, 95, 0.22),
-        0 8px 28px rgba(31, 38, 135, 0.16);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    box-shadow: none;
 }
 [data-theme="liquid-glass"] .sidebar {
-    backdrop-filter: saturate(200%) blur(18px);
-    -webkit-backdrop-filter: saturate(200%) blur(18px);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border-right-color: transparent;
 }
-/* 顶栏顶部一道长条高光，强化玻璃厚度 */
+/* 顶栏顶部一道长条高光，液态玻璃主题下隐藏以实现完全透明 */
 [data-theme="liquid-glass"] .topbar::before {
+    display: none;
     content: '';
     position: absolute;
     left: 0; right: 0; top: 0;
