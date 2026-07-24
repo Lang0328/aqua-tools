@@ -376,7 +376,7 @@ body, .topbar, .sidebar, .tool-body, .tool-card-v2, .design-ref-card,
     --accent-2: #22d3ee;
 
     /* 液态玻璃核心：强模糊 + 斜切高光(左上亮/右下暗) + 柔和外发光 + 柔和外阴影 */
-    --glass-bg: rgba(255, 255, 255, 0.4);
+    --glass-bg: rgba(255, 255, 255, 0);
     --glass-blur: saturate(220%) blur(26px);
     --glass-border: rgba(255, 255, 255, 0.75);
     --glass-shadow:
