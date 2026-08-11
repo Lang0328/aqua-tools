@@ -1,0 +1,3 @@
+[submodule "cloudfunctions/fanqie/novel-api"]
+	path = cloudfunctions/fanqie/novel-api
+	url = https://gitee.com/qtfy2020/novel-api.git

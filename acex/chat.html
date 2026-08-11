@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="aqua">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aqua Chat · 即时通讯</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="chat.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        // 尽早应用已保存主题，避免刷新时主题闪烁
+        (function() {
+            try {
+                var t = localStorage.getItem('chat-theme') || 'aqua';
+                document.documentElement.dataset.theme = t;
+            } catch (e) {}
+        })();
+    </script>
+</head>
+<body style="margin:0;background:var(--app-bg,var(--bg-soft,#f5f5f7));color:var(--text,#333);">
+
+<!-- 主题背景（与 Aqua Tools 一致） -->
+<div class="aurora-sky" aria-hidden="true">
+    <div class="aurora-stars"></div>
+    <div class="aurora-ribbon aurora-ribbon-1"></div>
+    <div class="aurora-ribbon aurora-ribbon-2"></div>
+    <div class="aurora-ribbon aurora-ribbon-3"></div>
+    <div class="aurora-ribbon aurora-ribbon-4"></div>
+    <div class="aurora-veil-glow"></div>
+    <div class="aurora-top-edge"></div>
+</div>
+<div class="liquid-bg" aria-hidden="true"></div>
+
+<!-- ========== 登录页（照抄 login.html 样式） ========== -->
+<div class="chat-login-wrap" id="loginScreen">
+    <div class="login-box">
+        <div class="login-title">
+            <div>
+                <h1>Aqua Chat</h1>
+                <span class="title-line"></span>
+            </div>
+            <span class="chat-clock" id="authClock" title="当前时间">--:--:--</span>
+        </div>
+        <div class="auth-switch" data-active="login">
+            <button type="button" class="auth-tab active" data-target="login">登录</button>
+            <button type="button" class="auth-tab" data-target="register">注册</button>
+            <span class="auth-slider"></span>
+        </div>
+        <form class="auth-panel active form" id="loginPanel" onsubmit="return false">
+            <input id="loginUser" type="text" placeholder="用户名">
+            <input id="loginPass" type="password" placeholder="密码">
+            <button type="button" id="loginBtn">登录</button>
+            <div class="auth-divider"><span>其他登录方式</span></div>
+            <div class="auth-alt">
+                <button type="button" class="auth-alt-btn" id="authDeviceLogin">设备一键登录</button>
+                <button type="button" class="auth-alt-btn" id="authKeyToggle">长句密钥登录</button>
+            </div>
+            <div class="auth-key-panel" id="authKeyPanel" style="display:none;">
+                <textarea id="authSentence" placeholder="输入一句只有你知道的句子作为密钥，系统自动创建或恢复账号"></textarea>
+                <button type="button" class="auth-alt-btn" id="authSentenceLogin">密钥登录 / 注册</button>
+            </div>
+            <div class="login-home-row">
+                <a href="index.html" class="login-home-btn" aria-label="返回主界面">
+                    <svg class="home-ico" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                        <path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M15 18l-6-6 6-6"/>
+                    </svg>
+                    返回主界面
+                </a>
+                <a href="desktop.html" class="login-home-btn" aria-label="返回桌面">
+                    <i class="fas fa-desktop" aria-hidden="true" style="font-size:15px;"></i>
+                    返回桌面
+                </a>
+            </div>
+            <p id="loginMsg"></p>
+        </form>
+        <form class="auth-panel form" id="registerPanel" onsubmit="return false">
+            <input id="regUser" type="text" placeholder="用户名（至少 3 个字符）">
+            <input id="regPass" type="password" placeholder="密码（至少 6 位）">
+            <input id="regConfirm" type="password" placeholder="确认密码">
+            <button type="button" id="registerBtn">注册</button>
+            <div class="login-home-row">
+                <a href="index.html" class="login-home-btn" aria-label="返回主界面">
+                    <svg class="home-ico" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                        <path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M15 18l-6-6 6-6"/>
+                    </svg>
+                    返回主界面
+                </a>
+                <a href="desktop.html" class="login-home-btn" aria-label="返回桌面">
+                    <i class="fas fa-desktop" aria-hidden="true" style="font-size:15px;"></i>
+                    返回桌面
+                </a>
+            </div>
+            <p id="regMsg"></p>
+        </form>
+    </div>
+    <button type="button" class="login-theme-toggle" id="chatLoginThemeToggle" onclick="toggleSiteTheme()">暗色</button>
+</div>
+
+<!-- ========== 主聊天界面 ========== -->
+<div class="chat-full chat-hidden" id="chatApp">
+    <!-- 侧边栏 -->
+    <aside class="chat-sidebar">
+        <div class="chat-sidebar-header">
+            <span class="chat-user-avatar" id="chatUserAvatar" style="background:#007aff;color:#fff;cursor:pointer;" title="点击查看个人资料"></span>
+            <div class="chat-user-info">
+                <div class="chat-user-name" id="chatUserName" style="cursor:pointer;">--</div>
+                <div class="chat-user-role" id="chatUserRole">用户</div>
+                <div class="chat-user-bio" id="chatUserBio" style="font-size:11px;color:var(--text-subtle);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px;"></div>
+            </div>
+            <div class="chat-sidebar-actions" role="toolbar" aria-label="侧边栏操作">
+                <button class="icon-btn" id="chatDevicesBtn" title="设备管理" aria-label="设备管理"><i class="fas fa-laptop"></i></button>
+                <button class="icon-btn" id="chatAdminBtn" title="管理后台" style="display:none;" aria-label="管理后台"><i class="fas fa-cog"></i></button>
+                <div class="theme-switcher">
+                    <button class="icon-btn" id="chatThemeBtn" title="切换主题" aria-label="切换主题"><i class="fas fa-circle-half-stroke"></i></button>
+                    <div class="theme-popover" id="chatThemePopover" hidden>
+                        <div class="theme-popover-title">主题</div>
+                        <button class="theme-option" data-theme="aqua"><span class="theme-swatch swatch-aqua"></span><span class="theme-name">浅空</span><i class="fas fa-check theme-check"></i></button>
+                        <button class="theme-option" data-theme="midnight"><span class="theme-swatch swatch-midnight"></span><span class="theme-name">午夜</span><i class="fas fa-check theme-check"></i></button>
+                        <button class="theme-option" data-theme="aurora"><span class="theme-swatch swatch-aurora"></span><span class="theme-name">极光</span><i class="fas fa-check theme-check"></i></button>
+                        <button class="theme-option" data-theme="aurora-light"><span class="theme-swatch swatch-aurora-light"></span><span class="theme-name">淡极光</span><i class="fas fa-check theme-check"></i></button>
+                        <button class="theme-option" data-theme="liquid-glass"><span class="theme-swatch swatch-liquid-glass"></span><span class="theme-name">液态玻璃</span><i class="fas fa-check theme-check"></i></button>
+                        <button class="theme-option" data-theme="kodachi"><span class="theme-swatch swatch-kodachi"></span><span class="theme-name">刀锋</span><i class="fas fa-check theme-check"></i></button>
+                    </div>
+                </div>
+                <button class="icon-btn" id="chatLogoutBtn" title="退出" aria-label="退出登录"><i class="fas fa-sign-out-alt"></i></button>
+                <button class="icon-btn" id="chatDesktopBtn" title="返回桌面" aria-label="返回桌面"><i class="fas fa-desktop"></i></button>
+            </div>
+        </div>
+        <div class="chat-search">
+            <input type="text" id="chatSearch" placeholder="搜索联系人/群组/频道/消息...">
+        </div>
+        <div class="chat-cat-tabs">
+            <button class="tab-btn active" data-cat="chats"><i class="fas fa-comment"></i> 聊天</button>
+            <button class="tab-btn" data-cat="groups"><i class="fas fa-users"></i> 群组</button>
+            <button class="tab-btn" data-cat="channels"><i class="fas fa-bullhorn"></i> 频道</button>
+        </div>
+        <div class="chat-cat-actions" id="chatCatActions">
+            <button class="mini-btn" id="createGroupBtn"><i class="fas fa-plus"></i> 群组</button>
+            <button class="mini-btn" id="createChannelBtn"><i class="fas fa-plus"></i> 频道</button>
+            <button class="mini-btn" id="addContactBtn"><i class="fas fa-user-plus"></i> 联系人</button>
+            <button class="mini-btn" id="openStickersBtn"><i class="fas fa-sticky-note"></i> 贴纸</button>
+        </div>
+        <div class="chat-list" id="chatListContainer"></div>
+    </aside>
+
+    <!-- 主聊天区 -->
+    <main class="chat-main" id="chatMain">
+        <div class="chat-main-header" id="chatMainHeader">
+            <!-- 第一行：聊天人名(左) + 时间(右) -->
+            <div class="chat-main-header-top">
+                <div class="chat-main-title-wrap">
+                    <button id="chatBackBtn" class="icon-btn" style="display:none;margin-right:8px;"><i class="fas fa-arrow-left"></i></button>
+                    <span class="chat-main-title" id="chatMainTitle">选择一个聊天</span>
+                    <div class="chat-main-subtitle" id="chatMainSubtitle"></div>
+                </div>
+                <span class="chat-clock" id="appClock" title="当前时间">--:--:--</span>
+            </div>
+            <!-- 第二行：其余按钮 -->
+            <div class="chat-main-header-bottom">
+                <button class="mini-btn" id="chatSearchBtn" title="搜索当前聊天" style="display:none;"><i class="fas fa-search"></i></button>
+                <button class="mini-btn" id="chatFilterBtn" title="筛选消息" style="display:none;"><i class="fas fa-filter"></i></button>
+                <button class="mini-btn" id="chatSelectBtn" title="多选" style="display:none;"><i class="fas fa-check-double"></i></button>
+                <div class="chat-main-actions" id="chatGroupActions" style="display:none;">
+                    <button class="mini-btn" id="groupInfoBtn"><i class="fas fa-info-circle"></i> 群信息</button>
+                    <button class="mini-btn" id="inviteBtn"><i class="fas fa-user-plus"></i> 邀请</button>
+                </div>
+                <div class="chat-main-actions" id="chatChannelActions" style="display:none;">
+                    <button class="mini-btn" id="subscribeBtn"><i class="fas fa-bell"></i> 订阅/发布</button>
+                    <button class="mini-btn" id="channelInfoBtn"><i class="fas fa-info-circle"></i> 频道信息</button>
+                </div>
+                <div class="chat-main-actions" id="chatContactActions" style="display:none;">
+                    <button class="mini-btn" id="secretChatBtn"><i class="fas fa-lock"></i> 秘密聊天</button>
+                    <button class="mini-btn" id="contactInfoBtn"><i class="fas fa-info-circle"></i> 联系人信息</button>
+                </div>
+            </div>
+        </div>
+        <!-- 聊天内搜索 -->
+        <div class="chat-inline-search chat-hidden" id="chatInlineSearch">
+            <input type="text" id="chatSearchInput" placeholder="搜索当前聊天..." style="flex:1;padding:6px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px;">
+            <span id="chatSearchCount" style="font-size:11px;color:var(--text-subtle);white-space:nowrap;"></span>
+            <button class="mini-btn" id="chatSearchPrev"><i class="fas fa-chevron-up"></i></button>
+            <button class="mini-btn" id="chatSearchNext"><i class="fas fa-chevron-down"></i></button>
+            <button class="mini-btn" id="chatSearchClose"><i class="fas fa-times"></i></button>
+        </div>
+        <!-- 消息筛选 -->
+        <div class="chat-filter-bar chat-hidden" id="chatFilterBar">
+            <button class="mini-btn active" data-filter="all">全部</button>
+            <button class="mini-btn" data-filter="text">文本</button>
+            <button class="mini-btn" data-filter="image">图片</button>
+            <button class="mini-btn" data-filter="file">文件</button>
+            <button class="mini-btn" data-filter="voice">语音</button>
+            <button class="mini-btn" data-filter="sticker">贴纸</button>
+        </div>
+        <!-- 多选操作栏 -->
+        <div class="chat-select-bar chat-hidden" id="chatSelectBar">
+            <span id="chatSelectCount" style="font-size:13px;font-weight:600;"></span>
+            <div style="display:flex;gap:4px;">
+                <button class="mini-btn" id="chatSelectForward"><i class="fas fa-forward"></i> 转发</button>
+                <button class="mini-btn danger" id="chatSelectDelete" style="color:#ff3b30;"><i class="fas fa-trash"></i> 删除</button>
+                <button class="mini-btn" id="chatSelectCancel">取消</button>
+            </div>
+        </div>
+        <div class="chat-messages" id="chatMessages">
+            <div class="chat-msg system"><div class="chat-msg-bubble">请从左侧选择一个聊天</div></div>
+        </div>
+        <div class="chat-typing" id="chatTyping"></div>
+        <div class="chat-input-area">
+            <span class="chat-channel-readonly-tip" id="chatChannelReadonlyTip" style="display:none;"></span>
+            <div class="chat-input-tools">
+                <button class="icon-btn" id="chatEmojiBtn" title="Emoji"><i class="fas fa-smile"></i></button>
+                <button class="icon-btn" id="chatMediaBtn" title="发送文件"><i class="fas fa-paperclip"></i></button>
+                <button class="icon-btn" id="chatStickerBtn" title="贴纸"><i class="fas fa-sticky-note"></i></button>
+                <button class="icon-btn" id="chatVoiceBtn" title="语音消息"><i class="fas fa-microphone"></i></button>
+                <button class="icon-btn" id="chatSelfDestructBtn" title="自毁消息" style="position:relative;">
+                    <i class="fas fa-bomb"></i>
+                    <span id="chatSelfDestructBadge" style="display:none;position:absolute;top:-4px;right:-4px;background:#ff3b30;color:#fff;font-size:9px;width:16px;height:16px;border-radius:50%;display:none;align-items:center;justify-content:center;">5</span>
+                </button>
+                <button class="icon-btn" id="chatGifBtn" title="GIF"><i class="fas fa-icons"></i></button>
+                <button class="icon-btn" id="chatFavoritesBtn" title="收藏消息"><i class="fas fa-star"></i></button>
+                <span class="chat-self-destruct-hint" id="chatSelfDestructHint" style="font-size:11px;color:var(--text-subtle);display:none;">自毁 5s</span>
+                <input type="file" id="chatMediaInput" style="display:none;" multiple accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx">
+                <input type="file" id="chatBgInput" style="display:none;" accept="image/*">
+            </div>
+            <div class="chat-input-quote" id="chatInputQuote">
+                <span id="chatInputQuoteText"></span>
+                <button class="chat-input-quote-close" id="chatInputQuoteClose">&times;</button>
+            </div>
+            <div class="chat-input-row">
+                <textarea id="chatInput" rows="1" placeholder="输入消息..."></textarea>
+                <button class="tool-btn primary chat-send-btn" id="chatSendBtn" disabled><i class="fas fa-paper-plane"></i></button>
+            </div>
+            <div class="chat-cmd-menu" id="chatCmdMenu" style="display:none;"></div>
+        </div>
+    </main>
+
+    <!-- 信息面板 -->
+    <aside class="chat-info-panel chat-hidden-mobile" id="infoPanel">
+        <div class="chat-info-header">
+            <span>详情</span>
+            <button class="icon-btn" id="infoCloseBtn"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="chat-info-content" id="infoContent"></div>
+    </aside>
+</div>
+
+<!-- ========== 管理后台 ========== -->
+<div class="chat-admin chat-hidden" id="adminPanel">
+    <aside class="chat-admin-sidebar">
+        <h2><i class="fas fa-cog"></i> 管理后台 <span id="adminRoleLabel" style="font-size:11px;color:var(--text-subtle);font-weight:400;"></span></h2>
+        <nav class="chat-admin-nav">
+            <div class="chat-admin-nav-item active" data-section="overview"><i class="fas fa-chart-pie"></i> 仪表盘</div>
+            <div class="chat-admin-nav-item" data-section="users"><i class="fas fa-users"></i> 用户管理</div>
+            <div class="chat-admin-nav-item" data-section="groups"><i class="fas fa-users-cog"></i> 群组管理</div>
+            <div class="chat-admin-nav-item" data-section="channels"><i class="fas fa-bullhorn"></i> 频道管理</div>
+            <div class="chat-admin-nav-item" data-section="messages"><i class="fas fa-envelope"></i> 消息审计</div>
+            <div class="chat-admin-nav-item" data-section="stats"><i class="fas fa-chart-line"></i> 流量统计</div>
+            <div class="chat-admin-nav-item" data-section="settings"><i class="fas fa-wrench"></i> 系统设置</div>
+            <div class="chat-admin-nav-item" data-section="logs"><i class="fas fa-history"></i> 操作日志</div>
+            <div class="chat-admin-nav-item" data-section="backup"><i class="fas fa-database"></i> 数据备份</div>
+            <div class="chat-admin-nav-item" data-section="notifications"><i class="fas fa-bell"></i> 系统通知</div>
+        </nav>
+        <div style="padding:12px 16px;border-top:1px solid #eee;">
+            <button class="chat-admin-back" id="adminBackBtn"><i class="fas fa-arrow-left"></i> 返回聊天</button>
+        </div>
+    </aside>
+    <main class="chat-admin-main">
+        <div class="chat-admin-section active" id="adminSectionOverview">
+            <h2>仪表盘</h2>
+            <div class="chat-admin-stats">
+                <div class="chat-admin-stat"><div class="chat-admin-stat-num" id="adminStatUsers">0</div><div class="chat-admin-stat-label">用户总数</div></div>
+                <div class="chat-admin-stat"><div class="chat-admin-stat-num" id="adminStatGroups">0</div><div class="chat-admin-stat-label">群组数</div></div>
+                <div class="chat-admin-stat"><div class="chat-admin-stat-num" id="adminStatChannels">0</div><div class="chat-admin-stat-label">频道数</div></div>
+                <div class="chat-admin-stat"><div class="chat-admin-stat-num" id="adminStatMessages">0</div><div class="chat-admin-stat-label">消息总数</div></div>
+                <div class="chat-admin-stat"><div class="chat-admin-stat-num" id="adminStatDAU">0</div><div class="chat-admin-stat-label">日活跃(模拟)</div></div>
+            </div>
+        </div>
+        <div class="chat-admin-section" id="adminSectionUsers">
+            <h2>用户管理</h2>
+            <input type="text" class="chat-admin-search" id="adminUserSearch" placeholder="搜索用户...">
+            <div id="adminUserList"></div>
+        </div>
+        <div class="chat-admin-section" id="adminSectionGroups">
+            <h2>群组管理</h2>
+            <input type="text" class="chat-admin-search" id="adminGroupSearch" placeholder="搜索群组...">
+            <div id="adminGroupList"></div>
+        </div>
+        <div class="chat-admin-section" id="adminSectionChannels">
+            <h2>频道管理</h2>
+            <input type="text" class="chat-admin-search" id="adminChannelSearch" placeholder="搜索频道...">
+            <div id="adminChannelList"></div>
+        </div>
+        <div class="chat-admin-section" id="adminSectionMessages">
+            <h2>消息审计</h2>
+            <div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
+                <input type="text" class="chat-admin-search" id="adminMsgSearch" placeholder="搜索内容/发送者/聊天...">
+                <button class="mini-btn" id="adminMsgRefresh"><i class="fas fa-sync-alt"></i> 刷新</button>
+            </div>
+            <div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap;align-items:center;">
+                <select id="adminMsgFilterType" style="padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:12px;">
+                    <option value="">全部类型</option>
+                    <option value="text">文本</option>
+                    <option value="image">图片</option>
+                    <option value="video">视频</option>
+                    <option value="voice">语音</option>
+                    <option value="file">文件</option>
+                    <option value="sticker">贴纸</option>
+                    <option value="poll">投票</option>
+                </select>
+                <select id="adminMsgFilterStatus" style="padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:12px;">
+                    <option value="">全部状态</option>
+                    <option value="normal">正常</option>
+                    <option value="recalled">已撤回</option>
+                    <option value="expired">已过期</option>
+                </select>
+                <select id="adminMsgFilterChat" style="padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:12px;max-width:200px;">
+                    <option value="">全部聊天</option>
+                </select>
+                <input type="date" id="adminMsgFilterFrom" title="开始日期" style="padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:12px;">
+                <span style="font-size:12px;color:var(--text-subtle);">至</span>
+                <input type="date" id="adminMsgFilterTo" title="结束日期" style="padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:12px;">
+                <button class="mini-btn" id="adminMsgFilterReset">重置</button>
+            </div>
+            <div id="adminMsgList"></div>
+        </div>
+        <div class="chat-admin-section" id="adminSectionStats">
+            <h2>流量统计</h2>
+            <div class="chat-admin-stats">
+                <div class="chat-admin-stat"><div class="chat-admin-stat-num" id="adminStatSentToday">0</div><div class="chat-admin-stat-label">今日发送</div></div>
+                <div class="chat-admin-stat"><div class="chat-admin-stat-num" id="adminStatRegToday">0</div><div class="chat-admin-stat-label">今日注册</div></div>
+                <div class="chat-admin-stat"><div class="chat-admin-stat-num" id="adminStatActiveUsers">0</div><div class="chat-admin-stat-label">当前在线</div></div>
+            </div>
+            <canvas id="trafficChart" width="600" height="200" style="width:100%;max-width:600px;height:200px;border:1px solid var(--border);border-radius:8px;margin-top:12px;"></canvas>
+        </div>
+        <div class="chat-admin-section" id="adminSectionSettings">
+            <h2>系统设置</h2>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:12px;">
+                <div style="font-size:13px;font-weight:600;margin-bottom:8px;">数据与容量</div>
+                <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;">
+                    <div><label style="font-size:13px;display:block;margin-bottom:4px;">消息保留天数</label><input type="number" id="adminSettingRetention" value="7" style="padding:8px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px;width:120px;"></div>
+                    <div><label style="font-size:13px;display:block;margin-bottom:4px;">最大群组成员数</label><input type="number" id="adminSettingMaxGroup" value="200" style="padding:8px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px;width:120px;"></div>
+                    <div><label style="font-size:13px;display:block;margin-bottom:4px;">自毁消息默认时间(秒)</label><input type="number" id="adminSettingSelfDestruct" value="5" style="padding:8px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px;width:120px;"></div>
+                    <label style="font-size:13px;display:flex;align-items:center;gap:6px;margin-top:14px;"><input type="checkbox" id="adminSettingAutoBackup" checked> 自动备份数据</label>
+                </div>
+            </div>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:12px;">
+                <div style="font-size:13px;font-weight:600;margin-bottom:8px;">安全与登录</div>
+                <div style="display:flex;gap:16px;flex-wrap:wrap;">
+                    <label style="font-size:13px;display:flex;align-items:center;gap:6px;"><input type="checkbox" id="adminSettingAllowRegister" checked> 允许新用户注册</label>
+                    <label style="font-size:13px;display:flex;align-items:center;gap:6px;"><input type="checkbox" id="adminSettingAllowKey" checked> 允许密钥登录</label>
+                    <label style="font-size:13px;display:flex;align-items:center;gap:6px;"><input type="checkbox" id="adminSettingAllowDevice" checked> 允许设备一键登录</label>
+                    <label style="font-size:13px;display:flex;align-items:center;gap:6px;"><input type="checkbox" id="adminSettingAllowRegisterAuto" checked> 登录即自动注册</label>
+                </div>
+            </div>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:12px;">
+                <div style="font-size:13px;font-weight:600;margin-bottom:8px;">功能模块</div>
+                <div style="display:flex;gap:16px;flex-wrap:wrap;">
+                    <label style="font-size:13px;display:flex;align-items:center;gap:6px;"><input type="checkbox" id="adminSettingVoice" checked> 语音消息</label>
+                    <label style="font-size:13px;display:flex;align-items:center;gap:6px;"><input type="checkbox" id="adminSettingSticker" checked> 贴纸表情</label>
+                    <label style="font-size:13px;display:flex;align-items:center;gap:6px;"><input type="checkbox" id="adminSettingGif" checked> GIF 动图</label>
+                    <label style="font-size:13px;display:flex;align-items:center;gap:6px;"><input type="checkbox" id="adminSettingSecret" checked> 秘密聊天</label>
+                    <label style="font-size:13px;display:flex;align-items:center;gap:6px;"><input type="checkbox" id="adminSettingOnline" checked> 在线状态显示</label>
+                    <label style="font-size:13px;display:flex;align-items:center;gap:6px;"><input type="checkbox" id="adminSettingMessages" checked> 消息审计模块</label>
+                </div>
+            </div>
+            <button class="mini-btn" id="adminSaveSettings" style="padding:8px 20px;">保存设置</button>
+            <button class="mini-btn" id="adminSettingsReset" style="padding:8px 20px;margin-left:8px;">恢复默认</button>
+        </div>
+        <div class="chat-admin-section" id="adminSectionLogs">
+            <h2>操作日志</h2>
+            <div id="adminLogList"><p style="font-size:13px;color:var(--text-subtle);">暂无操作记录</p></div>
+        </div>
+        <div class="chat-admin-section" id="adminSectionBackup">
+            <h2>数据备份</h2>
+            <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">导出或导入所有数据（JSON格式）</p>
+            <button class="mini-btn" id="adminBackupBtn" style="margin-right:8px;"><i class="fas fa-download"></i> 导出备份</button>
+            <button class="mini-btn" id="adminRestoreBtn"><i class="fas fa-upload"></i> 导入恢复</button>
+            <input type="file" id="adminRestoreInput" accept=".json" style="display:none;">
+        </div>
+        <div class="chat-admin-section" id="adminSectionNotifications">
+            <h2>系统通知<i class="fas fa-bell" style="margin-left:6px;color:#8a5dff;"></i></h2>
+            <div class="chat-admin-card">
+                <label>发布广播给全部在线用户</label>
+                <input type="text" id="adminBroadcastTitle" class="chat-admin-search" placeholder="标题（选填）" style="width:100%;">
+                <textarea id="adminBroadcastText" placeholder="输入广播内容..." rows="3" style="width:100%;margin-top:6px;"></textarea>
+                <div style="margin-top:8px;">
+                    <button class="chat-modal-confirm mini-btn" id="adminBroadcastBtn">发布广播</button>
+                </div>
+            </div>
+            <div style="margin-top:16px;font-size:13px;color:var(--text-muted);">广播历史</div>
+            <div id="adminBroadcastHistory"><p style="font-size:13px;color:var(--text-subtle);">暂无广播记录</p></div>
+            <div style="margin-top:16px;font-size:13px;color:var(--text-muted);">举报记录</div>
+            <div id="adminNotificationList"><p style="font-size:13px;color:var(--text-subtle);">暂无系统通知</p></div>
+        </div>
+    </main>
+</div>
+
+<!-- ========== 模态框 ========== -->
+<div class="chat-modal-mask" id="groupModal"><div class="chat-modal">
+    <h2 id="groupModalTitle">创建群组</h2>
+    <label>群组名称</label><input type="text" id="groupNameInput" placeholder="输入群组名称">
+    <label>群组类型</label>
+    <select id="groupTypeSelect"><option value="normal">普通群组</option><option value="super">超级群组</option></select>
+    <label>群组简介</label><textarea id="groupDescInput" placeholder="输入群组简介（可选）"></textarea>
+    <div class="chat-modal-actions">
+        <button class="chat-modal-cancel" id="groupModalCancel">取消</button>
+        <button class="chat-modal-confirm" id="groupModalConfirm">保存</button>
+    </div>
+</div></div>
+
+<div class="chat-modal-mask" id="channelModal"><div class="chat-modal">
+    <h2>创建频道</h2>
+    <label>频道名称</label><input type="text" id="channelNameInput" placeholder="输入频道名称">
+    <label>频道简介</label><textarea id="channelDescInput" placeholder="输入频道简介（可选）"></textarea>
+    <label><input type="checkbox" id="channelApprovalCheck"> 发帖需要审核</label>
+    <div class="chat-modal-actions">
+        <button class="chat-modal-cancel" id="channelModalCancel">取消</button>
+        <button class="chat-modal-confirm" id="channelModalConfirm">保存</button>
+    </div>
+</div></div>
+
+<div class="chat-modal-mask" id="channelPostModal"><div class="chat-modal">
+    <h2>发布帖子</h2>
+    <label>内容</label><textarea id="channelPostInput" placeholder="输入帖子内容..." rows="4"></textarea>
+    <div class="chat-modal-actions">
+        <button class="chat-modal-cancel" id="channelPostCancel">取消</button>
+        <button class="chat-modal-confirm" id="channelPostConfirm">发布</button>
+    </div>
+</div></div>
+
+<div class="chat-modal-mask" id="inviteModal"><div class="chat-modal">
+    <h2>邀请成员</h2>
+    <label>选择用户</label><select id="inviteUserSelect"><option value="">选择用户...</option></select>
+    <div style="margin-top:12px;padding-top:12px;border-top:1px solid #eee;">
+        <button class="mini-btn" id="genInviteLinkBtn" style="width:100%;"><i class="fas fa-link"></i> 生成邀请链接</button>
+        <div id="inviteLinkResult" style="margin-top:8px;font-size:12px;color:#007aff;word-break:break-all;display:none;"></div>
+    </div>
+    <div class="chat-modal-actions">
+        <button class="chat-modal-cancel" id="inviteModalCancel">关闭</button>
+        <button class="chat-modal-confirm" id="inviteModalConfirm">邀请</button>
+    </div>
+ </div></div>
+
+<div class="chat-modal-mask" id="gifModal"><div class="chat-modal" style="width:min(420px,90vw);">
+    <h2>发送 GIF</h2>
+    <input type="text" id="gifUrlInput" placeholder="输入 GIF 图片 URL" style="width:100%;padding:8px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px;">
+    <!-- Giphy 搜索 -->
+    <div style="margin-top:10px;">
+        <label style="font-size:12px;color:var(--text-muted);">或搜索 Giphy：</label>
+        <div style="display:flex;gap:4px;margin-top:4px;">
+            <input type="text" id="gifSearchInput" placeholder="输入关键词..." style="flex:1;padding:8px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px;">
+            <button class="mini-btn" id="gifSearchBtn" style="flex-shrink:0;">搜</button>
+        </div>
+    </div>
+    <div id="gifResults" style="margin-top:10px;display:grid;grid-template-columns:repeat(2,1fr);gap:8px;"></div>
+    <div class="chat-modal-actions">
+        <button class="chat-modal-cancel" id="gifModalCancel">取消</button>
+        <button class="chat-modal-confirm" id="gifSendBtn">发送</button>
+    </div>
+</div></div>
+
+<div class="chat-modal-mask" id="contactModal"><div class="chat-modal">
+    <h2>添加联系人</h2>
+    <label>搜索用户</label><input type="text" id="contactSearchInput" placeholder="输入用户名搜索...">
+    <div id="contactSearchResults" style="margin-top:8px;"></div>
+    <div class="chat-modal-actions"><button class="chat-modal-cancel" id="contactModalCancel">关闭</button></div>
+</div></div>
+
+<div class="chat-modal-mask" id="devicesModal"><div class="chat-modal" style="width:min(480px,90vw);">
+    <h2>我的设备</h2>
+    <div id="devicesList"></div>
+    <div class="chat-modal-actions"><button class="chat-modal-cancel" id="devicesModalClose">关闭</button></div>
+</div></div>
+
+<div class="chat-modal-mask" id="secretChatModal"><div class="chat-modal">
+    <h2>秘密聊天</h2>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">与 <span id="secretChatPartner"></span> 的秘密聊天会话</p>
+    <div style="background:var(--bg-card);border-radius:8px;padding:12px;font-family:monospace;font-size:13px;text-align:center;" id="secretChatCode">--:--:--:--</div>
+    <p style="font-size:11px;color:var(--text-subtle);text-align:center;margin-top:6px;">安全码：双方一致表示加密通道安全</p>
+    <div style="display:flex;gap:8px;justify-content:center;margin-top:12px;">
+        <button class="mini-btn" id="secretChatVerify" style="color:#34c759;border-color:#34c759;">验证安全码</button>
+    </div>
+    <div id="secretChatStatus" style="text-align:center;font-size:12px;margin-top:8px;color:var(--text-subtle);"></div>
+    <div class="chat-modal-actions"><button class="chat-modal-cancel" id="secretChatModalClose">关闭</button></div>
+</div></div>
+
+<div class="chat-modal-mask" id="stickerModal"><div class="chat-modal" style="width:min(520px,90vw);">
+    <h2>贴纸包</h2>
+    <div style="display:flex;gap:8px;margin-bottom:12px;">
+        <input type="text" id="stickerPackName" placeholder="贴纸包名称" style="flex:1;padding:8px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px;">
+        <input type="file" id="stickerUploadInput" accept="image/png,image/webp" multiple style="display:none;">
+        <button class="mini-btn" id="stickerUploadBtn"><i class="fas fa-upload"></i> 上传贴纸</button>
+    </div>
+    <div id="stickerPackList"></div>
+    <div class="chat-modal-actions"><button class="chat-modal-cancel" id="stickerModalClose">关闭</button></div>
+</div></div>
+
+<!-- Sticker picker popup -->
+<div class="chat-sticker-picker chat-hidden" id="stickerPicker">
+    <div class="chat-sticker-picker-header">
+        <span>贴纸</span>
+        <button class="icon-btn" id="stickerPickerClose"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="chat-sticker-picker-grid" id="stickerPickerGrid"></div>
+</div>
+
+<!-- ========== 个人资料弹窗 ========== -->
+<div class="chat-modal-mask" id="profileModal"><div class="chat-modal" style="width:min(480px,90vw);">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+        <span class="chat-user-avatar" id="profileAvatar" style="width:56px;height:56px;font-size:24px;cursor:pointer;position:relative;" title="点击更换头像">
+            <input type="file" id="profileAvatarInput" accept="image/*" style="display:none;">
+        </span>
+        <div>
+            <h2 style="margin:0;font-size:18px;" id="profileNameDisplay">--</h2>
+            <span style="font-size:12px;color:var(--text-muted);" id="profileRoleDisplay">用户</span>
+        </div>
+    </div>
+    <div style="margin-bottom:12px;">
+        <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:4px;">昵称</label>
+        <input type="text" id="profileNicknameInput" style="width:100%;padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;box-sizing:border-box;">
+    </div>
+    <div style="margin-bottom:12px;">
+        <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:4px;">生日</label>
+        <input type="date" id="profileBirthdayInput" style="width:100%;padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;box-sizing:border-box;">
+    </div>
+    <div style="margin-bottom:12px;padding-top:12px;border-top:1px solid #eee;">
+        <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:8px;">隐私设置</label>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+            <label style="display:flex;align-items:center;gap:6px;font-size:13px;"><input type="checkbox" id="profilePrivateChat" style="transform:scale(1.3);"> 关闭陌生人私聊</label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:13px;"><input type="checkbox" id="profileShowOnline" checked style="transform:scale(1.3);"> 显示在线状态</label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:13px;"><input type="checkbox" id="profileShowRead" checked style="transform:scale(1.3);"> 显示已读</label>
+        </div>
+    </div>
+    <div style="margin-bottom:12px;">
+        <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:4px;">个性签名</label>
+        <input type="text" id="profileBioInput" placeholder="一句话介绍自己..." style="width:100%;padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;box-sizing:border-box;">
+    </div>
+    <div style="margin-bottom:12px;padding-top:12px;border-top:1px solid #eee;">
+        <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:4px;">修改密码（仅账号密码登录）</label>
+        <div style="display:flex;gap:8px;">
+            <input type="password" id="profileOldPass" placeholder="旧密码" style="flex:1;padding:8px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px;">
+            <input type="password" id="profileNewPass" placeholder="新密码" style="flex:1;padding:8px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px;">
+            <button class="mini-btn" id="profileChangePassBtn" style="white-space:nowrap;">修改</button>
+        </div>
+    </div>
+    <div style="margin-bottom:12px;padding-top:12px;border-top:1px solid #eee;">
+        <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:8px;">个人统计</label>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center;">
+            <div style="background:var(--bg-card);border-radius:8px;padding:10px;"><div style="font-size:20px;font-weight:700;" id="profileMsgCount">0</div><div style="font-size:11px;color:var(--text-muted);">消息</div></div>
+            <div style="background:var(--bg-card);border-radius:8px;padding:10px;"><div style="font-size:20px;font-weight:700;" id="profileGroupCount">0</div><div style="font-size:11px;color:var(--text-muted);">群组</div></div>
+            <div style="background:var(--bg-card);border-radius:8px;padding:10px;"><div style="font-size:20px;font-weight:700;" id="profileDaysCount">0</div><div style="font-size:11px;color:var(--text-muted);">注册天数</div></div>
+        </div>
+    </div>
+    <div class="chat-modal-actions">
+        <button class="chat-modal-confirm" id="profileSaveBtn">保存</button>
+        <button class="chat-modal-cancel" id="profileCloseBtn">关闭</button>
+    </div>
+</div></div>
+
+<!-- ========== 用户资料卡弹窗 ========== -->
+<div class="chat-modal-mask" id="userCardModal"><div class="chat-modal" style="width:min(380px,90vw);text-align:center;">
+    <span class="chat-user-avatar" id="userCardAvatar" style="width:64px;height:64px;font-size:28px;margin:0 auto 12px;"></span>
+    <h2 style="margin:0 0 4px;font-size:18px;" id="userCardName">--</h2>
+    <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;" id="userCardUsername">@--</div>
+    <div style="font-size:13px;color:var(--text-muted);margin-bottom:12px;white-space:pre-line;" id="userCardBio">暂无签名</div>
+    <div style="display:flex;gap:8px;justify-content:center;margin-bottom:12px;">
+        <span style="font-size:12px;color:var(--text-muted);" id="userCardStatus">离线</span>
+        <span style="font-size:12px;color:var(--text-muted);" id="userCardRole">用户</span>
+        <span style="font-size:12px;color:var(--text-muted);" id="userCardDays">注册 0 天</span>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:center;margin-bottom:8px;">
+        <span style="font-size:12px;color:var(--text-muted);" id="userCardMsgStat">消息 0</span>
+        <span style="font-size:12px;color:var(--text-muted);" id="userCardGroupStat">群组 0</span>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:center;margin-top:12px;">
+        <button class="mini-btn" id="userCardChatBtn"><i class="fas fa-comment"></i> 发送消息</button>
+        <button class="mini-btn" id="userCardSecretBtn" style="color:#5856d6;border-color:#5856d6;"><i class="fas fa-lock"></i> 秘密聊天</button>
+    </div>
+    <div class="chat-modal-actions" style="justify-content:center;margin-top:12px;">
+        <button class="chat-modal-cancel" id="userCardClose">关闭</button>
+    </div>
+</div></div>
+
+<!-- ========== Emoji 面板 ========== -->
+<div class="chat-emoji-picker chat-hidden" id="emojiPicker">
+    <div class="chat-emoji-picker-header"><span>Emoji</span><button class="icon-btn" id="emojiPickerClose"><i class="fas fa-times"></i></button></div>
+    <div class="chat-emoji-picker-grid" id="emojiPickerGrid"></div>
+</div>
+
+<!-- ========== 消息转发 ========== -->
+<div class="chat-modal-mask" id="forwardModal"><div class="chat-modal">
+    <h2>转发消息</h2>
+    <div id="forwardMsgPreview" style="font-size:13px;color:var(--text-muted);margin-bottom:12px;padding:8px;background:var(--bg-card);border-radius:8px;"></div>
+    <label>选择目标聊天</label>
+    <div id="forwardChatList" style="max-height:240px;overflow-y:auto;margin-bottom:8px;"></div>
+    <div class="chat-modal-actions">
+        <button class="chat-modal-cancel" id="forwardModalCancel">取消</button>
+        <button class="chat-modal-confirm" id="forwardModalConfirm">转发</button>
+    </div>
+</div></div>
+
+<!-- ========== 收藏消息 ========== -->
+<div class="chat-modal-mask" id="favoritesModal"><div class="chat-modal" style="width:min(480px,90vw);">
+    <h2><i class="fas fa-star" style="color:#ff9500;"></i> 收藏消息</h2>
+    <div id="favoritesList" style="max-height:400px;overflow-y:auto;"></div>
+    <div class="chat-modal-actions"><button class="chat-modal-cancel" id="favoritesClose">关闭</button></div>
+</div></div>
+
+<!-- ========== 语音录制 ========== -->
+<div class="chat-modal-mask" id="voiceModal"><div class="chat-modal" style="text-align:center;">
+    <h2>语音消息</h2>
+    <div style="font-size:48px;margin:20px 0;" id="voiceStatusIcon"><i class="fas fa-microphone"></i></div>
+    <div style="font-size:24px;font-weight:700;font-variant-numeric:tabular-nums;" id="voiceTimer">00:00</div>
+    <div style="margin-top:16px;">
+        <button class="mini-btn" id="voiceStartBtn" style="font-size:16px;padding:12px 24px;background:#ff3b30;color:#fff;border:none;border-radius:50%;width:64px;height:64px;"><i class="fas fa-microphone"></i></button>
+        <button class="mini-btn" id="voiceSendBtn" style="display:none;font-size:16px;padding:12px 24px;background:#34c759;color:#fff;border:none;border-radius:50%;width:64px;height:64px;"><i class="fas fa-check"></i></button>
+    </div>
+    <div class="chat-modal-actions" style="justify-content:center;">
+        <button class="chat-modal-cancel" id="voiceModalClose">取消</button>
+    </div>
+</div></div>
+
+<!-- ========== 联系人分组 ========== -->
+<div class="chat-modal-mask" id="groupCatModal"><div class="chat-modal">
+    <h2>联系人分组</h2>
+    <div id="groupCatList"></div>
+    <div style="display:flex;gap:8px;margin-top:12px;">
+        <input type="text" id="groupCatNewInput" placeholder="新分组名称" style="flex:1;padding:8px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px;">
+        <button class="mini-btn" id="groupCatAddBtn">添加</button>
+    </div>
+    <div class="chat-modal-actions"><button class="chat-modal-cancel" id="groupCatClose">关闭</button></div>
+</div></div>
+
+<!-- ========== 表情反应 ========== -->
+<div class="chat-reaction-picker chat-hidden" id="reactionPicker">
+    <div id="reactionGrid" style="display:flex;flex-wrap:wrap;gap:4px;padding:8px;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.1);max-width:280px;"></div>
+</div>
+
+<!-- Toast -->
+<div class="chat-toast" id="chatToast"></div>
+
+<!-- ========== 设备登录安全须知 ========== -->
+<div class="chat-modal-mask" id="deviceNoticeModal"><div class="chat-modal" style="width:min(420px,90vw);">
+    <h2><i class="fas fa-shield-alt" style="color:#007aff;"></i> 设备登录安全须知</h2>
+    <div style="font-size:13px;color:var(--text-muted);line-height:1.7;">
+        <p>• 本次是<strong>设备一键登录</strong>，无需输入密码即可进入。</p>
+        <p>• 出于安全，<strong>建议立即为本设备设置密码</strong>。设置后，每次重新登录本设备时均需输入密码，防止他人盗用。</p>
+        <p>• 登录凭据与消息等数据<strong>存储于本地浏览器 IndexedDB / 服务器 SQLite</strong>，仅限账号主人。</p>
+        <p>• 设备用户无法通过用户名密码找回，丢失设备指纹等同于丢失账号。</p>
+        <p>• 如需在新设备登录，请在新设备完成一次设置密码。</p>
+    </div>
+    <div class="chat-modal-actions">
+        <button class="chat-modal-cancel" id="deviceNoticeClose">稍后再说</button>
+        <button class="chat-modal-confirm" id="deviceNoticeSetPwd">立即设置密码</button>
+    </div>
+</div></div>
+
+<!-- ========== 设备登录设置密码 ========== -->
+<div class="chat-modal-mask" id="deviceSetPwdModal"><div class="chat-modal" style="width:min(380px,90vw);">
+    <h2>为设备设置密码</h2>
+    <label style="font-size:12px;color:var(--text-muted);">新密码（至少 4 位）</label>
+    <input type="password" id="deviceNewPwd" placeholder="请输入新密码" style="width:100%;padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;box-sizing:border-box;">
+    <label style="font-size:12px;color:var(--text-muted);margin-top:8px;">重复密码</label>
+    <input type="password" id="deviceNewPwd2" placeholder="请再次输入" style="width:100%;padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;box-sizing:border-box;">
+    <div style="margin-top:10px;color:#ff9500;font-size:12px;" id="devicePwdTip"></div>
+    <div class="chat-modal-actions">
+        <button class="chat-modal-cancel" id="deviceSetPwdClose">取消</button>
+        <button class="chat-modal-confirm" id="deviceSetPwdConfirm">设置</button>
+    </div>
+</div></div>
+
+<!-- ========== 设备登录输入密码 ========== -->
+<div class="chat-modal-mask" id="devicePwdModal"><div class="chat-modal" style="width:min(360px,90vw);">
+    <h2>设备登录</h2>
+    <label style="font-size:12px;color:var(--text-muted);">请输入设备密码</label>
+    <input type="password" id="devicePwdInput" placeholder="设备密码" style="width:100%;padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;box-sizing:border-box;">
+    <div style="margin-top:10px;color:#ff3b30;font-size:12px;" id="devicePwdError"></div>
+    <div class="chat-modal-actions">
+        <button class="chat-modal-cancel" id="devicePwdClose">取消</button>
+        <button class="chat-modal-confirm" id="devicePwdConfirm">登录</button>
+    </div>
+</div></div>
+
+<!-- Mobile responsive style patch -->
+<style>
+    .chat-hidden-mobile { display: flex; }
+    .chat-info-panel { display: none; }
+    .chat-info-panel.show,
+    .chat-info-panel.show-mobile { display: flex !important; }
+    .chat-sticker-picker { position:fixed;bottom:0;left:0;right:0;z-index:500;background:var(--glass-bg,#fff);border-top:1px solid var(--border,#ddd);border-radius:12px 12px 0 0;box-shadow:0 -4px 20px rgba(0,0,0,.1);max-height:300px;display:flex;flex-direction:column;transition:transform .3s; }
+    .chat-sticker-picker.chat-hidden { display:none; }
+    .chat-sticker-picker-header { display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:1px solid var(--border,#eee);font-size:14px;font-weight:600; }
+    .chat-sticker-picker-grid { display:flex;flex-wrap:wrap;gap:8px;padding:12px;overflow-y:auto;flex:1; }
+    .chat-sticker-item { width:72px;height:72px;border:1px solid var(--border,#eee);border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:28px;background:var(--bg-card,#f9f9f9); }
+    .chat-sticker-item:hover { background:color-mix(in srgb,var(--primary) 10%,transparent);border-color:var(--primary); }
+    .chat-input-tool { width:30px;height:30px;border:none;border-radius:6px;cursor:pointer;background:none;font-size:15px;color:var(--text-muted);display:flex;align-items:center;justify-content:center; }
+    .chat-input-tool:hover { background:color-mix(in srgb,var(--text) 8%,transparent);color:var(--text); }
+    .chat-media-bubble { max-width:200px;border-radius:12px; }
+    .chat-media-bubble img { max-width:100%;border-radius:12px;display:block; }
+    .chat-expired-msg { color:var(--text-subtle);font-style:italic; }
+    .chat-self-destruct-timer { font-size:11px;color:var(--error,#ff3b30);margin-left:4px; }
+    .chat-secret-indicator { color:#5856d6;font-size:11px;margin-left:6px; }
+    .channel-post-item { padding:12px;border:1px solid var(--border,#eee);border-radius:8px;margin-bottom:8px; }
+    .channel-post-item .post-author { font-size:12px;color:var(--text-muted); }
+    .channel-post-item .post-content { font-size:14px;margin-top:4px; }
+    .channel-post-item .post-actions { margin-top:8px;display:flex;gap:6px; }
+    @media (max-width: 768px) {
+        .chat-hidden-mobile { display: none; }
+        .show-mobile { display: flex !important; }
+        .chat-main { display: none; }
+        .chat-main.show-mobile { display: flex; position: fixed; inset: 0; z-index: 10; background: var(--bg-soft,#fff); flex-direction: column; }
+        .chat-info-panel.show-mobile { display: flex; position: fixed; inset: 0; z-index: 20; background: var(--bg-soft,#fff); width: 100%; flex-direction: column; }
+        #chatBackBtn { display: flex !important; }
+    }
+</style>
+
+<script src="js/chat.js"></script>
+<script>
+(function () {
+    var b = document.getElementById('chatLoginThemeToggle');
+    if (b && document.documentElement.dataset.theme === 'kodachi') b.textContent = '浅色';
+})();
+function toggleSiteTheme() {
+    var cur = document.documentElement.dataset.theme === 'kodachi' ? '' : 'kodachi';
+    document.documentElement.dataset.theme = cur;
+    try { localStorage.setItem('chat-theme', cur); } catch (e) {}
+    var b = document.getElementById('chatLoginThemeToggle');
+    if (b) b.textContent = cur === 'kodachi' ? '浅色' : '暗色';
+}
+</script>
+</body>
+</html>

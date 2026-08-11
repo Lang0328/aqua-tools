@@ -1,0 +1,13 @@
+{
+  "name": "fanqie-downloader",
+  "version": "1.0.0",
+  "description": "番茄小说下载器云函数(个人备份用途)",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "private": true
+}
