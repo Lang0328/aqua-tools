@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="liquid-glass">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Aqua Desktop · 液态玻璃桌面</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        (function () {
+            var valid = ['aqua', 'midnight', 'aurora', 'aurora-light', 'liquid-glass', 'kodachi'];
+            var v = 'liquid-glass';
+            try { v = localStorage.getItem('aqua-theme') || 'liquid-glass'; } catch (e) {}
+            if (valid.indexOf(v) === -1) v = 'liquid-glass';
+            document.documentElement.setAttribute('data-theme', v);
+        })();
+    </script>
+    <style>
+        :root {
+            color-scheme: light;
+            --bg-soft: #e7ecfb;
+            --text: #1c2233;
+            --text-muted: #4a5266;
+            --text-subtle: #79819a;
+            --primary: #5b6cff;
+            --primary-light: #7d8bff;
+            --accent: #22d3ee;
+            --glass-border: rgba(255, 255, 255, 0.75);
+            --glass-shadow:
+                inset 0 1.5px 1px rgba(255, 255, 255, 0.92),
+                inset 1px 0 1px rgba(255, 255, 255, 0.45),
+                inset -1.5px -1.5px 1.5px rgba(50, 55, 95, 0.3),
+                inset 0 0 16px rgba(255, 255, 255, 0.2),
+                0 10px 34px rgba(31, 38, 135, 0.2);
+            --glass-bg: rgba(255, 255, 255, 0.42);
+            --glass-blur: saturate(220%) blur(26px);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html, body { height: 100%; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            color: var(--text);
+            background: linear-gradient(135deg, #eef1f8, #e7ecfb);
+            overflow: hidden;
+            -webkit-font-smoothing: antialiased;
+            user-select: none;
+        }
+
+        /* ============ 桌面壁纸（照片 + 液态玻璃光斑） ============ */
+        .desktop-bg {
+            position: fixed;
+            inset: -15%;
+            z-index: -2;
+            overflow: hidden;
+            background-color: #e7ecfb;
+            background-image: url('assets/bg1.jpg');
+            background-size: cover;
+            background-position: center;
+        }
+        /* 有照片时压暗彩色光斑，避免过曝、保留玻璃润感 */
+        body.has-photo .orb { opacity: 0.4; }
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(60px);
+            opacity: 0.85;
+            mix-blend-mode: screen;
+            will-change: transform, filter;
+            backface-visibility: hidden;
+            transform: translateZ(0);
+        }
+        .orb-1 { width: 46vw; height: 46vw; left: -6vw; top: -8vw;
+            background: radial-gradient(circle at 30% 30%, #ff6b81, #ff9a9e);
+            animation: float1 22s ease-in-out infinite; }
+        .orb-2 { width: 50vw; height: 50vw; right: -10vw; top: -6vw;
+            background: radial-gradient(circle at 60% 40%, #4895ef, #7aa8ff);
+            animation: float2 26s ease-in-out infinite; }
+        .orb-3 { width: 48vw; height: 48vw; right: 6vw; bottom: -14vw;
+            background: radial-gradient(circle at 50% 50%, #a78bfa, #c4b5fd);
+            animation: float3 24s ease-in-out infinite; }
+        .orb-4 { width: 44vw; height: 44vw; left: 4vw; bottom: -12vw;
+            background: radial-gradient(circle at 40% 60%, #2dd4bf, #5eead4);
+            animation: float4 28s ease-in-out infinite; }
+        @keyframes float1 { 0%,100%{ transform: translate(0,0) scale(1);} 50%{ transform: translate(8vw,6vh) scale(1.08);} }
+        @keyframes float2 { 0%,100%{ transform: translate(0,0) scale(1);} 50%{ transform: translate(-7vw,8vh) scale(1.12);} }
+        @keyframes float3 { 0%,100%{ transform: translate(0,0) scale(1);} 50%{ transform: translate(-6vw,-6vh) scale(1.06);} }
+        @keyframes float4 { 0%,100%{ transform: translate(0,0) scale(1);} 50%{ transform: translate(7vw,-7vh) scale(1.1);} }
+
+        .grain {
+            position: fixed; inset: 0; z-index: -1; pointer-events: none;
+            background: radial-gradient(circle at 50% 40%, rgba(255,255,255,0.12), transparent 70%);
+        }
+
+        /* ============ 进入动画（页面加载播放一次） ============ */
+        @keyframes bootZoom {
+            0%   { transform: scale(1.12); filter: saturate(140%) brightness(1.05); }
+            100% { transform: scale(1);    filter: saturate(100%) brightness(1); }
+        }
+        @keyframes fadeDown {
+            0%   { opacity: 0; transform: translateY(-22px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeUp {
+            0%   { opacity: 0; transform: translateY(28px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes iconPop {
+            0%   { opacity: 0; transform: translateY(26px) scale(.6); filter: blur(6px); }
+            60%  { opacity: 1; transform: translateY(-4px) scale(1.06); }
+            100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+        }
+        @keyframes orbIn {
+            0%   { opacity: 0; }
+            100% { opacity: 0.85; }
+        }
+        @keyframes dockUp {
+            0%   { opacity: 0; transform: translateX(-50%) translateY(40px) scale(.85); }
+            100% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+        }
+
+        .desktop-bg { animation: bootZoom 2.4s cubic-bezier(.22,.61,.36,1) both; }
+        .orb        { animation: orbIn 2s ease backwards; }
+        .menu-bar   { animation: fadeDown .9s cubic-bezier(.22,.61,.36,1) both; }
+        .dock       { animation: dockUp 1s cubic-bezier(.34,1.56,.64,1) .55s both; }
+
+        .icon { animation: iconPop .7s cubic-bezier(.34,1.56,.64,1) backwards; }
+        /* 错峰延迟由 renderIcons() 按索引动态设置，适配任意数量收藏图标 */
+
+        @media (prefers-reduced-motion: reduce) {
+            .desktop-bg, .orb, .menu-bar, .dock, .icon { animation: none !important; opacity: 1 !important; }
+        }
+
+        /* ============ 顶部菜单栏 ============ */
+        .menu-bar {
+            position: fixed; top: 0; left: 0; right: 0; height: 46px; z-index: 50;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 18px;
+            background: var(--glass-bg);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border-bottom: 1px solid var(--glass-border);
+            box-shadow: 0 4px 20px rgba(31, 38, 135, 0.08);
+        }
+        .menu-left { display: flex; align-items: center; gap: 16px; }
+        .menu-logo { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 14px; letter-spacing: .3px; }
+        .menu-logo svg { width: 20px; height: 20px; color: var(--primary); }
+        .menu-right { display: flex; align-items: center; gap: 12px; font-size: 13px; color: var(--text-muted); }
+        .menu-right .clock { font-variant-numeric: tabular-nums; font-weight: 600; color: var(--text); }
+
+        /* 网络状态指示（只读，非按钮） */
+        .net-indicator {
+            display: flex; align-items: center; justify-content: center;
+            width: 28px; height: 28px; border-radius: 9px; font-size: 14px;
+            color: var(--primary); background: rgba(91, 108, 255, 0.14);
+            position: relative;
+        }
+        .net-indicator.offline { color: #e0566b; background: rgba(224, 86, 107, 0.16); }
+        .net-indicator::after {
+            content: attr(data-tip); position: absolute; top: 34px; right: 0;
+            font-size: 11px; color: var(--text); background: rgba(255, 255, 255, 0.92);
+            padding: 3px 8px; border-radius: 8px; white-space: nowrap; opacity: 0; pointer-events: none;
+            transition: opacity .2s; box-shadow: 0 4px 12px rgba(31, 38, 135, .15);
+        }
+        .net-indicator:hover::after { opacity: 1; }
+
+        /* 电量 */
+        .status-batt {
+            display: flex; align-items: center; gap: 4px; font-size: 12.5px; color: var(--text);
+            font-variant-numeric: tabular-nums; position: relative; cursor: default;
+        }
+        .status-batt i { color: var(--text-muted); font-size: 15px; transition: color .3s; }
+        /* 充电=绿 / 低电量=黄 / 电量过低=红 */
+        .status-batt.charging i, .status-batt.charging { color: #34d399; }
+        .status-batt.low i, .status-batt.low { color: #facc15; }
+        .status-batt.crit i, .status-batt.crit { color: #f87171; }
+        .status-batt::after {
+            content: attr(data-tip); position: absolute; top: 34px; right: 0;
+            font-size: 11px; color: var(--text); background: rgba(255, 255, 255, 0.92);
+            padding: 3px 8px; border-radius: 8px; white-space: nowrap; opacity: 0; pointer-events: none;
+            transition: opacity .2s; box-shadow: 0 4px 12px rgba(31, 38, 135, .15);
+        }
+        .status-batt:hover::after { opacity: 1; }
+
+        /* 日期 + 时间 */
+        .status-date { display: flex; flex-direction: column; align-items: flex-end; line-height: 1.15; }
+        .status-date .date { font-size: 11px; color: var(--text-muted); }
+        .status-date .clock { font-size: 13px; }
+
+        /* ============ 桌面右上角数字时钟组件 ============ */
+        .clock-widget {
+            position: fixed; top: 74px; right: 32px; z-index: 40;
+            padding: 32px 40px; border-radius: 30px; text-align: right; min-width: 280px;
+            background: rgba(255, 255, 255, 0.5);
+            backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--glass-border); box-shadow: var(--glass-shadow);
+        }
+        .cw-time {
+            font-variant-numeric: tabular-nums; font-weight: 700; line-height: 1;
+            font-size: 80px; letter-spacing: 3px; color: var(--text);
+            display: flex; align-items: baseline; justify-content: flex-end; gap: 1px;
+        }
+        .cw-sec { font-size: 36px; font-weight: 600; color: var(--primary); margin-left: 7px; }
+        .cw-date { margin-top: 18px; font-size: 20px; color: var(--text-muted); font-weight: 500; }
+
+        /* ============ 桌面图标 ============ */
+        .desktop {
+            position: absolute; inset: 46px 0 96px 0;
+        }
+        .icon {
+            position: absolute; width: 96px; padding: 12px 8px 10px; border-radius: 16px;
+            display: flex; flex-direction: column; align-items: center; gap: 10px;
+            text-decoration: none; color: var(--text);
+            cursor: pointer; touch-action: none;
+            transition: transform .2s cubic-bezier(.34,1.56,.64,1), background .2s;
+        }
+        .icon:hover { background: rgba(255, 255, 255, 0.28); transform: translateY(-2px); }
+        .icon:active { transform: scale(0.95); }
+        .icon.selected { background: rgba(91, 108, 255, 0.22); }
+        .icon.dragging { cursor: grabbing; z-index: 30; transform: none !important; animation: none; }
+        /* 跟随中（点击图标后跟随鼠标） */
+        .icon.following { cursor: grabbing; z-index: 40; animation: none !important;
+            transform: scale(1.08) !important; box-shadow: 0 16px 40px rgba(31, 38, 135, .42); }
+
+        /* ===== 整理模式（在设置中开启后才可拖动） ===== */
+        @keyframes wiggle {
+            0%, 100% { transform: rotate(-1.6deg); }
+            50%      { transform: rotate(1.6deg); }
+        }
+        body.arranging .icon { cursor: grab; animation: wiggle .35s ease-in-out infinite; }
+        body.arranging .icon:hover { background: rgba(255, 255, 255, 0.28); }
+        body.arranging .icon.dragging { animation: none; }
+        .arrange-bar {
+            position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); z-index: 90;
+            display: none; align-items: center; gap: 14px;
+            padding: 12px 18px; border-radius: 18px;
+            background: var(--glass-bg);
+            backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--glass-border); box-shadow: var(--glass-shadow);
+        }
+        body.arranging .arrange-bar { display: flex; animation: pop .3s cubic-bezier(.34,1.56,.64,1); }
+        .arrange-bar .tip { font-size: 13px; color: var(--text-muted); }
+        .arrange-bar .confirm {
+            padding: 9px 22px; border: none; border-radius: 12px; cursor: pointer;
+            font-size: 13.5px; font-weight: 600; color: #fff;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            box-shadow: 0 8px 20px rgba(91,108,255,.35);
+        }
+        .arrange-bar .confirm:active { transform: scale(.97); }
+        .icon-remove {
+            position: absolute; top: -7px; right: -7px; width: 20px; height: 20px;
+            border-radius: 50%; background: #e0566b; color: #fff; border: none;
+            font-size: 14px; line-height: 18px; text-align: center; cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, .25); opacity: 0; transition: opacity .15s; z-index: 5;
+            pointer-events: none;
+        }
+        /* 删除（取消收藏）仅在整理/移动模式下可用，常态不可删 */
+        body.arranging .icon.fav .icon-remove { opacity: 1; pointer-events: auto; }
+        .icon-glass {
+            width: 60px; height: 60px; border-radius: 18px;
+            display: grid; place-items: center; font-size: 24px;
+            color: transparent; -webkit-text-stroke: 1.7px var(--text);
+            background: rgba(255, 255, 255, 0.58);
+            box-shadow: var(--glass-shadow);
+            border: 1px solid var(--glass-border);
+            position: relative; overflow: hidden;
+            transition: background .2s, -webkit-text-stroke-color .2s, transform .2s;
+        }
+        .icon-glass::after {
+            content: ''; position: absolute; inset: 0; border-radius: inherit;
+            background: linear-gradient(150deg, rgba(255,255,255,0.5), transparent 55%);
+        }
+        .icon:hover .icon-glass { background: rgba(255, 255, 255, 0.78); -webkit-text-stroke-color: var(--primary); }
+        .icon.selected .icon-glass { background: rgba(255, 255, 255, 0.85); -webkit-text-stroke-color: var(--primary); }
+        /* 统一为黑色线条，忽略旧配色修饰类 */
+        .icon-glass.cyan, .icon-glass.violet, .icon-glass.amber {
+            background: rgba(255, 255, 255, 0.58); color: transparent;
+            -webkit-text-stroke: 1.7px var(--text);
+        }
+        .icon-label {
+            font-size: 12.5px; font-weight: 500; text-align: center; line-height: 1.25;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, .55), 0 0 1px rgba(255, 255, 255, .45);
+        }
+
+        /* ============ 底部 Dock ============ */
+        .dock {
+            position: fixed; bottom: 14px; left: 50%; transform: translateX(-50%); z-index: 50;
+            display: flex; align-items: flex-end; gap: 10px; padding: 10px 14px; border-radius: 22px;
+            background: var(--glass-bg);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--glass-shadow);
+        }
+        .dock-item {
+            width: 52px; height: 52px; border-radius: 15px;
+            display: grid; place-items: center; font-size: 21px; text-decoration: none;
+            color: transparent; -webkit-text-stroke: 1.6px var(--text);
+            background: rgba(255, 255, 255, 0.58);
+            box-shadow: var(--glass-shadow); border: 1px solid var(--glass-border);
+            position: relative; transition: transform .25s cubic-bezier(.34,1.56,.64,1), background .2s, -webkit-text-stroke-color .2s;
+        }
+        .dock-item.cyan, .dock-item.violet, .dock-item.amber {
+            background: rgba(255, 255, 255, 0.58); color: transparent; -webkit-text-stroke: 1.6px var(--text);
+        }
+        .dock-item:hover { transform: translateY(-14px) scale(1.18); background: rgba(255, 255, 255, 0.8); -webkit-text-stroke-color: var(--primary); }
+        .dock-item::after {
+            content: attr(data-tip); position: absolute; top: -34px; left: 50%; transform: translateX(-50%);
+            font-size: 11px; color: var(--text); background: rgba(255,255,255,0.85);
+            padding: 3px 8px; border-radius: 8px; white-space: nowrap; opacity: 0; pointer-events: none;
+            transition: opacity .2s; box-shadow: 0 4px 12px rgba(31,38,135,.15);
+        }
+        .dock-item:hover::after { opacity: 1; }
+        .dock-sep { width: 1px; height: 34px; align-self: center; background: rgba(255,255,255,0.6); margin: 0 2px; }
+
+        /* ============ 弹窗（液态玻璃） ============ */
+        .modal-mask {
+            position: fixed; inset: 0; z-index: 100; display: none;
+            align-items: center; justify-content: center;
+            background: rgba(20, 24, 50, 0.3); backdrop-filter: blur(4px);
+        }
+        .modal-mask.show { display: flex; }
+        .modal {
+            width: min(380px, 86vw); padding: 28px; border-radius: 22px;
+            background: var(--modal-bg, rgba(255,255,255,0.5));
+            backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--glass-border); box-shadow: var(--glass-shadow);
+            text-align: center; animation: pop .3s cubic-bezier(.34,1.56,.64,1);
+        }
+        @keyframes pop { from { transform: scale(.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .modal i.logo-mark { font-size: 34px; color: var(--primary); }
+        .modal h2 { margin: 12px 0 6px; font-size: 18px; }
+        .modal p { font-size: 13px; color: var(--text-muted); line-height: 1.7; }
+        .modal .close {
+            margin-top: 18px; padding: 9px 22px; border: none; border-radius: 12px; cursor: pointer;
+            font-size: 13.5px; font-weight: 600; color: #fff;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            box-shadow: 0 8px 20px rgba(91,108,255,.35);
+        }
+        .modal .close:active { transform: scale(.97); }
+
+        /* ============ 设置面板 ============ */
+        .modal.settings { width: min(440px, 92vw); text-align: left; max-height: 86vh; overflow-y: auto; }
+        .modal-head { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; position: relative; }
+        .modal-head .logo-mark { font-size: 22px; }
+        .modal-head h2 { margin: 0; font-size: 18px; }
+        .modal-x {
+            position: absolute; right: 0; top: -4px; width: 30px; height: 30px; border: none;
+            border-radius: 10px; cursor: pointer; font-size: 20px; line-height: 1; color: var(--text-muted);
+            background: rgba(255, 255, 255, 0.4); transition: background .2s, color .2s;
+        }
+        .modal-x:hover { background: rgba(255, 255, 255, 0.75); color: var(--text); }
+        .set-section { margin-bottom: 22px; }
+        .set-section h3 { font-size: 13px; font-weight: 600; color: var(--text-muted); margin-bottom: 12px; letter-spacing: .3px; }
+        .bg-previews { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+        .bg-thumb {
+            width: 78px; height: 50px; border-radius: 10px; background-size: cover; background-position: center;
+            cursor: pointer; border: 2px solid transparent; box-shadow: var(--glass-shadow);
+            transition: transform .2s, border-color .2s;
+        }
+        .bg-thumb:hover { transform: translateY(-2px); }
+        .bg-thumb.active { border-color: var(--primary); }
+        .set-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        .upload-btn {
+            display: inline-flex; align-items: center; gap: 8px; padding: 9px 16px; border-radius: 12px;
+            cursor: pointer; font-size: 13px; font-weight: 600; color: #fff;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            box-shadow: 0 8px 20px rgba(91, 108, 255, .35); transition: transform .2s;
+        }
+        .upload-btn:active { transform: scale(.97); }
+        .set-reset {
+            display: inline-flex; align-items: center; gap: 6px; padding: 9px 16px; border-radius: 12px;
+            cursor: pointer; font-size: 13px; font-weight: 600; color: var(--text);
+            background: rgba(255, 255, 255, 0.5); border: 1px solid var(--glass-border); transition: transform .2s;
+        }
+        .set-reset:active { transform: scale(.97); }
+        .set-hint { font-size: 11.5px; color: var(--text-subtle); margin-top: 10px; line-height: 1.6; }
+
+        /* 主题选择胶囊 */
+        .theme-pill {
+            width: auto; min-width: 56px; height: 34px; padding: 0 12px;
+            display: grid; place-items: center; border-radius: 10px; font-size: 12px;
+            background: rgba(255, 255, 255, 0.5); border: 1px solid var(--glass-border);
+            color: var(--text); cursor: pointer; transition: transform .2s, box-shadow .2s;
+        }
+        .theme-pill:hover { transform: translateY(-2px); }
+        .theme-pill.active { box-shadow: 0 0 0 2px var(--primary); color: var(--primary); }
+        [data-theme="kodachi"] .theme-pill { background: rgba(18, 21, 27, 0.6); }
+        [data-theme="kodachi"] .theme-pill.active { box-shadow: 0 0 0 2px var(--primary); color: var(--primary-light); }
+
+        /* ============ 桌面便签小组件 ============ */
+        .memo-widget {
+            position: fixed; left: 16px; bottom: 16px; z-index: 40;
+            width: 250px; max-height: 46vh; display: flex; flex-direction: column;
+            background: var(--glass-bg);
+            backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--glass-border); box-shadow: var(--glass-shadow);
+            border-radius: 20px; padding: 14px 14px 12px;
+        }
+        .memo-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+        .memo-title { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; letter-spacing: .3px; }
+        .memo-title i { color: var(--primary); font-size: 14px; }
+        .memo-add {
+            width: 26px; height: 26px; border: none; border-radius: 8px; cursor: pointer;
+            font-size: 12px; color: var(--primary); background: rgba(91, 108, 255, 0.12);
+            display: grid; place-items: center; transition: background .2s, transform .2s;
+        }
+        .memo-add:hover { background: rgba(91, 108, 255, 0.24); transform: scale(1.12); }
+        .memo-list { display: flex; flex-direction: column; gap: 8px; overflow-y: auto; max-height: 36vh; }
+        .memo-empty { font-size: 12px; color: var(--text-subtle); padding: 4px 2px 2px; line-height: 1.6; }
+        .memo-note {
+            position: relative; border-radius: 14px; padding: 10px 12px;
+            background: rgba(255, 255, 255, 0.55); border: 1px solid var(--glass-border);
+            transition: box-shadow .2s, transform .2s;
+        }
+        .memo-note:hover { box-shadow: var(--glass-shadow); }
+        .memo-note textarea {
+            width: 100%; min-height: 40px; resize: vertical; border: none; outline: none;
+            background: transparent; color: var(--text);
+            font-family: inherit; font-size: 12.5px; line-height: 1.6; user-select: text;
+        }
+        .memo-note textarea::-webkit-scrollbar { width: 4px; }
+        .memo-note textarea::-webkit-scrollbar-thumb { background: rgba(91, 108, 255, .35); border-radius: 2px; }
+        .memo-note .memo-del {
+            position: absolute; top: -7px; right: -7px; width: 20px; height: 20px;
+            border: none; border-radius: 50%; cursor: pointer; line-height: 1;
+            background: rgba(224, 86, 107, 0.92); color: #fff; font-size: 13px;
+            display: grid; place-items: center; opacity: 0; transition: opacity .2s, transform .2s;
+        }
+        .memo-note:hover .memo-del { opacity: 1; }
+        .memo-note .memo-del:hover { transform: scale(1.15); }
+        .memo-note.c-1 { border-left: 4px solid #ffd166; }
+        .memo-note.c-2 { border-left: 4px solid #ff8ec7; }
+        .memo-note.c-3 { border-left: 4px solid #7ed6f5; }
+        .memo-note.c-4 { border-left: 4px solid #b9f6ca; }
+
+        @media (max-width: 640px) {
+            .net-indicator { display: none; }
+            .clock-widget { top: 58px; right: 16px; padding: 22px 26px; min-width: 200px; }
+            .cw-time { font-size: 54px; }
+            .cw-sec { font-size: 24px; }
+            .cw-date { font-size: 15px; }
+            .memo-widget { left: 16px; right: 16px; bottom: 96px; width: auto; max-height: 40vh; }
+            .memo-list { max-height: 30vh; }
+        }
+
+        /* ============ 刀锋 Kodachi 暗色玻璃主题 ============ */
+        [data-theme="kodachi"] {
+            color-scheme: dark;
+            --bg-soft: #12151b;
+            --text: #e8e3d7;
+            --text-muted: #a39c8c;
+            --text-subtle: #6d6758;
+            --primary: #f5a524;
+            --primary-light: #ffc14d;
+            --accent: #05fbe8;
+            --glass-border: rgba(245, 165, 36, 0.14);
+            --glass-shadow:
+                inset 0 1.5px 1px rgba(255, 255, 255, 0.06),
+                inset 0 0 24px rgba(245, 165, 36, 0.05),
+                0 10px 34px rgba(0, 0, 0, 0.55);
+            --glass-bg: rgba(18, 21, 27, 0.55);
+            --glass-blur: saturate(150%) blur(26px);
+        }
+        [data-theme="kodachi"] body {
+            background: linear-gradient(135deg, #14171e, #0e1014);
+        }
+        [data-theme="kodachi"] .desktop-bg { background-color: #12151b; }
+        [data-theme="kodachi"] .orb { opacity: 0.16; }
+        [data-theme="kodachi"] body.has-photo .orb { opacity: 0.12; }
+        [data-theme="kodachi"] .grain { background: radial-gradient(circle at 50% 40%, rgba(245, 165, 36, 0.06), transparent 70%); }
+        [data-theme="kodachi"] .dock,
+        [data-theme="kodachi"] .menu-bar,
+        [data-theme="kodachi"] .clock-widget,
+        [data-theme="kodachi"] .memo-widget,
+        [data-theme="kodachi"] .net-indicator,
+        [data-theme="kodachi"] .modal {
+            background: var(--glass-bg);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border-color: var(--glass-border);
+        }
+        [data-theme="kodachi"] .dock-item.active,
+        [data-theme="kodachi"] .dock-item:hover { background: rgba(245, 165, 36, 0.14); }
+        [data-theme="kodachi"] .dock-item.amber { -webkit-text-stroke-color: var(--primary-light); }
+        [data-theme="kodachi"] .set-reset,
+        [data-theme="kodachi"] .upload-btn { border-color: rgba(245, 165, 36, 0.25); color: var(--primary-light); }
+        [data-theme="kodachi"] .set-reset:hover,
+        [data-theme="kodachi"] .upload-btn:hover { background: rgba(245, 165, 36, 0.1); }
+        [data-theme="kodachi"] .bg-thumb { border-color: rgba(245, 165, 36, 0.18); }
+        [data-theme="kodachi"] .bg-thumb.active { box-shadow: 0 0 0 2px var(--primary); }
+    </style>
+</head>
+<body>
+    <!-- 桌面壁纸 -->
+    <div class="desktop-bg" aria-hidden="true">
+        <span class="orb orb-1"></span>
+        <span class="orb orb-2"></span>
+        <span class="orb orb-3"></span>
+        <span class="orb orb-4"></span>
+    </div>
+    <div class="grain" aria-hidden="true"></div>
+
+    <!-- 顶部菜单栏 -->
+    <header class="menu-bar">
+        <div class="menu-left">
+            <span class="menu-logo">
+                <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
+                    <path d="M12 2.5 C 7 9, 4.5 13, 4.5 16.5 A 7.5 7.5 0 0 0 19.5 16.5 C 19.5 13, 17 9, 12 2.5 Z"/>
+                </svg>
+                Aqua OS
+            </span>
+        </div>
+        <div class="menu-right">
+            <span class="net-indicator" id="netInd" data-tip="已联网" title="已联网">
+                <i class="fas fa-wifi"></i>
+            </span>
+            <div class="status-batt" data-tip="电量 87%">
+                <i class="fas fa-battery-three-quarters"></i>
+                <span>87%</span>
+            </div>
+            <div class="status-date">
+                <span class="date" id="date">--</span>
+                <span class="clock" id="clock">--:--</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- 右上角数字时钟组件 -->
+    <aside class="clock-widget" id="clockWidget" aria-label="数字时钟">
+        <div class="cw-time"><span id="cwH">--</span>:<span id="cwM">--</span><span class="cw-sec" id="cwS">00</span></div>
+        <div class="cw-date" id="cwDate">--</div>
+    </aside>
+
+    <!-- 桌面图标（由 JS 渲染：固定图标 + 收藏图标 + 拖拽定位） -->
+    <main class="desktop" id="desktop"></main>
+
+    <!-- 底部 Dock -->
+    <nav class="dock" aria-label="Dock">
+        <a class="dock-item" href="tools.html" data-tip="工具箱"><i class="fas fa-toolbox"></i></a>
+        <a class="dock-item" href="chat.html" data-tip="聊天"><i class="fas fa-comment-dots"></i></a>
+        <span class="dock-sep"></span>
+        <a class="dock-item violet" href="#" id="aboutDock" data-tip="关于"><i class="fas fa-circle-info"></i></a>
+        <a class="dock-item amber" href="#" id="settingsDock" data-tip="设置"><i class="fas fa-gear"></i></a>
+    </nav>
+
+    <!-- 桌面便签（小组件，数据存 localStorage） -->
+    <aside class="memo-widget" id="memoWidget" aria-label="便签">
+        <div class="memo-head">
+            <span class="memo-title"><i class="fas fa-note-sticky"></i> 便签</span>
+            <button class="memo-add" id="memoAdd" title="新建便签" aria-label="新建便签"><i class="fas fa-plus"></i></button>
+        </div>
+        <div class="memo-list" id="memoList"></div>
+    </aside>
+
+    <!-- 关于弹窗 -->
+    <div class="modal-mask" id="aboutModal">
+        <div class="modal" role="dialog" aria-modal="true" aria-label="关于 Aqua OS">
+            <i class="logo-mark fas fa-droplet"></i>
+            <h2>Aqua OS · 液态玻璃桌面</h2>
+            <p>基于 Aqua Tools 清新工具箱的桌面外壳。<br>所有工具均托管于 <code>tools.html</code>，点击「工具箱」即可使用。</p>
+            <button class="close" id="aboutClose">知道了</button>
+        </div>
+    </div>
+
+    <!-- 设置弹窗 -->
+    <div class="modal-mask" id="settingsModal">
+        <div class="modal settings" role="dialog" aria-modal="true" aria-label="设置">
+            <div class="modal-head">
+                <i class="logo-mark fas fa-gear"></i>
+                <h2>设置</h2>
+                <button class="modal-x" id="settingsClose" aria-label="关闭">&times;</button>
+            </div>
+
+            <section class="set-section">
+                <h3>桌面背景</h3>
+                <div class="bg-previews" id="bgPreviews"><!-- 预设缩略图由 JS 注入 --></div>
+                <div class="set-actions">
+                    <label class="upload-btn">
+                        <i class="fas fa-upload"></i> 上传背景图
+                        <input type="file" id="bgUpload" accept="image/*" hidden>
+                    </label>
+                    <button class="set-reset" id="bgReset"><i class="fas fa-rotate-left"></i> 恢复默认</button>
+                </div>
+                <p class="set-hint">点击缩略图切换预设背景；或上传本地图片作为自定义背景，将自动保存并在下次访问时应用。</p>
+            </section>
+
+            <section class="set-section">
+                <h3>桌面图标</h3>
+                <div class="set-actions">
+                    <button class="upload-btn" id="arrangeStart" style="border:none;">
+                        <i class="fas fa-up-down-left-right"></i> 整理图标位置
+                    </button>
+                </div>
+                <p class="set-hint">点击图标进入跟随，移动鼠标调整位置，再次点击图标（或点击空白处）确认放置，会自动吸附网格并限制边界；点击「完成」保存并退出。平时图标不可拖动。</p>
+            </section>
+
+            <section class="set-section">
+                <h3>主题</h3>
+                <div class="bg-previews" id="themePreviews">
+                    <button class="bg-thumb theme-pill" data-theme-choice="liquid-glass" type="button">液态</button>
+                    <button class="bg-thumb theme-pill" data-theme-choice="aqua" type="button">浅色</button>
+                    <button class="bg-thumb theme-pill" data-theme-choice="midnight" type="button">深夜</button>
+                    <button class="bg-thumb theme-pill" data-theme-choice="kodachi" type="button">刀锋</button>
+                </div>
+                <p class="set-hint">主题会与全站同步保存（localStorage「aqua-theme」），下次打开自动应用。</p>
+            </section>
+        </div>
+    </div>
+
+    <!-- 整理模式确认条 -->
+    <div class="arrange-bar" id="arrangeBar">
+        <span class="tip"><i class="fas fa-up-down-left-right"></i> 整理模式：点击图标跟随，再次点击放置</span>
+        <button class="confirm" id="arrangeDone">完成</button>
+    </div>
+
+    <script>
+        // 时钟 + 日期
+        (function () {
+            const el = document.getElementById('clock');
+            const dateEl = document.getElementById('date');
+            const days = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+            function tick() {
+                const d = new Date();
+                const p = n => String(n).padStart(2, '0');
+                el.textContent = `${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+                dateEl.textContent = `${d.getMonth() + 1}月${d.getDate()}日 ${days[d.getDay()]}`;
+            }
+            tick(); setInterval(tick, 1000);
+        })();
+
+        // 网络状态（只读指示，随浏览器联网状态实时变化）
+        function updateNet() {
+            const online = navigator.onLine;
+            const label = online ? '已联网' : '未联网';
+            const icon = online ? 'fa-wifi' : 'fa-triangle-exclamation';
+            const netInd = document.getElementById('netInd');
+            netInd.classList.toggle('offline', !online);
+            netInd.dataset.tip = label; netInd.title = label;
+            netInd.querySelector('i').className = 'fas ' + icon;
+        }
+        window.addEventListener('online', updateNet);
+        window.addEventListener('offline', updateNet);
+        updateNet();
+
+        // 电量（每分钟刷新一次）：优先真实电量 API，否则模拟电量
+        (function () {
+            const batt = document.querySelector('.status-batt');
+            const icon = batt.querySelector('i');
+            const txt = batt.querySelector('span');
+            const faIcon = p => p >= 100 ? 'fa-battery-full'
+                : p >= 75 ? 'fa-battery-three-quarters'
+                : p >= 50 ? 'fa-battery-half'
+                : p >= 25 ? 'fa-battery-quarter'
+                : 'fa-battery-empty';
+            function render(p, charging) {
+                const pp = Math.max(0, Math.min(100, Math.round(p)));
+                icon.className = 'fas ' + faIcon(pp);
+                txt.textContent = pp + '%';
+                batt.dataset.tip = (charging ? '充电中 ' : '电量 ') + pp + '%';
+                batt.title = batt.dataset.tip;
+                batt.classList.toggle('charging', !!charging);
+                batt.classList.toggle('low', !charging && pp <= 30 && pp > 15);
+                batt.classList.toggle('crit', !charging && pp <= 15);
+            }
+            function simulate() {
+                let p = 87;
+                render(p, false);
+                setInterval(() => { p = p <= 5 ? 100 : p - 1; render(p, false); }, 60000);
+            }
+            if (navigator.getBattery) {
+                navigator.getBattery().then(b => {
+                    const paint = () => render(b.level * 100, b.charging);
+                    paint();
+                    b.addEventListener('levelchange', paint);
+                    b.addEventListener('chargingchange', paint);
+                    setInterval(paint, 60000); // 兜底，每分钟刷新
+                }).catch(simulate);
+            } else {
+                simulate();
+            }
+        })();
+
+        // 桌面右上角数字时钟组件
+        (function () {
+            const h = document.getElementById('cwH');
+            const m = document.getElementById('cwM');
+            const s = document.getElementById('cwS');
+            const dateEl = document.getElementById('cwDate');
+            const days = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+            function tick() {
+                const d = new Date();
+                const p = n => String(n).padStart(2, '0');
+                h.textContent = p(d.getHours());
+                m.textContent = p(d.getMinutes());
+                s.textContent = p(d.getSeconds());
+                dateEl.textContent = `${d.getMonth() + 1}月${d.getDate()}日 ${days[d.getDay()]}`;
+            }
+            tick(); setInterval(tick, 1000);
+        })();
+
+        // ===== 桌面图标渲染 + 收藏 + 拖拽定位 =====
+        const FAV_KEY = 'aquaFavorites';
+        const POS_KEY = 'aquaIconPos';
+        const ICON_W = 96, ICON_H = 116, GAP_X = 10, GAP_Y = 12, OX = 22, OY = 26;
+
+        const FIXED_ICONS = [
+            { id: 'tools',    name: '工具箱', icon: 'fa-toolbox',       href: 'tools.html',  action: '' },
+            { id: 'chat',     name: '聊天',   icon: 'fa-comment-dots',  href: 'chat.html',   action: '' },
+            { id: 'about',    name: '关于',   icon: 'fa-circle-info',   href: '#',           action: 'about' },
+            { id: 'settings', name: '设置',   icon: 'fa-gear',          href: '#',           action: 'settings' }
+        ];
+
+        function getFavs() {
+            try { return JSON.parse(localStorage.getItem(FAV_KEY)) || []; }
+            catch (e) { return []; }
+        }
+        function getPosMap() {
+            try { return JSON.parse(localStorage.getItem(POS_KEY)) || {}; }
+            catch (e) { return {}; }
+        }
+        function savePosMap(m) {
+            try { localStorage.setItem(POS_KEY, JSON.stringify(m)); } catch (e) {}
+        }
+        function defaultPos(i) {
+            const desk = document.getElementById('desktop');
+            const cols = Math.max(1, Math.floor((desk.clientWidth - OX * 2) / (ICON_W + GAP_X)));
+            const col = i % cols, row = Math.floor(i / cols);
+            return { x: OX + col * (ICON_W + GAP_X), y: OY + row * (ICON_H + GAP_Y) };
+        }
+
+        // 整理模式：仅在设置中开启后才允许移动图标（点击跟随 / 再次点击放置）
+        let arranging = false;
+        let followingEl = null, followingId = null, grabOffX = 0, grabOffY = 0;
+        let followCache = null, followIconW = 0, followIconH = 0; // 缓存几何，避免跟随时每帧强制重排
+
+        function refreshFollowCache() {
+            const desk = document.getElementById('desktop');
+            const d = desk.getBoundingClientRect();
+            followCache = { left: d.left, top: d.top, w: desk.clientWidth, h: desk.clientHeight };
+        }
+
+        function setArranging(on) {
+            arranging = on;
+            document.body.classList.toggle('arranging', on);
+            if (!on && followingEl) dropFollow(); // 退出整理时若仍在跟随，先落位
+        }
+
+        // 图标跟随鼠标移动（几何已缓存，单帧只写 left/top，不再触发强制重排）
+        function moveFollow(e) {
+            if (!followingEl || !followCache) return;
+            let mx = e.clientX - followCache.left - grabOffX;
+            let my = e.clientY - followCache.top - grabOffY;
+            mx = Math.max(0, Math.min(mx, followCache.w - followIconW));
+            my = Math.max(0, Math.min(my, followCache.h - followIconH));
+            followingEl.style.left = mx + 'px';
+            followingEl.style.top = my + 'px';
+            followingEl._fx = mx; followingEl._fy = my;
+        }
+
+        // 开始跟随：记录抓取点偏移并缓存几何，图标吸附到鼠标
+        function startFollow(el, id, e) {
+            followingEl = el; followingId = id;
+            const r = el.getBoundingClientRect();
+            grabOffX = e.clientX - r.left;
+            grabOffY = e.clientY - r.top;
+            followIconW = el.offsetWidth; followIconH = el.offsetHeight;
+            refreshFollowCache();
+            el.classList.add('following');
+            moveFollow(e);
+        }
+
+        // 确认放置：吸附到网格并保存位置
+        function dropFollow() {
+            if (!followingEl) return;
+            const maxX = (followCache ? followCache.w : document.getElementById('desktop').clientWidth) - followIconW;
+            const maxY = (followCache ? followCache.h : document.getElementById('desktop').clientHeight) - followIconH;
+            const COL = ICON_W + GAP_X, ROW = ICON_H + GAP_Y;
+            const nx = Math.max(0, Math.min(OX + Math.round((followingEl._fx - OX) / COL) * COL, maxX));
+            const ny = Math.max(0, Math.min(OY + Math.round((followingEl._fy - OY) / ROW) * ROW, maxY));
+            followingEl.style.left = nx + 'px';
+            followingEl.style.top = ny + 'px';
+            const m = getPosMap(); m[followingId] = { x: nx, y: ny }; savePosMap(m);
+            followingEl.classList.remove('following');
+            followingEl = null; followingId = null;
+        }
+
+        // 全局监听：跟随中的图标随鼠标移动；窗口尺寸变化时刷新缓存几何
+        document.addEventListener('pointermove', e => { if (followingEl) moveFollow(e); });
+        window.addEventListener('resize', () => { if (followingEl) refreshFollowCache(); });
+
+        function attachDrag(el, id) {
+            el.addEventListener('click', e => {
+                if (el._moved) { e.preventDefault(); el._moved = false; return; }
+                if (arranging) {
+                    e.preventDefault();
+                    if (followingEl === el) {
+                        dropFollow();                 // 再次点击同一图标：确认放置
+                    } else {
+                        if (followingEl) dropFollow(); // 先放下之前跟随的图标
+                        startFollow(el, id, e);        // 点击图标：进入跟随
+                    }
+                    return;
+                }
+                document.querySelectorAll('#desktop .icon').forEach(o => o.classList.remove('selected'));
+                el.classList.add('selected');
+                const act = el.dataset.action;
+                if (act === 'about') { e.preventDefault(); openAbout(); }
+                else if (act === 'settings') { e.preventDefault(); openSettings(); }
+            });
+        }
+
+        function renderIcons() {
+            const desk = document.getElementById('desktop');
+            desk.innerHTML = '';
+            const favs = getFavs();
+            const items = FIXED_ICONS.concat(favs.map(f => ({
+                id: f.id, name: f.name, icon: f.icon, href: f.href || '#', action: '', fav: true
+            })));
+            const posMap = getPosMap();
+            items.forEach((it, i) => {
+                const pos = posMap[it.id] || defaultPos(i);
+                const a = document.createElement('a');
+                a.className = 'icon' + (it.fav ? ' fav' : '');
+                a.style.animationDelay = (0.2 + i * 0.13) + 's';
+                a.href = it.href;
+                a.dataset.id = it.id;
+                a.dataset.action = it.action || '';
+                a.style.left = pos.x + 'px';
+                a.style.top = pos.y + 'px';
+                const glass = document.createElement('span');
+                glass.className = 'icon-glass';
+                glass.innerHTML = '<i class="fas ' + it.icon + '"></i>';
+                const label = document.createElement('span');
+                label.className = 'icon-label';
+                label.textContent = it.name;
+                a.appendChild(glass); a.appendChild(label);
+                if (it.fav) {
+                    const rm = document.createElement('span');
+                    rm.className = 'icon-remove';
+                    rm.title = '取消收藏';
+                    rm.textContent = '×';
+                    rm.addEventListener('click', e => {
+                        e.stopPropagation();
+                        const l = getFavs().filter(f => f.id !== it.id);
+                        try { localStorage.setItem(FAV_KEY, JSON.stringify(l)); localStorage.setItem(FAV_KEY + ':rev', String(Date.now())); } catch (err) {}
+                        const m = getPosMap(); delete m[it.id]; savePosMap(m);
+                        renderIcons();
+                    });
+                    a.appendChild(rm);
+                }
+                attachDrag(a, it.id);
+                desk.appendChild(a);
+            });
+        }
+
+        renderIcons();
+        // 跨页面同步（另一标签页收藏/取消时刷新）
+        window.addEventListener('storage', e => { if (e.key === FAV_KEY) renderIcons(); });
+        // 桌面空白处点击取消选中
+        document.getElementById('desktop').addEventListener('click', e => {
+            if (e.target.id === 'desktop') {
+                document.querySelectorAll('#desktop .icon').forEach(o => o.classList.remove('selected'));
+                if (arranging && followingEl) dropFollow(); // 点击空白：确认放置当前跟随的图标
+            }
+        });
+
+        // 关于弹窗
+        function openAbout() { document.getElementById('aboutModal').classList.add('show'); }
+        function closeAbout() { document.getElementById('aboutModal').classList.remove('show'); }
+        document.getElementById('aboutDock').addEventListener('click', e => { e.preventDefault(); openAbout(); });
+        document.getElementById('aboutClose').addEventListener('click', closeAbout);
+        document.getElementById('aboutModal').addEventListener('click', e => {
+            if (e.target.id === 'aboutModal') closeAbout();
+        });
+
+        // 设置：背景与主题
+        const BG_KEY = 'aqua-bg';
+        const BG_DEFAULT = 'assets/bg1.jpg';
+        const PRESETS = [
+            { id: 'bg1', url: 'assets/bg1.jpg' },
+            { id: 'bg2', url: 'assets/bg2.jpg' },
+            { id: 'bg3', url: 'assets/bg3.jpg' }
+        ];
+        const desktopBg = document.querySelector('.desktop-bg');
+
+        function applyBg(url) {
+            desktopBg.style.backgroundImage = `url("${url}")`;
+            document.body.classList.add('has-photo');
+            markActiveThumb(url);
+            try { localStorage.setItem(BG_KEY, url); } catch (e) {}
+        }
+        function markActiveThumb(url) {
+            document.querySelectorAll('.bg-thumb').forEach(t => {
+                t.classList.toggle('active', t.dataset.url === url);
+            });
+        }
+        function openSettings() { document.getElementById('settingsModal').classList.add('show'); }
+        function closeSettings() { document.getElementById('settingsModal').classList.remove('show'); }
+
+        // 构建预设缩略图
+        (function buildThumbs() {
+            const wrap = document.getElementById('bgPreviews');
+            PRESETS.forEach(p => {
+                const t = document.createElement('div');
+                t.className = 'bg-thumb';
+                t.dataset.url = p.url;
+                t.style.backgroundImage = `url("${p.url}")`;
+                t.setAttribute('role', 'button');
+                t.setAttribute('aria-label', '应用预设背景 ' + p.id);
+                t.addEventListener('click', () => applyBg(p.url));
+                wrap.appendChild(t);
+            });
+        })();
+
+        // 上传自定义背景
+        document.getElementById('bgUpload').addEventListener('change', e => {
+            const file = e.target.files && e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = () => applyBg(reader.result);
+            reader.readAsDataURL(file);
+            e.target.value = '';
+        });
+        // 恢复默认背景
+        document.getElementById('bgReset').addEventListener('click', () => applyBg(BG_DEFAULT));
+
+        // 整理模式：设置里开启 → 回到桌面拖动 → 点「完成」退出
+        document.getElementById('arrangeStart').addEventListener('click', () => {
+            closeSettings();
+            setArranging(true);
+        });
+        document.getElementById('arrangeDone').addEventListener('click', () => setArranging(false));
+
+        // 设置弹窗开关
+        document.getElementById('settingsDock').addEventListener('click', e => { e.preventDefault(); openSettings(); });
+        document.getElementById('settingsClose').addEventListener('click', closeSettings);
+        document.getElementById('settingsModal').addEventListener('click', e => {
+            if (e.target.id === 'settingsModal') closeSettings();
+        });
+
+        // ===== 主题（与全站 localStorage「aqua-theme」同步） =====
+        const THEME_KEY = 'aqua-theme';
+        const THEME_LABELS = { 'liquid-glass': '液态', aqua: '浅色', midnight: '深夜', kodachi: '刀锋' };
+        function applyThemeChoice(name) {
+            document.documentElement.setAttribute('data-theme', name);
+            try { localStorage.setItem(THEME_KEY, name); } catch (e) {}
+            document.querySelectorAll('.theme-pill').forEach(b => {
+                b.classList.toggle('active', b.dataset.themeChoice === name);
+            });
+        }
+        (function initTheme() {
+            let v = 'liquid-glass';
+            try { v = localStorage.getItem(THEME_KEY) || 'liquid-glass'; } catch (e) {}
+            if (!THEME_LABELS[v]) v = 'liquid-glass';
+            document.querySelectorAll('.theme-pill').forEach(b => {
+                b.addEventListener('click', () => applyThemeChoice(b.dataset.themeChoice));
+            });
+            applyThemeChoice(v);
+        })();
+
+        // ===== 桌面便签（localStorage 持久化，自动换行、可增删） =====
+        (function () {
+            const MEMO_KEY = 'aquaMemo';
+            const COLORS = ['c-1', 'c-2', 'c-3', 'c-4'];
+            const wrap = document.getElementById('memoList');
+            const addBtn = document.getElementById('memoAdd');
+            if (!wrap || !addBtn) return;
+
+            function load() {
+                try { return JSON.parse(localStorage.getItem(MEMO_KEY)) || []; }
+                catch (e) { return []; }
+            }
+            function save(list) {
+                try { localStorage.setItem(MEMO_KEY, JSON.stringify(list)); } catch (e) {}
+            }
+            function render() {
+                const list = load();
+                if (!list.length) {
+                    wrap.innerHTML = '<div class="memo-empty">点右上角 + 新建便签，随手记下想法</div>';
+                    return;
+                }
+                wrap.innerHTML = '';
+                list.forEach((text, i) => {
+                    const note = document.createElement('div');
+                    note.className = 'memo-note ' + COLORS[i % COLORS.length];
+                    const ta = document.createElement('textarea');
+                    ta.placeholder = '写点什么…';
+                    ta.value = text || '';
+                    ta.addEventListener('input', () => {
+                        const arr = load(); arr[i] = ta.value; save(arr);
+                    });
+                    const del = document.createElement('button');
+                    del.className = 'memo-del';
+                    del.title = '删除便签';
+                    del.innerHTML = '&times;';
+                    del.addEventListener('click', () => {
+                        const arr = load(); arr.splice(i, 1); save(arr); render();
+                    });
+                    note.appendChild(ta); note.appendChild(del);
+                    wrap.appendChild(note);
+                });
+            }
+            addBtn.addEventListener('click', () => {
+                const arr = load();
+                arr.unshift('');
+                save(arr); render();
+                const first = wrap.querySelector('.memo-note textarea');
+                if (first) first.focus();
+            });
+            render();
+        })();
+
+        // 应用已保存的背景（无则使用默认）
+        (function initBg() {
+            let saved = null;
+            try { saved = localStorage.getItem(BG_KEY); } catch (e) {}
+            applyBg(saved || BG_DEFAULT);
+        })();
+
+        // Esc 关闭弹窗 / 退出整理模式
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') { closeAbout(); closeSettings(); setArranging(false); }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>通用小说搜索下载</title>
+<script>
+  (function () {
+    var v = '';
+    try { v = localStorage.getItem('aqua-theme') || ''; } catch (e) {}
+    if (v === 'kodachi') document.documentElement.setAttribute('data-theme', 'kodachi');
+  })();
+</script>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: -apple-system, "Microsoft YaHei", sans-serif; background: #f5f6fa; color: #222; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 24px 16px 60px; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  .sub { color: #888; font-size: 13px; margin-bottom: 18px; }
+  .bar { display: flex; gap: 8px; }
+  .bar input { flex: 1; padding: 11px 14px; font-size: 15px; border: 1px solid #d0d3da; border-radius: 8px; outline: none; }
+  .bar input:focus { border-color: #4a7bff; }
+  .bar button { padding: 11px 22px; font-size: 15px; border: 0; border-radius: 8px; background: #4a7bff; color: #fff; cursor: pointer; }
+  .bar button:hover { background: #3a6af0; }
+  .hint { color: #b00; font-size: 13px; margin: 12px 0; white-space: pre-wrap; }
+  .books { display: grid; gap: 10px; margin-top: 16px; }
+  .book { background: #fff; border: 1px solid #eceef2; border-radius: 10px; padding: 14px 16px; cursor: pointer; transition: .15s; }
+  .book:hover { border-color: #4a7bff; box-shadow: 0 2px 10px rgba(74,123,255,.12); }
+  .book .t { font-size: 16px; font-weight: 600; }
+  .book .a { color: #888; font-size: 13px; margin-top: 4px; }
+  .detail { background: #fff; border: 1px solid #eceef2; border-radius: 10px; padding: 18px; margin-top: 16px; }
+  .detail h2 { margin: 0 0 6px; font-size: 19px; }
+  .detail .meta { color: #888; font-size: 13px; margin-bottom: 10px; }
+  .detail .desc { font-size: 14px; line-height: 1.7; color: #444; max-height: 160px; overflow: auto; background: #fafbfc; padding: 10px 12px; border-radius: 8px; }
+  .detail .acts { margin-top: 14px; display: flex; gap: 10px; align-items: center; }
+  .dl { padding: 10px 20px; border: 0; border-radius: 8px; background: #2ecc71; color: #fff; font-size: 15px; cursor: pointer; }
+  .dl:hover { background: #27ae60; }
+  .status { color: #4a7bff; font-size: 14px; }
+  .back { color: #4a7bff; cursor: pointer; font-size: 14px; margin-bottom: 10px; display: inline-block; }
+  a.home { color: #4a7bff; text-decoration: none; font-size: 14px; }
+
+  .theme-toggle {
+    float: right; margin-top: 4px; padding: 6px 16px;
+    border: 1px solid #d0d3da; border-radius: 8px;
+    background: #fff; color: #555; font-size: 13px; cursor: pointer;
+  }
+  .theme-toggle:hover { border-color: #4a7bff; color: #4a7bff; }
+
+  [data-theme="kodachi"] body { background: #12151b; color: #e8e3d7; }
+  [data-theme="kodachi"] .sub { color: #a39c8c; }
+  [data-theme="kodachi"] .bar input {
+    background: rgba(255,255,255,.06); border-color: rgba(245,165,36,.25); color: #e8e3d7;
+  }
+  [data-theme="kodachi"] .bar input:focus { border-color: #f5a524; }
+  [data-theme="kodachi"] .bar button { background: linear-gradient(135deg, #f5a524, #ffc14d); color: #1c1305; }
+  [data-theme="kodachi"] .bar button:hover { background: linear-gradient(135deg, #ffb02e, #ffd066); }
+  [data-theme="kodachi"] .book,
+  [data-theme="kodachi"] .detail {
+    background: rgba(255,255,255,.04); border-color: rgba(245,165,36,.14);
+  }
+  [data-theme="kodachi"] .book:hover { border-color: rgba(245,165,36,.4); box-shadow: 0 2px 10px rgba(245,165,36,.12); }
+  [data-theme="kodachi"] .book .a,
+  [data-theme="kodachi"] .detail .meta { color: #a39c8c; }
+  [data-theme="kodachi"] .detail .desc { color: #c9c2b2; background: rgba(0,0,0,.25); }
+  [data-theme="kodachi"] .status,
+  [data-theme="kodachi"] .back,
+  [data-theme="kodachi"] a.home { color: #f5a524; }
+  [data-theme="kodachi"] .dl { background: linear-gradient(135deg, #f5a524, #ffc14d); color: #1c1305; }
+  [data-theme="kodachi"] .dl:hover { background: linear-gradient(135deg, #ffb02e, #ffd066); }
+  [data-theme="kodachi"] .theme-toggle {
+    background: rgba(245,165,36,.1); border-color: rgba(245,165,36,.25); color: #ffc14d;
+  }
+  [data-theme="kodachi"] .theme-toggle:hover { border-color: #f5a524; color: #ffe9bd; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>通用小说搜索下载</h1>
+  <button type="button" class="theme-toggle" id="novelThemeToggle" onclick="toggleNovelTheme()">暗色</button>
+  <div class="sub">支持按书名搜索（不限定平台，数据源：笔趣阁）。搜到书后点“下载整本”即可导出 TXT。</div>
+  <a class="home" href="index.html">← 返回首页</a>
+  <div class="bar" style="margin-top:10px">
+    <input id="kw" placeholder="输入小说书名，如：凡人修仙传" onkeydown="if(event.key==='Enter')doSearch()">
+    <button onclick="doSearch()">搜索</button>
+  </div>
+  <div id="hint" class="hint"></div>
+  <div id="list" class="books"></div>
+  <div id="detail"></div>
+</div>
+<script>
+function esc(s){ return (s||'').replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+
+async function doSearch() {
+  const kw = document.getElementById('kw').value.trim();
+  const hint = document.getElementById('hint');
+  const list = document.getElementById('list');
+  const detail = document.getElementById('detail');
+  if (!kw) { hint.textContent = '请输入书名'; return; }
+  hint.textContent = '搜索中…'; list.innerHTML = ''; detail.innerHTML = '';
+  try {
+    const res = await fetch('/api/novel/search?q=' + encodeURIComponent(kw));
+    const books = await res.json();
+    if (!Array.isArray(books) || !books.length) {
+      hint.textContent = '未找到相关小说，换个书名试试，或确认数据源可访问。';
+      return;
+    }
+    hint.textContent = '找到 ' + books.length + ' 个结果，点击选择：';
+    books.slice(0, 20).forEach((b, i) => {
+      const el = document.createElement('div');
+      el.className = 'book';
+      el.innerHTML = '<div class="t">' + esc(b.name) + '</div><div class="a">作者：' + esc(b.author || '未知') + '</div>';
+      el.onclick = () => showBook(b);
+      list.appendChild(el);
+    });
+  } catch (e) {
+    hint.textContent = '搜索失败：' + e.message;
+  }
+}
+
+let currentBook = null;
+async function showBook(b) {
+  currentBook = b;
+  const detail = document.getElementById('detail');
+  const hint = document.getElementById('hint');
+  hint.textContent = '';
+  detail.innerHTML = '<div class="detail"><div class="status">加载目录中…</div></div>';
+  try {
+    const res = await fetch('/api/novel/page?url=' + encodeURIComponent(b.link));
+    const data = await res.json();
+    const list = Array.isArray(data.list) ? data.list : [];
+    detail.innerHTML =
+      '<div class="detail">' +
+        '<div class="back" onclick="document.getElementById(\'detail\').innerHTML=\'\'">← 返回结果</div>' +
+        '<h2>' + esc(data.name || b.name) + '</h2>' +
+        '<div class="meta">作者：' + esc(data.author || b.author || '未知') + ' ｜ 章节数：' + list.length + '</div>' +
+        '<div class="desc">' + esc(data.desc || '（无简介）') + '</div>' +
+        '<div class="acts">' +
+          '<button class="dl" onclick="doDownload()">下载整本（TXT）</button>' +
+          '<span class="status" id="dlstatus"></span>' +
+        '</div>' +
+      '</div>';
+  } catch (e) {
+    detail.innerHTML = '<div class="detail"><div class="status">加载失败：' + esc(e.message) + '</div></div>';
+  }
+}
+
+function doDownload() {
+  if (!currentBook) return;
+  const s = document.getElementById('dlstatus');
+  if (s) s.textContent = '正在生成下载（整本较大请稍候）…';
+  // 直接跳转触发浏览器下载
+  window.location.href = '/api/novel/download?url=' + encodeURIComponent(currentBook.link) + '&name=' + encodeURIComponent(currentBook.name || 'novel');
+}
+</script>
+    <script src="js/favorite.js"></script>
+<script>
+  (function () {
+    var b = document.getElementById('novelThemeToggle');
+    if (b && document.documentElement.dataset.theme === 'kodachi') b.textContent = '浅色';
+  })();
+  function toggleNovelTheme() {
+    var cur = document.documentElement.dataset.theme === 'kodachi' ? '' : 'kodachi';
+    document.documentElement.dataset.theme = cur;
+    try { localStorage.setItem('aqua-theme', cur); } catch (e) {}
+    var b = document.getElementById('novelThemeToggle');
+    if (b) b.textContent = cur === 'kodachi' ? '浅色' : '暗色';
+  }
+</script>
+</body>
+</html>

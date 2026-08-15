@@ -1,0 +1,16 @@
+{
+  "name": "aqua-chat-server",
+  "version": "1.0.0",
+  "description": "Aqua Chat 服务器版：Express + SQLite，静态托管前端并提供 REST API",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "sync": "node sync.js",
+    "test": "node test-smoke.js",
+    "test:bots": "node test-bots.js",
+    "test:browser": "node test-browser.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
