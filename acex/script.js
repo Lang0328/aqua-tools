@@ -606,11 +606,12 @@
         try { saved = localStorage.getItem(STORAGE_KEY) || 'liquid-glass'; } catch (e) {}
         applyTheme(saved);
 
-        // 液态玻璃：鼠标 3D 倾斜（仅该主题生效）
+        // 液态玻璃：鼠标 3D 倾斜（仅该主题生效；尊重系统“减弱动态效果”）
         const tiltGrid = $('.tools-grid-v2');
+        const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         let lastTiltCard = null;
         let tiltRaf = false, tiltClientX = 0, tiltClientY = 0, tiltTarget = null;
-        if (tiltGrid) {
+        if (tiltGrid && !reduceMotion) {
             tiltGrid.addEventListener('mousemove', (e) => {
                 if (document.documentElement.dataset.theme !== 'liquid-glass') return;
                 tiltClientX = e.clientX; tiltClientY = e.clientY; tiltTarget = e.target;

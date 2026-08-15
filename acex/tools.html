@@ -41,6 +41,17 @@
         <div class="aurora-entry-sweep" id="auroraEntrySweep"></div>
     </div>
 
+    <!-- 液态玻璃折射滤镜：feTurbulence + feDisplacementMap 对背景做位移，模拟真实液态边缘折射 -->
+    <svg width="0" height="0" style="position:absolute;pointer-events:none" aria-hidden="true">
+        <defs>
+            <filter id="liquidGlass" x="-25%" y="-25%" width="150%" height="150%" color-interpolation-filters="sRGB">
+                <feTurbulence type="fractalNoise" baseFrequency="0.008 0.012" numOctaves="2" seed="8" stitchTiles="stitch" result="noise"/>
+                <feGaussianBlur in="noise" stdDeviation="0.5" result="smooth"/>
+                <feDisplacementMap in="SourceGraphic" in2="smooth" scale="22" xChannelSelector="R" yChannelSelector="G"/>
+            </filter>
+        </defs>
+    </svg>
+
     <!-- 液态玻璃折射背景（仅液态玻璃主题显示） -->
     <div class="liquid-bg" aria-hidden="true"></div>
 
