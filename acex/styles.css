@@ -2,6 +2,10 @@
    Aqua Tools · 精致设计系统（Apple 基底 + 分类色彩个性）
    ============================================ */
 
+/* 液态玻璃水光坐标：注册为可过渡的自定义属性，使光标高光平滑跟随（非瞬时跳变） */
+@property --mx { syntax: '<percentage>'; inherits: true; initial-value: 26%; }
+@property --my { syntax: '<percentage>'; inherits: true; initial-value: 14%; }
+
 :root {
     color-scheme: light;
     /* Apple 风格配色 — 克制、精致 */
@@ -511,7 +515,7 @@ body, .topbar, .sidebar, .tool-body, .tool-card-v2, .design-ref-card,
         radial-gradient(44% 50% at 24% 84%, rgba(45, 212, 191, 0.55), transparent 60%),
         radial-gradient(55% 55% at 50% 50%, rgba(255, 209, 102, 0.4), transparent 65%),
         linear-gradient(135deg, #eef1f8, #e7ecfb);
-    filter: url(#liquidGlass) saturate(115%);
+    filter: url(#liquidGlassBg) saturate(115%);
 }
 [data-theme="liquid-glass"] .liquid-bg {
     display: block;
@@ -553,26 +557,42 @@ body, .topbar, .sidebar, .tool-body, .tool-card-v2, .design-ref-card,
     mix-blend-mode: screen;
     opacity: 0.9;
     pointer-events: none;
-    transition: opacity 0.3s ease;
+    transition: opacity 0.3s ease,
+                --mx 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+                --my 0.22s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-/* 斜向流光（纯 CSS 渐变，不套 SVG 滤镜，避免大量卡片逐像素计算卡顿） */
+/* 斜向流光：GPU 合成的扫光带循环流动，营造液态反光（纯 transform 位移，不重算滤镜，多卡片也流畅） */
 [data-theme="liquid-glass"] .tool-card-v2::after {
     content: '';
-    display: block;
     position: absolute;
-    inset: 0;
+    inset: -65% -25%;
     z-index: 1;
     border-radius: inherit;
-    background: linear-gradient(135deg,
-        rgba(255, 255, 255, 0.65) 0%,
-        rgba(255, 255, 255, 0.04) 36%,
-        rgba(255, 255, 255, 0.28) 70%,
-        rgba(255, 255, 255, 0.05) 100%);
-    opacity: 0.9;
+    background: linear-gradient(115deg,
+        transparent 40%,
+        rgba(255, 255, 255, 0.55) 50%,
+        transparent 60%);
+    transform: translateX(-130%) skewX(-10deg);
+    opacity: 0;
+    mix-blend-mode: screen;
     pointer-events: none;
+    will-change: transform;
+    animation: lgFlow 7s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+@keyframes lgFlow {
+    0%   { transform: translateX(-130%) skewX(-10deg); opacity: 0; }
+    14%  { opacity: 0.85; }
+    50%  { transform: translateX(130%) skewX(-10deg);  opacity: 0.85; }
+    62%  { opacity: 0; }
+    100% { transform: translateX(130%) skewX(-10deg);  opacity: 0; }
+}
+[data-theme="liquid-glass"] .tool-card-v2:hover::after {
+    animation-duration: 3.2s;
+    opacity: 1;
 }
 [data-theme="liquid-glass"] .tool-card-v2:hover {
+    will-change: transform;
     box-shadow:
         inset 0 1.5px 1px rgba(255, 255, 255, 0.95),
         inset 1px 0 1px rgba(255, 255, 255, 0.5),

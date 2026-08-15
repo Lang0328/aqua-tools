@@ -609,6 +609,10 @@
         // 液态玻璃：鼠标 3D 倾斜（仅该主题生效；尊重系统“减弱动态效果”）
         const tiltGrid = $('.tools-grid-v2');
         const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        // 减弱动态效果：移除背景折射的 SMIL 呼吸动画，避免无谓重绘
+        if (reduceMotion) {
+            document.querySelectorAll('svg filter animate').forEach(a => a.remove());
+        }
         let lastTiltCard = null;
         let tiltRaf = false, tiltClientX = 0, tiltClientY = 0, tiltTarget = null;
         if (tiltGrid && !reduceMotion) {
